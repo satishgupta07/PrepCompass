@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
+/**
+ * PrepCompass color theme — dark-first, indigo accent on a near-black
+ * blue-slate background. Deliberately distinct from other trackers in this
+ * workspace (no amber, no default Tailwind zinc/blue) so the app reads as
+ * its own product rather than a themed default.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0e16;
+  --surface: #10151f;
+  --surface-hover: #171e2b;
+  --border: #232c3d;
+  --foreground: #e9edf5;
+  --muted: #7c86a0;
+  --accent: #7c5cff;
+  --accent-foreground: #0a0e16;
+  --easy: #2dd4bf;
+  --medium: #f5a623;
+  --hard: #fb6f84;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-easy: var(--easy);
+  --color-medium: var(--medium);
+  --color-hard: var(--hard);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

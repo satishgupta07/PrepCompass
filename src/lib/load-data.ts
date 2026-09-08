@@ -14,7 +14,7 @@ import {
   type DayActivityDocument,
   type DayActivityDTO,
 } from "@/models/DayActivity";
-import mockData from "@/lib/mock-data.json";
+import mockData from "../lib/mock-data.json"
 
 export type AppData = {
   patterns: PatternDTO[];
