@@ -14,7 +14,6 @@ import {
   type DayActivityDocument,
   type DayActivityDTO,
 } from "@/models/DayActivity";
-import mockData from "../lib/mock-data.json"
 
 export type AppData = {
   patterns: PatternDTO[];
@@ -29,12 +28,7 @@ export type AppData = {
  */
 async function fetchAppData(): Promise<AppData> {
   if (!process.env.MONGODB_URI) {
-    return {
-      patterns: mockData.patterns as PatternDTO[],
-      problems: mockData.problems as ProblemDTO[],
-      dayActivities: (mockData.dayActivities ?? []) as DayActivityDTO[],
-      isMock: true,
-    };
+    throw new Error("MONGODB_URI environment variable is not set");
   }
 
   await connectToDatabase();
