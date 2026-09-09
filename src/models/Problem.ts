@@ -1,5 +1,6 @@
 import mongoose, { Schema, type InferSchemaType } from "mongoose";
 import { DIFFICULTIES, type Difficulty } from "@/lib/difficulty";
+import type { ProblemProgressDTO } from "@/models/ProblemProgress";
 
 /**
  * Mongoose model + DTO for a single LeetCode problem. `pattern` stores the
@@ -7,12 +8,12 @@ import { DIFFICULTIES, type Difficulty } from "@/lib/difficulty";
  * src/lib/services/patterns.ts for how a pattern delete is blocked while
  * problems still reference its slug.
  *
- * `solvedAt` and `lastRevisedDate` drive the spaced-revision feature (see
- * CLAUDE.md's "Spaced revision and streaks"): `solvedAt` is set once, the
- * first time `solved` flips to true, and only cleared if unchecked;
- * `lastRevisedDate` is bumped every time the problem is marked revised.
- * `src/lib/reminders.ts` computes what's due from
- * `(lastRevisedDate ?? solvedAt) + 5 days`.
+ * This is the shared catalog only (title, difficulty, reference links) —
+ * admin-managed, the same for every user. Per-user state (`solved`,
+ * `notes`, `lastRevisedDate`, `solvedAt`) lives in `ProblemProgress`
+ * (src/models/ProblemProgress.ts) and gets merged back in by `toProblemDTO`
+ * below, so `ProblemDTO` keeps the same shape every existing consumer
+ * (grouping, stats, reminders, the UI) already expects.
  */
 
 const problemSchema = new Schema(
@@ -21,24 +22,14 @@ const problemSchema = new Schema(
     pattern: { type: String, required: true, trim: true, index: true },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     difficulty: { type: String, enum: [...DIFFICULTIES], required: true },
-    solved: { type: Boolean, default: false, index: true },
     leetcodeLink: { type: String, trim: true },
     githubLink: { type: String, trim: true },
     youtubeLink: { type: String, trim: true },
-    notes: { type: String, default: "", maxlength: 10_000 },
-    // Last time the user marked this problem "revised"; drives the 5-day
-    // spaced-revision reminder alongside solvedAt.
-    lastRevisedDate: { type: Date },
-    // Set once, the moment `solved` first becomes true; never touched again
-    // after that (cleared only if the problem is unmarked as solved).
-    solvedAt: { type: Date },
   },
   { timestamps: true },
 );
 
-// Compound index for the tracker page's per-pattern/solved-state filtering,
-// plus a text index so problem titles are searchable.
-problemSchema.index({ pattern: 1, solved: 1 });
+// Text index so problem titles are searchable.
 problemSchema.index({ title: "text" });
 
 // Reuse an existing compiled model in dev/HMR instead of recompiling it,
@@ -53,7 +44,8 @@ export type ProblemDocument = InferSchemaType<typeof problemSchema> & {
 /**
  * Plain, JSON-serializable shape for passing problems from Server Components
  * to Client Components — a Mongoose document's ObjectId/Date fields aren't
- * serializable across that boundary as-is.
+ * serializable across that boundary as-is. This is a merged view (catalog +
+ * the current user's progress), not a 1:1 mirror of either schema.
  */
 export type ProblemDTO = {
   id: string;
@@ -71,25 +63,29 @@ export type ProblemDTO = {
   updatedAt: string;
 };
 
-export function toProblemDTO(doc: ProblemDocument): ProblemDTO {
+/**
+ * Merges a catalog `Problem` doc with the current user's (optional)
+ * `ProblemProgress` DTO. `progress` is `null`/`undefined` when this user has
+ * never interacted with the problem yet — in that case it defaults to
+ * unsolved, no notes, no revision history, matching a freshly-added
+ * problem's previous defaults.
+ */
+export function toProblemDTO(
+  doc: ProblemDocument,
+  progress?: ProblemProgressDTO | null,
+): ProblemDTO {
   return {
     id: doc._id.toString(),
     pattern: doc.pattern,
     title: doc.title,
     difficulty: doc.difficulty as Difficulty,
-    solved: doc.solved ?? false,
+    solved: progress?.solved ?? false,
     leetcodeLink: doc.leetcodeLink ?? undefined,
     githubLink: doc.githubLink ?? undefined,
     youtubeLink: doc.youtubeLink ?? undefined,
-    notes: doc.notes ?? "",
-    // Date fields are stored as UTC midnight Dates but surfaced as plain
-    // "YYYY-MM-DD" day keys — the UI only ever cares about the day, not a
-    // time-of-day, and this keeps the DTO's date fields consistent with the
-    // "YYYY-MM-DD" keys used elsewhere (DayActivity.date, reminders, etc).
-    lastRevisedDate: doc.lastRevisedDate
-      ? doc.lastRevisedDate.toISOString().slice(0, 10)
-      : undefined,
-    solvedAt: doc.solvedAt ? doc.solvedAt.toISOString().slice(0, 10) : undefined,
+    notes: progress?.notes ?? "",
+    lastRevisedDate: progress?.lastRevisedDate,
+    solvedAt: progress?.solvedAt,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
   };

@@ -20,10 +20,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 /**
- * True partial update: per `patchProblemService`'s contract, a key omitted
- * from the JSON body leaves that field untouched, while an explicit `null`
- * clears it. This intentionally differs from the "edit panel" Server Action
- * (`updateProblemDetailsForm`), which always replaces every field.
+ * True partial update of the catalog's reference links only
+ * (`leetcodeLink`/`githubLink`/`youtubeLink`) — per `patchProblemService`'s
+ * contract, a key omitted from the JSON body leaves that field untouched,
+ * while an explicit `null` clears it. `solved`/`notes`/`lastRevisedDate`
+ * are no longer patchable here: they're per-user now (ProblemProgress) and
+ * this REST surface has no session to scope them by; sending those keys
+ * gets rejected with a 400 (the schema is `.strict()`). This intentionally
+ * differs from the "edit panel" Server Action (`updateProblemDetailsForm`),
+ * which always replaces every field it's given.
  */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleApiRoute(async () => {

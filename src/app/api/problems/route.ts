@@ -1,8 +1,13 @@
 /**
- * GET/POST /api/problems — list problems (optionally filtered by pattern
- * (string, e.g. its slug), difficulty, and solved status via query params),
- * or create a new one. GET is always open; POST requires API key auth when
+ * GET/POST /api/problems — list catalog problems (optionally filtered by
+ * pattern (string, e.g. its slug) and difficulty via query params), or
+ * create a new one. GET is always open; POST requires API key auth when
  * `API_KEY` is configured (see `requireApiAuth`).
+ *
+ * There's no `?solved=` filter anymore — `solved` is now per-user
+ * (src/models/ProblemProgress.ts) and the REST API has no session concept
+ * to scope it by; this endpoint always returns the shared catalog view
+ * (every problem with `solved: false`, `notes: ""`).
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { listProblemsService, createProblemService } from "@/lib/services/problems";
@@ -24,11 +29,8 @@ export async function GET(request: NextRequest) {
     const difficultyParam = searchParams.get("difficulty");
     // An unrecognized ?difficulty= value is silently ignored (treated as "no filter") rather than erroring.
     const difficulty = isDifficulty(difficultyParam) ? difficultyParam : undefined;
-    const solvedParam = searchParams.get("solved");
-    // Absent means "no filter"; present means filter to exactly "true" (anything else is treated as false).
-    const solved = solvedParam === null ? undefined : solvedParam === "true";
 
-    const problems = await listProblemsService({ pattern, difficulty, solved });
+    const problems = await listProblemsService({ pattern, difficulty });
     return NextResponse.json(problems);
   });
 }
