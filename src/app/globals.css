@@ -1,10 +1,13 @@
 @import "tailwindcss";
 
 /**
- * PrepCompass color theme — dark-first, indigo accent on a near-black
- * blue-slate background. Deliberately distinct from other trackers in this
- * workspace (no amber, no default Tailwind zinc/blue) so the app reads as
- * its own product rather than a themed default.
+ * PrepCompass color theme — indigo accent on a near-black blue-slate
+ * background by default; adding `.light` (toggled by
+ * src/components/ui/ThemeToggle.tsx, persisted to localStorage, applied
+ * pre-hydration by the inline script in src/app/layout.tsx to avoid a
+ * flash of the wrong theme) swaps every token below to the light variant,
+ * kept in the same violet/teal/amber/pink hue family, just re-tuned for
+ * contrast on a light surface.
  */
 :root {
   --background: #0a0e16;
@@ -18,6 +21,20 @@
   --easy: #2dd4bf;
   --medium: #f5a623;
   --hard: #fb6f84;
+}
+
+:root.light {
+  --background: #e4e6eb;
+  --surface: #f7f8fa;
+  --surface-hover: #eceef2;
+  --border: #d3d6de;
+  --foreground: #1b1f28;
+  --muted: #5c6373;
+  --accent: #6845e8;
+  --accent-foreground: #ffffff;
+  --easy: #0d9488;
+  --medium: #b45309;
+  --hard: #dc2626;
 }
 
 @theme inline {
@@ -39,4 +56,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
