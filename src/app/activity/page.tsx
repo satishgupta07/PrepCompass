@@ -7,6 +7,7 @@
 // two lookup structures each of those needs.
 import { loadAppData } from "@/lib/load-data";
 import { todayDateKey } from "@/lib/activity";
+import { groupActivityByDate, deriveFallbackActivityByDate } from "@/lib/activity-log";
 import { computeCurrentStreak, computeLongestStreak } from "@/lib/streak";
 import { ActivityGraph } from "@/components/activity/ActivityGraph";
 
@@ -15,7 +16,7 @@ import { ActivityGraph } from "@/components/activity/ActivityGraph";
 export const dynamic = "force-dynamic";
 
 export default async function ActivityPage() {
-  const { dayActivities } = await loadAppData();
+  const { dayActivities, problems, patterns, activityEvents } = await loadAppData();
   const todayKey = todayDateKey();
 
   // "Active" days (count > 0) are what streaks are computed over; the full
@@ -24,6 +25,16 @@ export default async function ActivityPage() {
   const countByDate = new Map(dayActivities.map((day) => [day.date, day.count]));
   const currentStreak = computeCurrentStreak(activeDates, todayKey);
   const longestStreak = computeLongestStreak(activeDates);
+
+  // The real per-action log, backfilled for any active date it doesn't
+  // cover yet (days recorded before this log existed) with a best-effort
+  // reconstruction from each problem's current state — see
+  // `deriveFallbackActivityByDate`.
+  const activityByDate = groupActivityByDate(activityEvents, patterns);
+  const fallbackByDate = deriveFallbackActivityByDate(problems, patterns);
+  for (const [date, events] of fallbackByDate) {
+    if (!activityByDate.has(date)) activityByDate.set(date, events);
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-10">
@@ -38,7 +49,7 @@ export default async function ActivityPage() {
           <div className="text-sm text-muted">longest streak (days)</div>
         </div>
       </div>
-      <ActivityGraph countByDate={countByDate} todayKey={todayKey} />
+      <ActivityGraph countByDate={countByDate} activityByDate={activityByDate} todayKey={todayKey} />
     </div>
   );
 }
