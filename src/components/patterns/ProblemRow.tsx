@@ -41,7 +41,7 @@ function formatDate(isoDate: string): string {
  *   click can't race the first.
  * - `isEditOpen` — whether the edit modal is open.
  */
-export function ProblemRow({ problem }: { problem: ProblemDTO }) {
+export function ProblemRow({ problem, isAdmin }: { problem: ProblemDTO; isAdmin: boolean }) {
   const [isPending, startTransition] = useTransition();
   const [optimisticSolved, setOptimisticSolved] = useOptimistic(problem.solved);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -129,19 +129,26 @@ export function ProblemRow({ problem }: { problem: ProblemDTO }) {
             >
               <PencilIcon className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isPending}
-              aria-label="Delete problem"
-              className="text-muted transition-colors hover:text-hard"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isPending}
+                aria-label="Delete problem"
+                className="text-muted transition-colors hover:text-hard"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </td>
       </tr>
-      <ProblemEditPanel problem={problem} open={isEditOpen} onClose={() => setIsEditOpen(false)} />
+      <ProblemEditPanel
+        problem={problem}
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        isAdmin={isAdmin}
+      />
     </>
   );
 }

@@ -20,7 +20,7 @@ import { PatternAccordionList } from "./PatternAccordionList";
  * unfiltered dataset; filtering happens entirely client-side so typing in
  * the search box doesn't round-trip to the server.
  */
-export function TrackerView({ groups }: { groups: PatternGroup[] }) {
+export function TrackerView({ groups, isAdmin }: { groups: PatternGroup[]; isAdmin: boolean }) {
   const [filters, setFilters] = useState<ProblemFilters>(DEFAULT_FILTERS);
   const active = hasActiveFilters(filters);
 
@@ -45,7 +45,7 @@ export function TrackerView({ groups }: { groups: PatternGroup[] }) {
           No problems match your filters.
         </p>
       ) : (
-        <PatternAccordionList groups={displayGroups} forceOpenAll={active} />
+        <PatternAccordionList groups={displayGroups} forceOpenAll={active} isAdmin={isAdmin} />
       )}
     </div>
   );

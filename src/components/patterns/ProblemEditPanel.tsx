@@ -5,6 +5,7 @@ import type { ProblemDTO } from "@/models/Problem";
 import { useServerFormAction } from "@/lib/hooks/useServerFormAction";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { inputClasses, labelClasses } from "@/components/ui/field-classes";
 
 /**
@@ -21,16 +22,23 @@ import { inputClasses, labelClasses } from "@/components/ui/field-classes";
  * visible fields back to their old values instead of the ones just saved.
  *
  * Props: `problem` (data to prefill and the id to submit), `open`/`onClose`
- * (controlled by the parent `ProblemRow`, which owns the open/closed state).
+ * (controlled by the parent `ProblemRow`, which owns the open/closed state),
+ * `isAdmin` — the LeetCode/GitHub/YouTube link fields are shared catalog
+ * metadata, not personal progress, so they're only rendered (and only
+ * submitted) for an admin; a regular user only ever edits their own notes
+ * and last-revised date. See `updateProblemDetailsForm` in
+ * `src/lib/services/problems.ts` for the matching server-side split.
  */
 export function ProblemEditPanel({
   problem,
   open,
   onClose,
+  isAdmin,
 }: {
   problem: ProblemDTO;
   open: boolean;
   onClose: () => void;
+  isAdmin: boolean;
 }) {
   const { error, isPending, handleSubmit } = useServerFormAction(updateProblemDetails, {
     onSuccess: onClose,
@@ -61,53 +69,51 @@ export function ProblemEditPanel({
           <label htmlFor="edit-last-revised" className={labelClasses}>
             Last revised date
           </label>
-          <input
-            id="edit-last-revised"
-            name="lastRevisedDate"
-            type="date"
-            defaultValue={problem.lastRevisedDate ?? ""}
-            className={inputClasses}
-          />
+          <DatePicker id="edit-last-revised" name="lastRevisedDate" defaultValue={problem.lastRevisedDate} />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="edit-leetcode" className={labelClasses}>
-            LeetCode link
-          </label>
-          <input
-            id="edit-leetcode"
-            name="leetcodeLink"
-            type="url"
-            defaultValue={problem.leetcodeLink ?? ""}
-            placeholder="https://leetcode.com/problems/..."
-            className={inputClasses}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="edit-github" className={labelClasses}>
-            GitHub solution link
-          </label>
-          <input
-            id="edit-github"
-            name="githubLink"
-            type="url"
-            defaultValue={problem.githubLink ?? ""}
-            placeholder="https://github.com/..."
-            className={inputClasses}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="edit-youtube" className={labelClasses}>
-            YouTube reference link
-          </label>
-          <input
-            id="edit-youtube"
-            name="youtubeLink"
-            type="url"
-            defaultValue={problem.youtubeLink ?? ""}
-            placeholder="https://youtube.com/..."
-            className={inputClasses}
-          />
-        </div>
+        {isAdmin && (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="edit-leetcode" className={labelClasses}>
+                LeetCode link
+              </label>
+              <input
+                id="edit-leetcode"
+                name="leetcodeLink"
+                type="url"
+                defaultValue={problem.leetcodeLink ?? ""}
+                placeholder="https://leetcode.com/problems/..."
+                className={inputClasses}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="edit-github" className={labelClasses}>
+                GitHub solution link
+              </label>
+              <input
+                id="edit-github"
+                name="githubLink"
+                type="url"
+                defaultValue={problem.githubLink ?? ""}
+                placeholder="https://github.com/..."
+                className={inputClasses}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="edit-youtube" className={labelClasses}>
+                YouTube reference link
+              </label>
+              <input
+                id="edit-youtube"
+                name="youtubeLink"
+                type="url"
+                defaultValue={problem.youtubeLink ?? ""}
+                placeholder="https://youtube.com/..."
+                className={inputClasses}
+              />
+            </div>
+          </>
+        )}
         {error && <p className="text-sm text-hard">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>

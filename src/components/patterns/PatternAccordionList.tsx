@@ -18,9 +18,11 @@ import { PatternAccordion } from "./PatternAccordion";
 export function PatternAccordionList({
   groups,
   forceOpenAll = false,
+  isAdmin,
 }: {
   groups: PatternGroup[];
   forceOpenAll?: boolean;
+  isAdmin: boolean;
 }) {
   if (groups.length === 0) {
     return (
@@ -38,6 +40,7 @@ export function PatternAccordionList({
           group={group}
           defaultOpen={index === 0}
           forceOpen={forceOpenAll}
+          isAdmin={isAdmin}
         />
       ))}
     </div>

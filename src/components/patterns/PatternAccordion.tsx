@@ -31,10 +31,12 @@ export function PatternAccordion({
   group,
   defaultOpen = false,
   forceOpen = false,
+  isAdmin,
 }: {
   group: PatternGroup;
   defaultOpen?: boolean;
   forceOpen?: boolean;
+  isAdmin: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isPending, startTransition] = useTransition();
@@ -87,15 +89,17 @@ export function PatternAccordion({
               <ExternalLinkIcon className="h-3.5 w-3.5" />
             </a>
           )}
-          <button
-            type="button"
-            onClick={handleDeletePattern}
-            disabled={isPending}
-            aria-label={`Delete ${pattern.name}`}
-            className="text-muted transition-colors hover:text-hard"
-          >
-            <TrashIcon className="h-3.5 w-3.5" />
-          </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={handleDeletePattern}
+              disabled={isPending}
+              aria-label={`Delete ${pattern.name}`}
+              className="text-muted transition-colors hover:text-hard"
+            >
+              <TrashIcon className="h-3.5 w-3.5" />
+            </button>
+          )}
         </span>
         <span className="flex shrink-0 items-center gap-3">
           <span className="text-sm text-muted">
@@ -108,10 +112,12 @@ export function PatternAccordion({
       {effectiveOpen && (
         <div className="border-t border-border">
           {deleteError && <p className="px-4 pt-3 text-sm text-hard">{deleteError}</p>}
-          <ProblemTable problems={problems} emptyStateMessage="No problems here yet." />
-          <div className="flex justify-end px-4 py-3">
-            <AddProblemForm pattern={pattern} />
-          </div>
+          <ProblemTable problems={problems} emptyStateMessage="No problems here yet." isAdmin={isAdmin} />
+          {isAdmin && (
+            <div className="flex justify-end px-4 py-3">
+              <AddProblemForm pattern={pattern} />
+            </div>
+          )}
         </div>
       )}
     </section>

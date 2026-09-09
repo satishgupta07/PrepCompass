@@ -15,7 +15,8 @@ import { authConfig } from "@/auth.config";
 // function proxy` — a destructured `export const { auth: proxy } = ...`
 // isn't recognized (the declarator's `id` is an ObjectPattern, not a bare
 // identifier), so `auth` is pulled out on its own line first.
-export default NextAuth(authConfig).auth;
+const { auth } = NextAuth(authConfig);
+export const proxy = auth;
 
 // Excludes all of `/api/*`, not just `/api/auth` — those routes are the
 // REST API, which has its own, separate auth story (`src/lib/api-auth.ts`'s

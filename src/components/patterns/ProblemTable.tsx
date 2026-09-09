@@ -11,9 +11,11 @@ import { ProblemRow } from "./ProblemRow";
 export function ProblemTable({
   problems,
   emptyStateMessage,
+  isAdmin,
 }: {
   problems: ProblemDTO[];
   emptyStateMessage: string;
+  isAdmin: boolean;
 }) {
   if (problems.length === 0) {
     return <p className="px-4 py-6 text-sm text-muted">{emptyStateMessage}</p>;
@@ -37,7 +39,7 @@ export function ProblemTable({
         </thead>
         <tbody>
           {problems.map((problem) => (
-            <ProblemRow key={problem.id} problem={problem} />
+            <ProblemRow key={problem.id} problem={problem} isAdmin={isAdmin} />
           ))}
         </tbody>
       </table>
