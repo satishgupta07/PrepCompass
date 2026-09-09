@@ -11,20 +11,36 @@ import { DIFFICULTIES } from "./difficulty";
 /**
  * An optional link field (LeetCode/GitHub/YouTube/reference URLs). HTML
  * forms submit an empty string for a blank input rather than omitting the
- * field, so this accepts `""` alongside `undefined` and normalizes both to
- * `undefined` — a real value must still pass `.url()`.
+ * field, and `FormData.get()` returns `null` (not `undefined`) for a field
+ * that isn't in the DOM at all (e.g. ProblemEditPanel's link inputs, which
+ * only render for an admin) — so this accepts `""`, `null`, and `undefined`
+ * and normalizes all three to `undefined`; a real value must still pass
+ * `.url()`.
  */
 const optionalUrl = z
   .string()
   .trim()
   .url()
+  .nullable()
   .optional()
   .or(z.literal(""))
-  .transform((value) => (value === "" || value === undefined ? undefined : value));
+  .transform((value) => (value === "" || value == null ? undefined : value));
 
 export const PatternCreateSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
   referenceLink: optionalUrl,
+});
+
+/** Backs `registerAction`/`loginAction` (src/actions/auth.ts). */
+export const RegisterSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters").max(200),
+});
+
+export const LoginSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const ProblemCreateSchema = z.object({
