@@ -103,6 +103,7 @@ export async function updateProblemDetails(
   const result = await updateProblemDetailsForm(userId, isAdmin, formData.get("id"), {
     notes: formData.get("notes"),
     lastRevisedDate: formData.get("lastRevisedDate"),
+    difficulty: formData.get("difficulty"),
     leetcodeLink: formData.get("leetcodeLink"),
     githubLink: formData.get("githubLink"),
     youtubeLink: formData.get("youtubeLink"),

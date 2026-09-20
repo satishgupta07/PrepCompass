@@ -236,6 +236,10 @@ export async function updateProblemDetailsForm(
       if (value) catalogSet[key] = value;
       else catalogUnset[key] = "";
     }
+    // Difficulty is also admin-only catalog metadata — include it if submitted.
+    if (parsed.data.difficulty) {
+      catalogSet.difficulty = parsed.data.difficulty;
+    }
     await ProblemModel.updateOne(
       { _id: id },
       { $set: catalogSet, ...(Object.keys(catalogUnset).length ? { $unset: catalogUnset } : {}) },

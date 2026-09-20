@@ -6,11 +6,12 @@ import { useServerFormAction } from "@/lib/hooks/useServerFormAction";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { DIFFICULTIES, DIFFICULTY_META } from "@/lib/difficulty";
 import { inputClasses, labelClasses } from "@/components/ui/field-classes";
 
 /**
  * Modal form for editing a problem's mutable details: notes, last-revised
- * date, and the three optional reference links.
+ * date, and (for admins) the difficulty and the three optional reference links.
  *
  * Submits to `updateProblemDetails`, the full-replace Server Action (see
  * AGENTS.md/CLAUDE.md: every field is always sent, so an emptied link
@@ -23,10 +24,10 @@ import { inputClasses, labelClasses } from "@/components/ui/field-classes";
  *
  * Props: `problem` (data to prefill and the id to submit), `open`/`onClose`
  * (controlled by the parent `ProblemRow`, which owns the open/closed state),
- * `isAdmin` — the LeetCode/GitHub/YouTube link fields are shared catalog
- * metadata, not personal progress, so they're only rendered (and only
- * submitted) for an admin; a regular user only ever edits their own notes
- * and last-revised date. See `updateProblemDetailsForm` in
+ * `isAdmin` — the difficulty and LeetCode/GitHub/YouTube link fields are
+ * shared catalog metadata, not personal progress, so they're only rendered
+ * (and only submitted) for an admin; a regular user only ever edits their
+ * own notes and last-revised date. See `updateProblemDetailsForm` in
  * `src/lib/services/problems.ts` for the matching server-side split.
  */
 export function ProblemEditPanel({
@@ -73,6 +74,23 @@ export function ProblemEditPanel({
         </div>
         {isAdmin && (
           <>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="edit-difficulty" className={labelClasses}>
+                Difficulty
+              </label>
+              <select
+                id="edit-difficulty"
+                name="difficulty"
+                defaultValue={problem.difficulty}
+                className={inputClasses}
+              >
+                {DIFFICULTIES.map((difficulty) => (
+                  <option key={difficulty} value={difficulty}>
+                    {DIFFICULTY_META[difficulty].label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="edit-leetcode" className={labelClasses}>
                 LeetCode link

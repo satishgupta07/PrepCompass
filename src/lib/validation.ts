@@ -72,6 +72,15 @@ export const ProblemDetailsUpdateSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((value) => (value ? value : undefined)),
+  // Admin-only catalog metadata (like the link fields). The edit panel only
+  // renders/submits this when `isAdmin` is true; non-admin submissions leave
+  // it absent (`undefined`). `nullable()` handles `formData.get()` returning
+  // `null` for a field not in the DOM; `transform` normalizes to `undefined`.
+  difficulty: z
+    .enum(DIFFICULTIES)
+    .optional()
+    .nullable()
+    .transform((value) => (value == null ? undefined : value)),
   leetcodeLink: optionalUrl,
   githubLink: optionalUrl,
   youtubeLink: optionalUrl,
