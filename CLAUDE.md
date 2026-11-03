@@ -201,3 +201,41 @@ light — re-exposed under `@theme inline` as `background`, `surface`,
 Tailwind classes (`bg-surface`, `text-hard`). Don't hardcode hex colors in
 components; add a new token (both variants) to `globals.css` instead if the
 palette needs to grow.
+
+### Study notebooks, PDF download and progress
+
+`content/study/*.html` are self-contained, hand-authored study notebooks
+(HTML & CSS, JavaScript, React, System Design, Node.js) — don't reformat them; they carry
+their own CSS/JS. They live in `content/`, not `public/`, so serverless hosts
+bundle them into the functions that read them: `next.config.ts`'s
+`outputFileTracingIncludes` lists those routes — keep it in sync with
+`src/lib/study-files.ts` (the one place that knows the path). `src/lib/study.ts`
+is the catalog (slug = file name). Routes, all gated by `proxy.ts` like every
+non-API path: `/study` (index + progress), `/study/[slug]` (checklist beside the
+notebook in an iframe), `/study/raw/[slug]` (the HTML itself) and
+`/study/pdf/[slug]`.
+
+**PDF.** `src/lib/study-pdf.ts` renders a notebook with `puppeteer-core` driving
+a locally installed Chrome/Edge (set `CHROME_PATH` to override detection),
+using the notebook's own `@media print` rules (for "one page at a time"
+`.page` notebooks like System Design it first visits every page so their
+diagrams/labs get drawn, and starts each page on a new sheet). A render is expensive, so it is
+cached in the OS temp dir keyed by slug + file mtime, concurrent requests for
+the same notebook share one render, and at most one browser runs at a time.
+It still needs a real browser binary, so on serverless hosts (e.g. Vercel)
+swap in `@sparticuz/chromium` or pre-generate the PDFs.
+
+**Study progress.** Per-user, like `ProblemProgress`: `StudyProgress`
+(`src/models/StudyProgress.ts`) is one row per `{ userId, notebook }` holding
+`completed` — the ids of the notebook sheets marked studied. The page list is
+parsed from each notebook's `<section class="sheet|page" id=… data-title|data-label>`
+tags by `src/lib/study-pages.ts` (first sheet = cover, skipped; cached by file
+mtime), so replacing a notebook updates the checklist automatically; keep that
+markup shape and unique sheet ids in any new notebook. `setPageStudied`
+(`src/lib/services/study.ts`) validates the id, uses `$addToSet`/`$pull`, and
+retries once on a duplicate-key error from two racing first-time upserts.
+`toggleStudyPage` (`src/actions/study.ts`) is the Server Action. Progress reads
+on the pages go through `tryGet…` helpers that return `null` on a DB error or
+3 s timeout, so `/study` still renders (without progress) if MongoDB is down.
+Removing a sheet from a notebook leaves a stale id in `completed` — harmless,
+counts are clamped to the current total.

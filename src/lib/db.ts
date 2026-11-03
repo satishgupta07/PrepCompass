@@ -43,10 +43,21 @@ export function connectToDatabase(): Promise<typeof mongoose> {
   }
 
   if (!global.mongooseConnection) {
-    global.mongooseConnection = mongoose.connect(MONGODB_URI).then(async (conn) => {
-      await dropLegacyDayActivityIndex(conn);
-      return conn;
-    });
+    global.mongooseConnection = mongoose
+      // Fail in 5 s instead of the driver's default 30 s when the database is
+      // unreachable, so pages can degrade (see the study pages and Header)
+      // rather than hang.
+      .connect(MONGODB_URI, { serverSelectionTimeoutMS: 5_000 })
+      .then(async (conn) => {
+        await dropLegacyDayActivityIndex(conn);
+        return conn;
+      })
+      .catch((error) => {
+        // Don't cache a failed attempt: otherwise one transient outage would
+        // make every later call reject until the process restarts.
+        global.mongooseConnection = undefined;
+        throw error;
+      });
   }
 
   return global.mongooseConnection;

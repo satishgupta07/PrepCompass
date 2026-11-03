@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>HTML &amp; CSS — a handwritten study notebook</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&amp;family=Patrick+Hand&amp;display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --desk:#e7dfc9; --paper:#fbf8ee; --rule:#c9dcee; --margin:#e46a68;
+  --ink:#1d3f94; --ink-soft:#3b57a3; --red:#c4302b;
+  --green:#2b7a3a; --greenbg:#e6f4df; --yellow:#fff27a; --pink:#ffc2dc; --note:#fff59a;
+  --lh:32px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:env(safe-area-inset-left,0px);
+  padding-right:env(safe-area-inset-right,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;background:var(--desk);color:var(--ink);
+  font-family:'Caveat','Segoe Script','Bradley Hand','Comic Sans MS',cursive;
+  font-size:22px;line-height:var(--lh);counter-reset:topic;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--ink)}
+.lab,.src,.pghead,.pgfoot,table,.tag,.fab,summary,.legend li,.toc a{font-family:'Patrick Hand','Segoe Print','Comic Sans MS',cursive}
+
+/* ---------- the notebook sheet ---------- */
+.sheet{
+  position:relative;max-width:900px;margin:28px auto;
+  padding:18px 30px 20px 94px;
+  background-color:var(--paper);
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--lh) - 1px),var(--rule) calc(var(--lh) - 1px),var(--rule) var(--lh));
+  background-position:0 6px;
+  border-radius:8px 16px 10px 20px / 16px 9px 18px 8px;
+  box-shadow:0 2px 3px rgba(70,50,10,.18),0 10px 24px rgba(70,50,10,.2);
+  overflow-x:clip;scroll-margin-top:12px;
+}
+.sheet::before{content:"";position:absolute;top:0;bottom:0;left:70px;width:2px;background:var(--margin);opacity:.75;box-shadow:3px 0 0 rgba(228,106,104,.25)}
+.sheet::after{
+  content:"";position:absolute;left:14px;top:0;bottom:0;width:30px;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 10%,var(--desk) 0 9px,#b9b19a 9px 10.5px,transparent 11px),
+    radial-gradient(circle at 50% 50%,var(--desk) 0 9px,#b9b19a 9px 10.5px,transparent 11px),
+    radial-gradient(circle at 50% 90%,var(--desk) 0 9px,#b9b19a 9px 10.5px,transparent 11px);
+}
+.sheet:nth-of-type(even){transform:rotate(.12deg)}
+.sheet:nth-of-type(odd){transform:rotate(-.1deg)}
+
+.pghead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 14px;margin:0 0 6px;padding-bottom:4px;border-bottom:2px dashed var(--red)}
+.pghead .pn{font-size:26px;color:var(--red);transform:rotate(-1.5deg)}
+.pghead .lbl{font-size:19px;color:var(--ink-soft)}
+.pgfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;padding-top:6px;border-top:2px dashed var(--red);font-size:19px;color:var(--red)}
+.pgfoot a{color:var(--ink);text-decoration:none;border-bottom:2px dotted var(--red);padding:2px 4px}
+
+/* ---------- headings ---------- */
+.sheet h2{
+  counter-increment:topic;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;
+  font-size:34px;line-height:1.15;font-weight:700;color:var(--red);
+  margin:26px 0 8px;transform:rotate(-.6deg);transform-origin:left center;
+}
+.sheet h2:nth-of-type(even){transform:rotate(.4deg)}
+.sheet h2::before{
+  content:counter(topic);flex:none;width:40px;height:40px;display:grid;place-items:center;
+  border:2.5px solid var(--red);border-radius:52% 48% 55% 45% / 48% 56% 44% 52%;
+  font-size:24px;line-height:1;transform:rotate(-4deg);
+}
+.sheet h2 .t{flex:1 1 220px}
+.src{margin-left:auto;font-size:15px;line-height:1.2;font-weight:400;color:var(--ink-soft);border:1.5px dashed var(--ink-soft);padding:2px 9px;border-radius:12px 4px 12px 5px;white-space:nowrap;transform:rotate(1deg)}
+.sheet h3{font-size:27px;line-height:1.2;margin:14px 0 4px;color:var(--red)}
+.sheet p{margin:6px 0}
+
+/* ---------- common box surface ---------- */
+.plain,.added,.slip,.code,.tw,.sketch{margin:16px 0 14px}
+.plain,.added,.slip,.code{position:relative;padding:12px 16px 10px}
+.plain p:first-child,.added p:first-child,.slip p:first-child{margin-top:0}
+.plain p:last-child,.added p:last-child,.slip p:last-child{margin-bottom:0}
+.plain:nth-child(odd),.added:nth-child(odd),.slip:nth-child(odd){transform:rotate(-.35deg)}
+.plain:nth-child(even),.added:nth-child(even),.slip:nth-child(even){transform:rotate(.3deg)}
+
+/* In plain words */
+.plain{border:2.5px dashed #4a78d0;background:#eef5ff;padding-left:64px;border-radius:255px 14px 225px 14px / 14px 225px 14px 255px;border-radius:26px 8px 22px 10px / 10px 22px 8px 26px}
+.plain::before{
+  content:"";position:absolute;left:12px;top:14px;width:44px;height:44px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 5c-8 0-14 6-14 13 0 5 3 8 5 11 1 2 1 4 1 6h16c0-2 0-4 1-6 2-3 5-6 5-11 0-7-6-13-14-13z' fill='%23fff27a' stroke='%231d3f94' stroke-width='2.4' stroke-linejoin='round'/%3E%3Cpath d='M18 39h12M19 43h10' stroke='%231d3f94' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M5 8l4 3M43 8l-4 3M2 20h4M46 20h-4' stroke='%23c4302b' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/contain;
+}
+.plain::after{content:"In plain words";position:absolute;top:-14px;left:60px;background:var(--paper);padding:0 8px;font-family:'Patrick Hand',cursive;font-size:17px;line-height:1.3;color:#2f5fc0}
+
+/* + added */
+.added{background:var(--greenbg);border:2.5px solid #5aa564;color:#1f5f2c;margin-top:24px;border-radius:10px 24px 12px 22px / 22px 10px 24px 12px}
+.added .tag{position:absolute;top:-15px;right:16px;background:var(--green);color:#fff;font-size:16px;line-height:1.4;padding:1px 12px;border-radius:12px 4px 12px 4px;transform:rotate(2deg)}
+.added code{background:rgba(43,122,58,.12);color:#17491f}
+.added h3{color:#1f5f2c;margin-top:4px}
+.added .code{background:#fbfff6;border-color:#5f9a68}
+
+/* flagged slip in the source */
+.slip{background:#fff1f3;border:2.5px dotted var(--red);color:#8a231f;margin-top:24px;border-radius:20px 8px 18px 10px / 10px 18px 8px 20px}
+.slip .tag{position:absolute;top:-15px;left:18px;background:var(--red);color:#fff;font-size:16px;line-height:1.4;padding:1px 12px;border-radius:4px 12px 4px 12px;transform:rotate(-2deg)}
+.slip code{background:rgba(196,48,43,.1);color:#6d1a17}
+
+/* key points */
+ul.key{list-style:none;padding:0;margin:8px 0 12px}
+ul.key li{position:relative;padding-left:36px;margin:3px 0}
+ul.key li::before{content:"";position:absolute;left:2px;top:8px;width:26px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'%3E%3Cpath d='M2 9c6-4 12 3 18-1M15 3l6 5-6 5' stroke='%23c4302b' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/contain}
+.added ul.key li::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'%3E%3Cpath d='M2 9c6-4 12 3 18-1M15 3l6 5-6 5' stroke='%232b7a3a' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+ul.key li:nth-child(odd){transform:rotate(-.35deg)}
+ul.key li:nth-child(even){transform:rotate(.3deg)}
+mark{color:inherit;padding:0 3px;border-radius:3px 6px 4px 7px}
+mark.y{background:linear-gradient(transparent 38%,var(--yellow) 38%,var(--yellow) 92%,transparent 92%)}
+mark.p{background:linear-gradient(transparent 38%,var(--pink) 38%,var(--pink) 92%,transparent 92%)}
+
+/* gotchas */
+p.warn{position:relative;margin:4px 0;padding-left:32px;color:var(--red)}
+p.warn::before{content:"\26A0";position:absolute;left:4px;top:0;font-family:'Patrick Hand',sans-serif}
+p.warn:nth-of-type(odd){transform:rotate(-.3deg)}
+p.warn:nth-of-type(even){transform:rotate(.35deg)}
+
+/* inline code */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:.7em;background:rgba(29,63,148,.08);padding:1px 5px;border-radius:4px;color:#17306f;overflow-wrap:anywhere}
+
+/* taped-in code */
+.code{background:#fffef6;border:2px dashed #8a7a55;color:#1c2a4a;margin-top:22px;border-radius:6px 14px 8px 12px / 12px 6px 14px 8px;box-shadow:1px 3px 6px rgba(80,60,10,.15)}
+.code:nth-child(odd){transform:rotate(-.25deg)}
+.code:nth-child(even){transform:rotate(.25deg)}
+.code::before{content:"";position:absolute;top:-12px;left:28px;width:76px;height:22px;background:rgba(235,214,128,.75);border:1px solid rgba(190,165,70,.4);transform:rotate(-4deg)}
+.code[data-t]::after{content:attr(data-t);position:absolute;top:-14px;right:18px;background:var(--paper);padding:0 8px;font-family:'Patrick Hand',cursive;font-size:16px;line-height:1.4;color:#7a6a40}
+.code pre{margin:0;overflow-x:auto;tab-size:2;-webkit-overflow-scrolling:touch}
+.code pre code{display:block;background:none;padding:0;border-radius:0;font-size:13.5px;line-height:1.55;color:#1c2a4a;white-space:pre;overflow-wrap:normal}
+.code .c{color:#2b7a3a}
+
+/* tables */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;background:rgba(251,248,238,.9);border-radius:6px}
+table{border-collapse:collapse;font-size:17px;line-height:1.3;min-width:520px;width:100%;color:var(--ink)}
+th,td{border:1.5px dashed #7da0de;padding:4px 9px;text-align:left;vertical-align:top}
+th{background:linear-gradient(transparent 30%,var(--yellow) 30%);color:var(--red);font-weight:400;white-space:nowrap}
+td code{font-size:.82em}
+tr:nth-child(even) td{background:rgba(238,245,255,.7)}
+
+/* sketches */
+.sketch{text-align:center;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sketch svg{display:block;width:100%;min-width:540px;height:auto;filter:url(#wobble)}
+
+/* sticky note */
+aside.sticky{
+  position:relative;width:min(100%,440px);margin:30px 0 8px auto;padding:24px 22px 14px;
+  background:var(--note);box-shadow:3px 7px 12px rgba(80,60,0,.28);
+  transform:rotate(-1.6deg);border-radius:2px 3px 20px 3px / 3px 2px 3px 20px;
+}
+aside.sticky::before{content:"";position:absolute;top:-13px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(255,255,255,.6);border:1px solid rgba(160,140,60,.35);transform:rotate(3deg)}
+aside.sticky h3{margin:0 0 4px;font-size:30px;color:var(--red)}
+aside.sticky ul{list-style:none;margin:0;padding:0}
+aside.sticky li{position:relative;padding-left:24px;line-height:28px;margin:2px 0}
+aside.sticky li::before{content:"\2605";position:absolute;left:2px;color:var(--red);font-size:.8em;font-family:sans-serif}
+
+/* quick-check folds */
+details.fold{margin:10px 0;border:2px dashed var(--ink-soft);background:#f3f8ff;padding:6px 14px;border-radius:14px 6px 16px 8px}
+details.fold summary{cursor:pointer;color:var(--red);font-size:19px;padding:2px 0}
+details.fold[open]{background:var(--greenbg);border-color:#5aa564}
+details.fold p{margin:6px 0 4px;color:#1f5f2c}
+
+/* ---------- cover ---------- */
+.cover{padding-top:34px;padding-bottom:30px}
+.cover .ring{position:absolute;right:26px;top:22px;width:150px;height:150px;border-radius:50%;pointer-events:none;transform:rotate(18deg);
+  background:radial-gradient(circle,transparent 52%,rgba(140,88,40,.2) 55%,rgba(140,88,40,.1) 61%,transparent 66%),radial-gradient(circle at 70% 30%,rgba(140,88,40,.1),transparent 40%)}
+.cover h1{font-size:76px;line-height:1;margin:12px 0 0;color:var(--red);transform:rotate(-1.5deg);font-weight:700}
+.cover .sub{font-size:32px;margin:6px 0 4px;color:var(--ink);transform:rotate(-.6deg)}
+.cover .by{font-size:20px;color:var(--ink-soft)}
+.howto{margin:20px 0 16px;padding:10px 16px;border:2.5px dashed #4a78d0;background:#eef5ff;border-radius:22px 8px 20px 10px/10px 20px 8px 22px;transform:rotate(-.4deg)}
+.legend{margin:14px 0}
+.legend ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:2px 22px}
+.legend li{font-size:18px;line-height:1.3;display:flex;align-items:center;gap:8px;padding:3px 0}
+.sw{flex:none;display:inline-block;width:22px;height:16px;border-radius:5px 3px 6px 3px}
+.sw.b{background:var(--ink)}.sw.r{background:var(--red)}.sw.g{background:#5aa564}.sw.y{background:var(--yellow)}.sw.p{background:var(--pink);margin-left:-4px}
+.sw.f{background:#fff1f3;border:2px dotted var(--red)}.sw.n{background:var(--note);box-shadow:1px 2px 2px rgba(80,60,0,.3)}
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:6px}
+.toc h4{grid-column:1/-1;margin:14px 0 2px;font-size:26px;line-height:1.2;color:var(--red);border-bottom:2px dashed var(--red)}
+.toc a{display:flex;gap:8px;align-items:baseline;font-size:18px;line-height:1.3;text-decoration:none;color:var(--ink);padding:3px 4px;border-radius:6px}
+.toc a:hover,.toc a:focus-visible{background:var(--yellow);outline:none}
+.toc a b{flex:none;min-width:2.2em;color:var(--red);font-weight:400}
+:where(a,summary,button):focus-visible{outline:3px solid var(--red);outline-offset:2px;border-radius:4px}
+
+/* floating button */
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;
+  background:var(--note);color:var(--red);text-decoration:none;font-size:19px;line-height:1.2;padding:8px 14px;border:2px solid var(--red);
+  border-radius:20px 8px 18px 8px;box-shadow:2px 4px 8px rgba(0,0,0,.25);transform:rotate(-2deg)}
+
+/* ---------- phones ---------- */
+@media (max-width:640px){
+  :root{--lh:30px}
+  body{font-size:20px}
+  .sheet{margin:14px 6px;padding:14px 14px 16px 50px;border-radius:6px 12px 8px 14px/12px 7px 14px 6px}
+  .sheet::before{left:36px}
+  .sheet::after{left:2px;width:26px;background-size:100% 100%}
+  .sheet h2{font-size:28px}
+  .sheet h2::before{width:34px;height:34px;font-size:20px}
+  .plain{padding-left:56px}
+  .plain::before{width:38px;height:38px;left:10px}
+  .plain::after{left:52px}
+  .cover h1{font-size:54px}.cover .sub{font-size:26px}
+  .cover .ring{width:100px;height:100px;right:10px;top:10px}
+  .legend ul,.toc{grid-template-columns:1fr}
+  aside.sticky{margin-left:auto;margin-right:auto}
+  .pgfoot{font-size:17px}
+}
+
+/* ---------- printing ---------- */
+@page{margin:10mm}
+@media print{
+  html,body{background:#fff}
+  :root{padding:0}
+  .fab{display:none}
+  .sheet{margin:0;box-shadow:none;border-radius:0;transform:none!important;break-after:page;page-break-after:always;overflow:visible;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet:last-of-type{break-after:auto;page-break-after:auto}
+  .sheet *{transform:none!important}
+  .code,.tw,.plain,.added,.slip,aside.sticky,details.fold{break-inside:avoid}
+  details.fold{display:block}
+  .pgfoot a{border-bottom:0}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="wobble" x="-2%" y="-2%" width="104%" height="104%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/>
+  </filter>
+</svg>
+
+<a class="fab" href="#contents">↑ contents</a>
+
+<!-- ====================== COVER ====================== -->
+<section class="sheet cover" id="pg-cover">
+  <div class="ring" aria-hidden="true"></div>
+  <p class="by">my study notebook · pages in order, one scroll</p>
+  <h1>HTML &amp; CSS</h1>
+  <p class="sub">a handwritten study reference, with fuller explanations</p>
+  <p class="by">Built from the HTML and CSS handbooks by satishgupta07 (the two README files). Written for a learner between beginner and intermediate who is learning from scratch and revising.</p>
+
+  <div class="howto"><p><b>How to use:</b> read a page top to bottom, try every code box in a browser, then fold open the “Quick check” on the last pages — <mark class="y">green boxes are my additions</mark>, everything else comes from the source.</p></div>
+
+  <div class="legend">
+    <h3>Colour legend</h3>
+    <ul>
+      <li><i class="sw b"></i>Blue ink — body text and the source’s own ideas</li>
+      <li><i class="sw r"></i>Red — headings and ⚠ warnings</li>
+      <li><i class="sw g"></i>Green box “+ added” — gap-fillers, not in the source</li>
+      <li><i class="sw y"></i><i class="sw p"></i>Yellow / pink highlighter — key terms</li>
+      <li><i class="sw f"></i>Dotted pink box “⚑ check” — a slip or loose spot in the source</li>
+      <li><i class="sw n"></i>Yellow sticky — “Remember!”</li>
+    </ul>
+  </div>
+
+  <nav id="contents" aria-label="Contents">
+    <h3>Contents</h3>
+    <div class="toc"></div>
+  </nav>
+</section>
+
+<!-- ====================== PAGE: what HTML is ====================== -->
+<section class="sheet" id="pg-what-html" data-part="Part 1 · HTML" data-label="What HTML is · anatomy of a tag" data-toc="What HTML is · anatomy of a tag">
+
+<h2><span class="t">What HTML really is</span><span class="src">HTML README §1</span></h2>
+<div class="plain"><p>Think of HTML as the labels on moving boxes. A label says what is inside — “kitchen”, “fragile”, “books” — but not how the new room should look. The browser reads the labels and builds the room; CSS decorates it later.</p></div>
+<ul class="key">
+  <li><mark class="y">HyperText Markup Language</mark> — a markup language, <mark class="p">not</mark> a programming language: no variables, no loops, no logic.</li>
+  <li>You wrap content in <mark class="y">tags</mark> that describe what each piece <em>means</em>.</li>
+  <li>A page is a tree of nested elements. The browser reads it top to bottom, builds the <mark class="y">DOM</mark> (Document Object Model) in memory, then paints it.</li>
+  <li><mark class="y">Separation of concerns</mark>: HTML for structure, CSS for looks, JavaScript for behaviour.</li>
+  <li>HTML is a <mark class="y">living standard</mark> kept by the WHATWG — there is no “HTML 6”.</li>
+</ul>
+
+<div class="sketch">
+<svg viewBox="0 0 660 175" role="img" aria-label="HTML source is parsed into a DOM tree, which is laid out and painted as pixels">
+  <defs><marker id="ah1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#c4302b" stroke-width="1.8" stroke-linecap="round"/></marker></defs>
+  <g fill="#fffef6" stroke="#1d3f94" stroke-width="2.4" stroke-linecap="round">
+    <rect x="8" y="22" width="170" height="125" rx="10"/><rect x="245" y="22" width="170" height="125" rx="10"/><rect x="482" y="22" width="170" height="125" rx="10"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="23" fill="#1d3f94">
+    <text x="22" y="52">HTML source</text><text x="259" y="52">DOM tree</text><text x="496" y="52">Pixels</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="15" fill="#1d3f94">
+    <text x="22" y="82">&lt;html&gt;</text><text x="36" y="104">&lt;head&gt;…</text><text x="36" y="126">&lt;body&gt;…</text>
+    <text x="259" y="82">html</text><text x="275" y="104">├ head</text><text x="275" y="126">└ body → h1, p</text>
+  </g>
+  <g font-family="Caveat,cursive" font-size="20" fill="#1d3f94"><text x="496" y="90">┌ My page ┐</text><text x="496" y="116">  Hello.</text></g>
+  <g fill="none" stroke="#c4302b" stroke-width="2.4" stroke-linecap="round">
+    <path d="M182 86C202 70 222 104 241 86" marker-end="url(#ah1)"/><path d="M419 86C439 70 459 104 478 86" marker-end="url(#ah1)"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="20" fill="#c4302b"><text x="190" y="64">parse</text><text x="418" y="64">layout + paint</text></g>
+</svg>
+</div>
+
+<div class="tw"><table>
+<tr><th>Layer</th><th>Language</th><th>Purpose</th></tr>
+<tr><td>Structure</td><td><b>HTML</b></td><td>What the page <b>is</b> (a heading, a list, a form)</td></tr>
+<tr><td>Presentation</td><td><b>CSS</b></td><td>What it <b>looks like</b> (colour, layout, animation)</td></tr>
+<tr><td>Behaviour</td><td><b>JavaScript</b></td><td>What it <b>does</b> (interactivity, async data)</td></tr>
+</table></div>
+
+<p class="warn">Browsers are forgiving: broken HTML still renders by guesswork, so your own mistakes can hide. Validate early with the W3C Validator.</p>
+
+<div class="added"><b class="tag">+ added</b>
+<p><b>View source vs Elements panel.</b> “View source” shows the text you wrote. DevTools → <em>Elements</em> shows the live DOM, after the browser has repaired mistakes and after JavaScript has changed things. When the page looks wrong, trust the Elements panel.</p></div>
+
+<h2><span class="t">Anatomy of a tag</span><span class="src">HTML README §2</span></h2>
+<div class="plain"><p>A tag pair is like bookends round a row of books. Attributes are little stickers on the opening bookend with extra instructions, like “this link goes to…”. Some elements are so small they have no books to hold — those are void elements and need only one bookend.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;a href="https://example.com"&gt;Click me&lt;/a&gt;
+&lt;!-- &lt;a ...&gt;     opening tag (tag name = a)
+     href="..."   attribute: key="value"
+     Click me     content (text or other tags)
+     &lt;/a&gt;        closing tag
+     all of it    = one element --&gt;
+
+&lt;img src="cat.jpg" alt="A grey cat"&gt;   &lt;!-- void element: no content, no closing tag --&gt;</code></pre></div>
+<ul class="key">
+  <li><mark class="y">Element</mark> = opening tag + content + closing tag. <mark class="y">Attribute</mark> = a key/value pair that configures it; some are required (<code>&lt;img&gt;</code> needs <code>src</code> and <code>alt</code>).</li>
+  <li>Tag names are case-insensitive, but write them in lowercase. Wrap attribute values in double quotes — unquoted values break on spaces or special characters.</li>
+  <li><mark class="y">Void elements</mark> never have content: <code>&lt;br&gt; &lt;hr&gt; &lt;img&gt; &lt;input&gt; &lt;link&gt; &lt;meta&gt; &lt;source&gt; &lt;track&gt;</code>. The trailing <code>/&gt;</code> (as in <code>&lt;br /&gt;</code>) is optional but harmless.</li>
+  <li>HTML <mark class="y">collapses whitespace</mark>: spaces, tabs and newlines become one space. Use <code>&lt;pre&gt;</code> or CSS <code>white-space: pre</code> to keep them, and <code>&amp;nbsp;</code> to stop two words splitting across lines.</li>
+  <li><mark class="y">Comments</mark> (<code>&lt;!-- … --&gt;</code>) are sent to the browser and are visible in View source.</li>
+</ul>
+<div class="tw"><table>
+<tr><th>Char</th><th>Entity</th><th>Char</th><th>Entity</th></tr>
+<tr><td><code>&lt;</code></td><td><code>&amp;lt;</code></td><td><code>"</code></td><td><code>&amp;quot;</code></td></tr>
+<tr><td><code>&gt;</code></td><td><code>&amp;gt;</code></td><td><code>'</code></td><td><code>&amp;apos;</code></td></tr>
+<tr><td><code>&amp;</code></td><td><code>&amp;amp;</code></td><td colspan="2">With <code>&lt;meta charset="UTF-8"&gt;</code> you can type café, ©, ★, 你好, 🚀 directly.</td></tr>
+</table></div>
+<p class="warn">Never put secrets in a comment — anyone can read them in View source.</p>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>The source says these five characters “can’t be typed directly”. Strictly, only <code>&lt;</code> and <code>&amp;</code> must be escaped in normal text; quotes matter inside a quoted attribute value. <code>&amp;apos;</code> is valid in HTML5 (it was not in HTML 4).</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><b>More void elements:</b> <code>&lt;area&gt;</code>, <code>&lt;base&gt;</code>, <code>&lt;col&gt;</code>, <code>&lt;embed&gt;</code>, <code>&lt;wbr&gt;</code>. <b>Boolean attributes</b> (<code>disabled</code>, <code>checked</code>, <code>required</code>) are “on” whenever they are present — <code>disabled="false"</code> <em>still disables</em>. Remove the attribute to turn it off.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>HTML marks <b>meaning</b>; CSS styles; JS acts.</li>
+<li>The browser builds a DOM tree from your tags — and forgives errors silently.</li>
+<li>Void elements have no closing tag; whitespace collapses.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: skeleton + meta ====================== -->
+<section class="sheet" id="pg-skeleton" data-part="Part 1 · HTML" data-label="Document skeleton · meta tags" data-toc="Document skeleton · meta tags">
+
+<h2><span class="t">The document skeleton</span><span class="src">HTML README §3 · Step 1</span></h2>
+<div class="plain"><p>The skeleton is like the cover sheet of a form. The first line says which rulebook you are using (the DOCTYPE), the next gives your language, then come the hidden office notes (<code>head</code>) and the part visitors actually read (<code>body</code>).</p></div>
+<div class="code" data-t="html — boilerplate"><pre><code>&lt;!DOCTYPE html&gt;                 &lt;!-- use modern standards mode --&gt;
+&lt;html lang="en"&gt;                &lt;!-- root element + page language --&gt;
+  &lt;head&gt;                        &lt;!-- info ABOUT the page --&gt;
+    &lt;meta charset="UTF-8" /&gt;    &lt;!-- character encoding --&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+                                &lt;!-- render at the phone's real width --&gt;
+    &lt;title&gt;Page title&lt;/title&gt;   &lt;!-- tab title + search result title --&gt;
+  &lt;/head&gt;
+  &lt;body&gt;                        &lt;!-- everything the user sees --&gt;
+    &lt;!-- visible content --&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+<ul class="key">
+  <li><mark class="y">DOCTYPE</mark> is not a tag but a declaration. HTML5 shortened the old long DTD line to <code>&lt;!DOCTYPE html&gt;</code>.</li>
+  <li>Without it the browser enters <mark class="p">quirks mode</mark>, mimicking 1990s bugs (the box model and margin collapsing misbehave). With it: <mark class="y">standards mode</mark>.</li>
+  <li><code>lang</code> takes a BCP 47 tag (<code>en</code>, <code>en-US</code>, <code>fr</code>, <code>hi</code>…). It helps screen readers pronounce text, browsers offer translation, search engines pick regions, and CSS <code>:lang()</code> target languages.</li>
+  <li><code>&lt;head&gt;</code> = metadata, links to CSS, scripts; only <code>&lt;title&gt;</code> shows. <code>&lt;body&gt;</code> = everything visible.</li>
+</ul>
+<p class="warn">Forget the DOCTYPE and layouts break in small, confusing ways.</p>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Good titles.</b> Make each page’s <code>&lt;title&gt;</code> unique and descriptive, with the specific part first. <b>Favicon:</b> add <code>&lt;link rel="icon" href="/favicon.ico"&gt;</code> in the head. Without it, browsers request <code>/favicon.ico</code> anyway and may log a 404.</p></div>
+
+<h2><span class="t"><code>&lt;!DOCTYPE html&gt;</code> in depth</span><span class="src">added topic · expands README §3</span></h2>
+<div class="plain"><p>The DOCTYPE is like the rulebook title on the first line of a board game box: “this game uses the modern rules”. If the line is missing, the browser assumes you are playing by the old, messy house rules from the 1990s, just so ancient pages don’t break.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<div class="code" data-t="html + js"><pre><code>&lt;!DOCTYPE html&gt;          &lt;!-- the whole modern doctype: no version, no URL --&gt;
+
+/* old HTML 4.01 / XHTML doctypes were long and named a DTD file: */
+/* &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt; */
+
+/* check which mode the browser chose (type in the DevTools console): */
+document.compatMode   /* "CSS1Compat" = standards mode, "BackCompat" = quirks mode */</code></pre></div>
+<ul class="key">
+  <li><b>What it really does:</b> it is not an HTML version label. It exists only to switch the browser into <mark class="y">standards mode</mark>. HTML5 has no versions, so the short form is all you need.</li>
+  <li><b>Three modes exist:</b> <mark class="y">standards</mark> (modern rules), <mark class="p">quirks</mark> (legacy behaviour, triggered by a missing or old DOCTYPE), and <b>limited-quirks</b> (almost standards, triggered by some transitional HTML 4 / XHTML doctypes; it differs mainly in how images sit in table cells).</li>
+  <li><b>Where it goes:</b> the very first thing in the file, before <code>&lt;html&gt;</code>. Keep nothing but whitespace or comments above it; some older browsers fall into quirks mode if a comment comes first.</li>
+  <li><b>Typing it:</b> case-insensitive (<code>&lt;!doctype html&gt;</code> works), but write <code>&lt;!DOCTYPE html&gt;</code> by convention. It has no closing tag and is not an element, so it never appears in the DOM tree as a tag you can style.</li>
+  <li><b>Fixing a mystery layout:</b> if sizes, heights or fonts look off, first check <code>document.compatMode</code>. A missing DOCTYPE is a cheap thing to rule out.</li>
+</ul>
+<p class="warn">Don’t copy an old XHTML doctype from an ancient tutorial: it can drop you into limited-quirks or XHTML-flavoured behaviour for no benefit.</p></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>The source says quirks mode makes “the box model behave differently”. I can’t confirm that for modern browsers: their quirks modes mostly differ in things like table text not inheriting font size, percentage heights on <code>body</code>/<code>html</code>, and line-height quirks, and the full list is long and browser-specific. The safe takeaway is unchanged: always include the DOCTYPE and you never have to learn the list.</p></div>
+
+<h2><span class="t">Meta tags — a deep dive</span><span class="src">HTML README §4 · Steps 27–28</span></h2>
+<div class="plain"><p>Meta tags are the page’s ID card and business card. One group tells the browser how to read the file, another tells search engines how to list it, another tells chat apps how to preview a shared link.</p></div>
+<div class="code" data-t="four shapes of meta"><pre><code>&lt;meta charset="UTF-8" /&gt;
+&lt;meta name="..."       content="..." /&gt;
+&lt;meta http-equiv="..." content="..." /&gt;
+&lt;meta property="..."   content="..." /&gt;   &lt;!-- Open Graph --&gt;</code></pre></div>
+<h3>Required / near-required</h3>
+<div class="tw"><table>
+<tr><th>Tag</th><th>Purpose</th></tr>
+<tr><td><code>&lt;meta charset="UTF-8"&gt;</code></td><td>Character encoding. UTF-8 supports every script. Must sit in the <b>first 1024 bytes</b>, and come first in <code>head</code>.</td></tr>
+<tr><td><code>&lt;meta name="viewport" …&gt;</code></td><td>Mobile browsers render at the device’s real width. Without it, phones show a zoomed-out desktop layout.</td></tr>
+<tr><td><code>&lt;title&gt;</code></td><td>Tab and search-result title. Required for valid HTML.</td></tr>
+</table></div>
+<h3>SEO &amp; social sharing</h3>
+<div class="tw"><table>
+<tr><th>Tag</th><th>What it controls</th></tr>
+<tr><td><code>&lt;meta name="description"&gt;</code></td><td>Snippet under your page in search results (~155 characters).</td></tr>
+<tr><td><code>&lt;meta name="keywords"&gt;</code></td><td>Largely ignored today — safe to skip.</td></tr>
+<tr><td><code>&lt;meta name="robots" content="index, follow"&gt;</code></td><td>Crawler directives; <code>noindex, nofollow</code> hides a page.</td></tr>
+<tr><td><code>&lt;link rel="canonical" href="…"&gt;</code></td><td>The “official” URL (avoids duplicate-content problems).</td></tr>
+<tr><td><code>&lt;meta property="og:title"&gt;</code> etc.</td><td><b>Open Graph</b> — previews on Facebook, LinkedIn, Slack. Pair with <code>og:description</code>, <code>og:image</code>, <code>og:url</code>.</td></tr>
+<tr><td><code>&lt;meta name="twitter:card" content="summary_large_image"&gt;</code></td><td>Twitter-specific preview card.</td></tr>
+</table></div>
+<h3>Browser &amp; app behaviour</h3>
+<div class="tw"><table>
+<tr><th>Tag</th><th>What it does</th></tr>
+<tr><td><code>&lt;meta name="theme-color" content="#2c3e50"&gt;</code></td><td>Colours the browser UI on mobile.</td></tr>
+<tr><td><code>&lt;meta name="color-scheme" content="light dark"&gt;</code></td><td>Says which colour schemes the page supports.</td></tr>
+<tr><td><code>&lt;meta http-equiv="refresh"&gt;</code></td><td>Auto-redirect/refresh after N seconds — use sparingly (bad for accessibility).</td></tr>
+<tr><td><code>&lt;meta name="referrer"&gt;</code></td><td>Controls what is sent in the <code>Referer</code> header on outbound clicks.</td></tr>
+</table></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>The source calls the card <em>Twitter</em>-specific; the platform is now X. I believe <code>twitter:card</code> is still read, but I can’t confirm current behaviour — check X’s card documentation before relying on it.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p>A minimal Open Graph set, using the tags the source lists:</p>
+<div class="code" data-t="html"><pre><code>&lt;meta property="og:title" content="My page"&gt;
+&lt;meta property="og:description" content="One-line summary"&gt;
+&lt;meta property="og:image" content="https://example.com/card.png"&gt;  &lt;!-- use a full absolute URL --&gt;
+&lt;meta property="og:url" content="https://example.com/"&gt;
+&lt;meta name="twitter:card" content="summary_large_image"&gt;</code></pre></div>
+<p><b>Viewport gotcha:</b> never add <code>user-scalable=no</code> or <code>maximum-scale=1</code> — they block pinch-zoom and fail accessibility checks.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Always start with <code>&lt;!DOCTYPE html&gt;</code> and <code>lang</code>.</li>
+<li>Charset first, viewport second, title always.</li>
+<li>Meta tags talk to browsers, search engines and social apps.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: element families ====================== -->
+<section class="sheet" id="pg-elements" data-part="Part 1 · HTML" data-label="Element families · block vs inline · global attributes" data-toc="Element families · block vs inline · global attributes">
+
+<h2><span class="t">Element categories</span><span class="src">HTML README §5</span></h2>
+<div class="plain"><p>A tidy kitchen drawer: knives here, spoons there, cling film in a box. HTML elements are grouped by job so you can reach for the right one without thinking.</p></div>
+<div class="tw"><table>
+<tr><th>Category</th><th>Examples</th></tr>
+<tr><td><b>Document structure</b></td><td><code>&lt;html&gt; &lt;head&gt; &lt;body&gt;</code></td></tr>
+<tr><td><b>Metadata</b></td><td><code>&lt;meta&gt; &lt;link&gt; &lt;title&gt; &lt;style&gt; &lt;script&gt;</code></td></tr>
+<tr><td><b>Sectioning</b></td><td><code>&lt;header&gt; &lt;nav&gt; &lt;main&gt; &lt;section&gt; &lt;article&gt; &lt;aside&gt; &lt;footer&gt;</code></td></tr>
+<tr><td><b>Headings</b></td><td><code>&lt;h1&gt;</code> – <code>&lt;h6&gt;</code></td></tr>
+<tr><td><b>Text content</b></td><td><code>&lt;p&gt; &lt;blockquote&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;dl&gt; &lt;pre&gt; &lt;hr&gt;</code></td></tr>
+<tr><td><b>Inline (text-level)</b></td><td><code>&lt;a&gt; &lt;strong&gt; &lt;em&gt; &lt;mark&gt; &lt;code&gt; &lt;kbd&gt; &lt;abbr&gt; &lt;time&gt; &lt;span&gt; &lt;br&gt;</code></td></tr>
+<tr><td><b>Embedded content</b></td><td><code>&lt;img&gt; &lt;picture&gt; &lt;video&gt; &lt;audio&gt; &lt;iframe&gt; &lt;canvas&gt; &lt;svg&gt;</code></td></tr>
+<tr><td><b>Tabular data</b></td><td><code>&lt;table&gt; &lt;tr&gt; &lt;th&gt; &lt;td&gt; &lt;caption&gt; &lt;thead&gt; &lt;tbody&gt; &lt;tfoot&gt;</code></td></tr>
+<tr><td><b>Forms</b></td><td><code>&lt;form&gt; &lt;input&gt; &lt;label&gt; &lt;select&gt; &lt;textarea&gt; &lt;button&gt; &lt;fieldset&gt;</code></td></tr>
+<tr><td><b>Interactive</b></td><td><code>&lt;details&gt; &lt;summary&gt; &lt;dialog&gt;</code></td></tr>
+<tr><td><b>Generic containers</b></td><td><code>&lt;div&gt;</code> (block), <code>&lt;span&gt;</code> (inline)</td></tr>
+</table></div>
+
+<h2><span class="t">Block vs inline</span><span class="src">HTML README §5</span></h2>
+<div class="plain"><p>Block elements are like paragraphs on a page — each starts on a fresh line and spans the full width. Inline elements are like words inside a sentence: they flow along and take only the space they need.</p></div>
+<ul class="key">
+  <li><mark class="y">Block</mark> — new line, fills the container’s width: <code>&lt;div&gt; &lt;p&gt; &lt;h1&gt; &lt;section&gt;</code>.</li>
+  <li><mark class="y">Inline</mark> — flows with text, only as wide as its content: <code>&lt;a&gt; &lt;span&gt; &lt;strong&gt; &lt;em&gt;</code>.</li>
+  <li>Every element has a default <code>display</code>. CSS can override it, but you write HTML against the default.</li>
+</ul>
+<div class="code" data-t="html"><pre><code>&lt;p&gt;I am a block. &lt;strong&gt;I am inline&lt;/strong&gt; inside it,
+   and so is &lt;a href="#"&gt;this link&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;A second block starts on its own line.&lt;/p&gt;</code></pre></div>
+
+<h2><span class="t">Global attributes</span><span class="src">HTML README §5</span></h2>
+<div class="plain"><p>Global attributes are like the standard fields on every ID card — name, address, photo. Any element can carry them, whatever its job.</p></div>
+<div class="tw"><table>
+<tr><th>Attribute</th><th>Purpose</th></tr>
+<tr><td><code>id</code></td><td>Unique identifier on the page</td></tr>
+<tr><td><code>class</code></td><td>Reusable names, space-separated</td></tr>
+<tr><td><code>style</code></td><td>Inline CSS</td></tr>
+<tr><td><code>title</code></td><td>Tooltip text on hover</td></tr>
+<tr><td><code>lang</code>, <code>dir</code></td><td>Language / text direction (<code>ltr</code>, <code>rtl</code>, <code>auto</code>)</td></tr>
+<tr><td><code>hidden</code></td><td>Removes from rendering <em>and</em> the accessibility tree</td></tr>
+<tr><td><code>tabindex</code></td><td>Keyboard tab order; <code>0</code> = focusable, <code>-1</code> = focusable only by script</td></tr>
+<tr><td><code>contenteditable</code></td><td>Makes any element editable like a textarea</td></tr>
+<tr><td><code>draggable</code>, <code>spellcheck</code></td><td>Drag-and-drop; spell-check on editable content</td></tr>
+<tr><td><code>data-*</code></td><td>Custom metadata (see the CSS-hooks page)</td></tr>
+<tr><td><code>role</code>, <code>aria-*</code></td><td>Accessibility hints — only when no native semantic exists</td></tr>
+</table></div>
+<p class="warn"><code>id</code> must be unique on the page — duplicates break anchors and scripts.</p>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Nesting rules matter:</b> a <code>&lt;p&gt;</code> cannot contain block elements (the parser closes it early), a link cannot contain another link or a button, and <code>&lt;ul&gt;</code>’s direct children must be <code>&lt;li&gt;</code>.</li>
+  <li><b>Avoid positive <code>tabindex</code></b> (1, 2, 3…): it overrides the natural order and confuses keyboard users. Use <code>0</code> or <code>-1</code> only.</li>
+  <li><b><code>hidden</code> can be undone by your CSS:</b> if a rule sets <code>display: flex</code> on that element, it will show again.</li>
+  <li>Newer globals such as <code>inert</code> and <code>popover</code> exist; I’m not certain of their current support in every browser, so check before relying on them.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Block = new line, full width. Inline = flows in text.</li>
+<li>Pick the element whose <b>meaning</b> fits, not the one that looks right.</li>
+<li><code>id</code> is unique; <code>class</code> is reusable.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: text ====================== -->
+<section class="sheet" id="pg-text" data-part="Part 1 · HTML" data-label="Headings · paragraphs · text-level semantics" data-toc="Headings · paragraphs · text semantics">
+
+<h2><span class="t">Headings, paragraphs &amp; breaks</span><span class="src">Phase 1 · Step 2</span></h2>
+<div class="plain"><p>Headings are the chapter titles of a book. Nobody picks a chapter title because it looks big — it marks where a new idea starts, and screen-reader users jump from heading to heading like flipping to a chapter.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;h1&gt;Pasta at home&lt;/h1&gt;          &lt;!-- the page title --&gt;
+&lt;h2&gt;Ingredients&lt;/h2&gt;            &lt;!-- a section --&gt;
+&lt;h3&gt;For the sauce&lt;/h3&gt;          &lt;!-- a sub-section: don't jump from h1 to h3 --&gt;
+&lt;p&gt;Boil water.&lt;br&gt;Add salt.&lt;/p&gt;   &lt;!-- br = a line break INSIDE a paragraph --&gt;
+&lt;hr&gt;                           &lt;!-- thematic break: the topic shifts --&gt;</code></pre></div>
+<ul class="key">
+  <li>Headings form the <mark class="y">document outline</mark> used by screen readers and search engines. Use one <code>&lt;h1&gt;</code> and <mark class="y">never skip levels</mark> for styling — size comes from CSS, the level is meaning.</li>
+  <li><code>&lt;p&gt;</code> is for prose. <code>&lt;br&gt;</code> is a line break inside a paragraph (a poem, an address), <mark class="p">not</mark> a vertical spacer — use CSS margin. <code>&lt;hr&gt;</code> is a <mark class="y">thematic break</mark>, not a decorative line.</li>
+</ul>
+<p class="warn">Don’t choose <code>&lt;h3&gt;</code> because it is smaller. Choose by meaning, then size with CSS.</p>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>“Exactly one <code>&lt;h1&gt;</code>” is stated as a rule. It is a widely recommended convention, but I don’t believe the HTML spec forbids several — so treat it as best practice, not a validation error.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Outline test:</b> read only your headings, top to bottom. Do they tell the story of the page? If not, the structure needs work — this is exactly what a screen-reader user hears first.</p></div>
+
+<h2><span class="t">Text-level semantics</span><span class="src">Phase 1 · Step 3</span></h2>
+<div class="plain"><p>Imagine highlighter pens with meanings: one says “this really matters” (<code>strong</code>), one says “say this with stress” (<code>em</code>), and a plain bold pen that only changes how it looks (<code>b</code>). Prefer the pens that carry meaning.</p></div>
+<div class="tw"><table>
+<tr><th>Semantic (preferred)</th><th>Visual-only equivalent</th></tr>
+<tr><td><code>&lt;strong&gt;</code> — importance</td><td><code>&lt;b&gt;</code> — just bold</td></tr>
+<tr><td><code>&lt;em&gt;</code> — stress emphasis</td><td><code>&lt;i&gt;</code> — just italic</td></tr>
+<tr><td><code>&lt;mark&gt;</code> — highlight as relevant</td><td>—</td></tr>
+<tr><td><code>&lt;del&gt;</code> / <code>&lt;ins&gt;</code> — edits</td><td>—</td></tr>
+</table></div>
+<div class="code" data-t="html"><pre><code>&lt;p&gt;Press &lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;S&lt;/kbd&gt; to save.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Warning:&lt;/strong&gt; do &lt;em&gt;not&lt;/em&gt; unplug.&lt;/p&gt;
+&lt;p&gt;Water is H&lt;sub&gt;2&lt;/sub&gt;O and E = mc&lt;sup&gt;2&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;abbr title="HyperText Markup Language"&gt;HTML&lt;/abbr&gt; was updated on
+   &lt;time datetime="2026-01-15"&gt;15 Jan 2026&lt;/time&gt;.&lt;/p&gt;
+&lt;p&gt;She said &lt;q&gt;hello&lt;/q&gt;. Run &lt;code&gt;console.log()&lt;/code&gt;.&lt;/p&gt;
+&lt;blockquote cite="https://example.com"&gt;A longer quotation goes here.&lt;/blockquote&gt;</code></pre></div>
+<ul class="key">
+  <li>Also covered: <code>&lt;small&gt;</code>, <code>&lt;sub&gt;</code>/<code>&lt;sup&gt;</code>, <code>&lt;code&gt;</code>, <code>&lt;kbd&gt;</code> (keyboard input), <code>&lt;samp&gt;</code> (sample output), <code>&lt;q&gt;</code> (inline quote), <code>&lt;blockquote&gt;</code>, <code>&lt;abbr title&gt;</code> (expansion on hover), <code>&lt;cite&gt;</code>, <code>&lt;time datetime&gt;</code> (machine-readable date).</li>
+</ul>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>Calling <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> “just bold / just italic” is a useful simplification. In HTML5 they do have defined roles (<code>b</code>: draw attention without extra importance; <code>i</code>: an alternate voice, such as a foreign term). The advice to prefer <code>strong</code>/<code>em</code> for importance and stress still stands.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><code>&lt;pre&gt;</code> keeps whitespace and line breaks (good for code). Use <code>&lt;mark&gt;</code> for relevance (a search hit), not decoration. Put the language on foreign phrases with <code>lang="fr"</code> so screen readers switch pronunciation.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Headings give structure — choose level by meaning, never by size.</li>
+<li><code>&lt;br&gt;</code> is not spacing; <code>&lt;hr&gt;</code> is not decoration.</li>
+<li>Prefer <code>strong</code>/<code>em</code> over <code>b</code>/<code>i</code> when meaning matters.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: lists links images ====================== -->
+<section class="sheet" id="pg-lists-links-images" data-part="Part 1 · HTML" data-label="Lists · links · images" data-toc="Lists · links · images">
+
+<h2><span class="t">Lists</span><span class="src">Phase 1 · Step 4</span></h2>
+<div class="plain"><p>An unordered list is a shopping list — the order doesn’t matter. An ordered list is a recipe — step 3 can’t come before step 1. A description list is a glossary: a word, then what it means.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;ul&gt;&lt;li&gt;Eggs&lt;/li&gt;&lt;li&gt;Flour&lt;/li&gt;&lt;/ul&gt;                 &lt;!-- order doesn't matter --&gt;
+
+&lt;ol type="A" start="3" reversed&gt;                    &lt;!-- order matters --&gt;
+  &lt;li&gt;Mix&lt;/li&gt;
+  &lt;li&gt;Bake
+    &lt;ul&gt;&lt;li&gt;180°C, 20 min&lt;/li&gt;&lt;/ul&gt;                &lt;!-- lists nest inside an li --&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;dl&gt;&lt;dt&gt;DOM&lt;/dt&gt;&lt;dd&gt;The in-memory tree of a page.&lt;/dd&gt;&lt;/dl&gt;</code></pre></div>
+<ul class="key">
+  <li><code>&lt;ol&gt;</code> attributes: <code>type</code> (A/a/I/i), <code>start</code>, <code>reversed</code>. <code>&lt;dl&gt;</code> holds <code>&lt;dt&gt;</code> (term) / <code>&lt;dd&gt;</code> (definition) pairs — glossaries, metadata.</li>
+  <li>Lists nest: an <code>&lt;li&gt;</code> can contain another <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code>.</li>
+</ul>
+
+<h2><span class="t">Links</span><span class="src">Phase 1 · Step 5</span></h2>
+<div class="plain"><p>A link is a signpost. The <code>href</code> is the address on the sign; the text between the tags is the words people read. A good sign says where it leads.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;a href="https://example.com"&gt;External&lt;/a&gt;
+&lt;a href="about.html"&gt;Relative file&lt;/a&gt;
+&lt;a href="#contact"&gt;Same-page section (matches id="contact")&lt;/a&gt;
+&lt;a href="mailto:hi@example.com"&gt;Email&lt;/a&gt;   &lt;a href="tel:+911234567890"&gt;Call&lt;/a&gt;
+&lt;a href="https://example.com" target="_blank" rel="noopener noreferrer"&gt;New tab&lt;/a&gt;
+&lt;a href="guide.pdf" download&gt;Download the guide&lt;/a&gt;
+&lt;a href="#top"&gt;Back to top&lt;/a&gt;   &lt;!-- special case: needs no matching id --&gt;</code></pre></div>
+<p class="warn"><code>target="_blank"</code> + no <code>rel="noopener noreferrer"</code> lets the new tab reach <code>window.opener</code> — a real phishing vector.</p>
+<ul class="key">
+  <li><code>download</code> forces a file download instead of navigating. <code>href="#top"</code> and bare <code>href="#"</code> scroll to the top — a browser special case, not a real anchor.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Link text should make sense alone</b> — screen-reader users list all links, so “click here” tells them nothing; write “Read the installation guide”. Modern browsers treat <code>target="_blank"</code> as if <code>noopener</code> were set, but I can’t vouch for every older browser, so keep the <code>rel</code> — it is harmless.</p></div>
+
+<h2><span class="t">Images</span><span class="src">Phase 1 · Step 6</span></h2>
+<div class="plain"><p>An image is a photo in a frame, with a caption card for anyone who can’t see it. That card is the <code>alt</code> text: it tells a screen reader (or a broken-image icon) what the picture is for.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;img src="chart.png" alt="Sales rose 40% in Q3"
+     width="640" height="360"       &lt;!-- reserves space: no layout shift --&gt;
+     loading="lazy"                 &lt;!-- load only when near the screen --&gt;
+     srcset="chart-1x.png 1x, chart-2x.png 2x"&gt;   &lt;!-- right resolution per device --&gt;
+
+&lt;img src="swirl.svg" alt=""&gt;       &lt;!-- decorative: empty alt, screen readers skip it --&gt;
+
+&lt;figure&gt;
+  &lt;img src="chart.png" alt="Sales by quarter"&gt;
+  &lt;figcaption&gt;Figure 1: Sales by quarter&lt;/figcaption&gt;
+&lt;/figure&gt;</code></pre></div>
+<ul class="key">
+  <li><code>src</code> and <mark class="y">alt</mark> are required. <code>alt=""</code> for purely decorative images.</li>
+  <li><code>width</code>/<code>height</code> prevent <mark class="y">layout shift</mark> (Cumulative Layout Shift, a Core Web Vital). <code>loading="lazy"</code> defers offscreen images.</li>
+  <li>Use <code>&lt;figure&gt;</code> + <code>&lt;figcaption&gt;</code> when an image needs a caption <em>and</em> is referenced as a unit (a chart, a code listing).</li>
+</ul>
+<p class="warn">Describe purpose, not “image of…”. A missing <code>alt</code> makes screen readers read the filename.</p>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Width-based <code>srcset</code>:</b> the source shows density (<code>1x</code>, <code>2x</code>). You can instead list widths and tell the browser how wide the image will display:</p>
+<div class="code" data-t="html"><pre><code>&lt;img src="hero-800.jpg" alt="Mountain at sunrise"
+     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1600.jpg 1600w"
+     sizes="(min-width: 800px) 800px, 100vw"&gt;</code></pre></div>
+<p><b>Don’t lazy-load</b> the main above-the-fold image — it delays the most important thing on screen.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>ul</code> unordered, <code>ol</code> ordered, <code>dl</code> term + definition.</li>
+<li><code>target="_blank"</code> always gets <code>rel="noopener noreferrer"</code>.</li>
+<li>Every image needs <code>alt</code> — empty if purely decorative.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: semantic ====================== -->
+<section class="sheet" id="pg-semantic" data-part="Part 1 · HTML" data-label="Semantic HTML · div vs span" data-toc="Semantic HTML · div vs span">
+
+<h2><span class="t">Landmark elements</span><span class="src">Phase 2 · Step 7</span></h2>
+<div class="plain"><p>A building has a sign over the door, corridors with arrows, a main hall, side rooms and a basement notice board. Before HTML5, every room was just <code>&lt;div class="room"&gt;</code>. Landmark tags put the real names on the doors, so visitors, search engines and screen readers can find their way.</p></div>
+<div class="code" data-t="html — a page layout"><pre><code>&lt;body&gt;
+  &lt;header&gt;&lt;h1&gt;My Blog&lt;/h1&gt;&lt;/header&gt;
+  &lt;nav aria-label="Primary"&gt;&lt;a href="/"&gt;Home&lt;/a&gt; &lt;a href="/about"&gt;About&lt;/a&gt;&lt;/nav&gt;
+  &lt;main&gt;                                   &lt;!-- exactly one per page --&gt;
+    &lt;article&gt;                              &lt;!-- self-contained: could live in an RSS feed --&gt;
+      &lt;h2&gt;Post title&lt;/h2&gt;
+      &lt;section&gt;&lt;h3&gt;Intro&lt;/h3&gt;&lt;p&gt;…&lt;/p&gt;&lt;/section&gt;   &lt;!-- thematic group, has a heading --&gt;
+    &lt;/article&gt;
+    &lt;aside&gt;Related links&lt;/aside&gt;              &lt;!-- tangential content --&gt;
+  &lt;/main&gt;
+  &lt;footer&gt;© 2026&lt;/footer&gt;
+&lt;/body&gt;</code></pre></div>
+<div class="tw"><table>
+<tr><th>Element</th><th>Role</th></tr>
+<tr><td><code>&lt;header&gt;</code></td><td>Top of a page <em>or section</em> (logo, intro, byline). Can appear many times.</td></tr>
+<tr><td><code>&lt;nav&gt;</code></td><td>Major navigation. Add <code>aria-label="Primary"</code> etc. when there are several.</td></tr>
+<tr><td><code>&lt;main&gt;</code></td><td>The unique main content — <b>exactly one per page</b>.</td></tr>
+<tr><td><code>&lt;section&gt;</code></td><td>Thematic group; should have a heading.</td></tr>
+<tr><td><code>&lt;article&gt;</code></td><td>Self-contained, syndicatable unit (post, recipe, comment).</td></tr>
+<tr><td><code>&lt;aside&gt;</code></td><td>Tangentially related content (sidebar, pull-quote, glossary).</td></tr>
+<tr><td><code>&lt;footer&gt;</code></td><td>Bottom of a page or section (copyright, related links).</td></tr>
+</table></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Landmark mapping:</b> a page-level <code>&lt;header&gt;</code> acts as the “banner”, page-level <code>&lt;footer&gt;</code> as “contentinfo”. Inside an <code>&lt;article&gt;</code> or <code>&lt;section&gt;</code> they are just section headers/footers, not page landmarks.</li>
+  <li>A <code>&lt;section&gt;</code> only becomes a navigable “region” for screen readers when it has an accessible name (for example <code>aria-labelledby</code> pointing at its heading).</li>
+  <li><b>Article or section?</b> Ask: “Would this still make sense on its own in a feed?” Yes → <code>article</code>. No, it’s just a themed chunk → <code>section</code>.</li>
+</ul></div>
+
+<h2><span class="t"><code>&lt;div&gt;</code> vs <code>&lt;span&gt;</code></span><span class="src">Phase 2 · Step 8</span></h2>
+<div class="plain"><p><code>div</code> and <code>span</code> are blank sticky labels: they carry no meaning, only a hook for styling. A <code>div</code> is a big blank label on its own line; a <code>span</code> is a tiny one inside a sentence. Use them only when no meaningful element fits.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;div class="card"&gt;                       &lt;!-- block hook for layout --&gt;
+  &lt;p&gt;Total: &lt;span class="price"&gt;$9&lt;/span&gt;&lt;/p&gt;   &lt;!-- inline hook inside text --&gt;
+&lt;/div&gt;</code></pre></div>
+<div class="tw"><table>
+<tr><th>If the thing is…</th><th>…use</th><th>…not</th></tr>
+<tr><td>An action (submit, toggle)</td><td><code>&lt;button&gt;</code></td><td><code>&lt;div onclick&gt;</code></td></tr>
+<tr><td>Navigation to another place</td><td><code>&lt;a href&gt;</code></td><td><code>&lt;span onclick&gt;</code></td></tr>
+<tr><td>A real sub-heading</td><td><code>&lt;h2&gt;</code></td><td>big bold <code>&lt;p&gt;</code></td></tr>
+<tr><td>A list of items</td><td><code>&lt;ul&gt; &lt;li&gt;</code></td><td>lines of <code>&lt;div&gt;</code></td></tr>
+</table></div>
+<p class="warn">A page made only of <code>&lt;div&gt;</code>s is valid but accessibility-hostile — “div soup”.</p>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Landmarks replace <code>&lt;div class="header"&gt;</code> and friends.</li>
+<li>One <code>&lt;main&gt;</code> per page; label repeated <code>&lt;nav&gt;</code>s.</li>
+<li><code>div</code>/<code>span</code> are the last resort, not the first.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: tables ====================== -->
+<section class="sheet" id="pg-tables" data-part="Part 1 · HTML" data-label="Tables" data-toc="Tables">
+
+<h2><span class="t">Table basics</span><span class="src">Phase 3 · Step 9</span></h2>
+<div class="plain"><p>A table is a printed spreadsheet. The caption is the title above it, header cells (<code>th</code>) name each column or row, and data cells (<code>td</code>) hold the numbers. Tables are only for data that really has rows and columns — never for page layout.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;table&gt;
+  &lt;caption&gt;Fruit prices&lt;/caption&gt;   &lt;!-- title; read out first by screen readers --&gt;
+  &lt;tr&gt;                           &lt;!-- tr = table row --&gt;
+    &lt;th&gt;Fruit&lt;/th&gt;                &lt;!-- th = header cell (semantic) --&gt;
+    &lt;th&gt;Price&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;Apple&lt;/td&gt;&lt;td&gt;$1&lt;/td&gt;&lt;/tr&gt;   &lt;!-- td = data cell --&gt;
+&lt;/table&gt;</code></pre></div>
+<ul class="key">
+  <li><code>&lt;table&gt;</code> wraps everything; <code>&lt;caption&gt;</code> is the title; <code>&lt;tr&gt;</code> a row; <code>&lt;th&gt;</code> a header cell; <code>&lt;td&gt;</code> a data cell.</li>
+  <li>Layout tables were a 1990s hack. CSS Grid replaced them completely.</li>
+</ul>
+
+<h2><span class="t">Structured &amp; accessible tables</span><span class="src">Phase 3 · Step 10</span></h2>
+<div class="plain"><p>Real reports have a header band, a body and a totals row. <code>thead</code>, <code>tbody</code> and <code>tfoot</code> name those three bands. <code>scope</code> then tells a screen reader which direction each header points — “this labels the column below” or “this labels the row beside”.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;&lt;th scope="col"&gt;Item&lt;/th&gt;&lt;th scope="col"&gt;Q1&lt;/th&gt;&lt;th scope="col"&gt;Q2&lt;/th&gt;&lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Pens&lt;/th&gt;&lt;td&gt;10&lt;/td&gt;&lt;td&gt;12&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Pads&lt;/th&gt;&lt;td colspan="2"&gt;sold out&lt;/td&gt;&lt;/tr&gt;   &lt;!-- merges 2 columns --&gt;
+  &lt;/tbody&gt;
+  &lt;tfoot&gt;&lt;tr&gt;&lt;th scope="row"&gt;Total&lt;/th&gt;&lt;td&gt;10&lt;/td&gt;&lt;td&gt;12&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;
+&lt;/table&gt;</code></pre></div>
+<ul class="key">
+  <li><code>scope="col"</code> = labels a column; <code>scope="row"</code> = labels its row. Critical for screen-reader navigation.</li>
+  <li><code>colspan="2"</code> merges cells horizontally, <code>rowspan="2"</code> vertically.</li>
+</ul>
+<p class="warn">When a cell spans <em>down</em>, don’t repeat it in the next row’s markup — the renderer already counts it.</p>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Wide tables on phones:</b> wrap the table in a <code>&lt;div&gt;</code> with <code>overflow-x: auto</code> so it scrolls inside its own box instead of stretching the page (this notebook does exactly that).</li>
+  <li><b>Complex tables</b> with several header levels can link cells to headers with <code>id</code> and <code>headers="…"</code>.</li>
+  <li>Style hooks: <code>border-collapse: collapse</code> removes double borders; <code>&lt;colgroup&gt;</code>/<code>&lt;col&gt;</code> style whole columns.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Tables are for data, never for layout.</li>
+<li>Caption + thead/tbody/tfoot + <code>scope</code> = accessible.</li>
+<li>Spanning cells: don’t repeat them in later rows.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: forms I ====================== -->
+<section class="sheet" id="pg-forms-1" data-part="Part 1 · HTML" data-label="Forms I · basics and input types" data-toc="Forms I · basics and input types">
+
+<h2><span class="t">Form submission essentials</span><span class="src">Phase 4 · Step 11</span></h2>
+<div class="plain"><p>A form is a paper order slip. <code>action</code> is the counter you hand it in at, <code>method</code> is how you hand it over, each field’s <code>name</code> is the printed heading on the slip, and the <code>label</code> is the question printed next to the blank.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;form action="/submit" method="post"&gt;   &lt;!-- where &amp; how to send the data --&gt;
+  &lt;label for="email"&gt;Email&lt;/label&gt;      &lt;!-- label points at the input's id --&gt;
+  &lt;input id="email" name="email" type="email" /&gt;   &lt;!-- name = key in the payload --&gt;
+  &lt;button type="submit"&gt;Send&lt;/button&gt;
+&lt;/form&gt;</code></pre></div>
+<ul class="key">
+  <li><code>action</code> = URL it posts to. <code>method</code>: <mark class="y">get</mark> (data in the URL — searches, bookmarkable) or <mark class="y">post</mark> (data in the body — sensitive, large, or changing things).</li>
+  <li>Every input that should be sent needs a <mark class="y">name</mark>. No name → no value.</li>
+  <li><code>&lt;label for="id"&gt;</code> tied to <code>&lt;input id&gt;</code>: clicking the label focuses the input, the hit target grows, and screen readers announce it.</li>
+</ul>
+<p class="warn">An input without <code>name</code> is silently dropped on submit.</p>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>A <code>&lt;button&gt;</code> inside a form submits by default.</b> For buttons that do something else, write <code>type="button"</code>.</li>
+  <li><b>File uploads</b> need <code>method="post"</code> and <code>enctype="multipart/form-data"</code> on the form.</li>
+  <li><b>Wrapping alternative:</b> <code>&lt;label&gt;Email &lt;input name="email"&gt;&lt;/label&gt;</code> works without <code>for</code>/<code>id</code>.</li>
+  <li><b><code>autocomplete</code></b> (for example <code>email</code>, <code>current-password</code>, <code>one-time-code</code>) lets browsers fill fields correctly — a big win on phones.</li>
+</ul></div>
+
+<h2><span class="t">Input types</span><span class="src">Phase 4 · Step 12</span></h2>
+<div class="plain"><p>One attribute, many tools. <code>type</code> turns the same <code>&lt;input&gt;</code> into a text box, a date picker, a colour dial or a slider — and on phones it swaps the on-screen keyboard to match.</p></div>
+<div class="tw"><table>
+<tr><th>Type</th><th>Behaviour</th></tr>
+<tr><td><code>text</code> <code>password</code> <code>email</code> <code>tel</code> <code>url</code> <code>search</code></td><td>Text variants; mobile keyboards adapt (numeric for <code>tel</code>, an <code>@</code> key for <code>email</code>).</td></tr>
+<tr><td><code>number</code></td><td>With <code>min</code>, <code>max</code>, <code>step</code>.</td></tr>
+<tr><td><code>date</code> <code>time</code> <code>datetime-local</code> <code>month</code> <code>week</code></td><td>Native pickers.</td></tr>
+<tr><td><code>color</code></td><td>OS colour picker.</td></tr>
+<tr><td><code>range</code></td><td>Slider.</td></tr>
+<tr><td><code>file</code></td><td>Upload. <code>accept="image/*"</code>, <code>multiple</code>.</td></tr>
+<tr><td><code>hidden</code></td><td>Submitted but invisible (CSRF tokens, ids).</td></tr>
+<tr><td><code>checkbox</code> <code>radio</code></td><td>See the next page.</td></tr>
+</table></div>
+<div class="code" data-t="html"><pre><code>&lt;input type="number" name="qty" min="1" max="10" step="1"&gt;
+&lt;input type="date"   name="dob"&gt;
+&lt;input type="range"  name="vol" min="0" max="100"&gt;
+&lt;input type="file"   name="photo" accept="image/*" multiple&gt;
+&lt;input type="hidden" name="token" value="abc123"&gt;</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b><code>type="number"</code> is for quantities</b>, not for phone numbers, postcodes or card numbers (scroll-wheel changes, leading zeros vanish). Use <code>type="text"</code> with <code>inputmode="numeric"</code>.</li>
+  <li><code>&lt;datalist&gt;</code> adds suggestions to a text input while still allowing free typing.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>No <code>name</code> = nothing sent.</li>
+<li><code>label for</code> ↔ <code>input id</code> every single time.</li>
+<li><code>get</code> for searching, <code>post</code> for changing things.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: forms II ====================== -->
+<section class="sheet" id="pg-forms-2" data-part="Part 1 · HTML" data-label="Forms II · choices and validation" data-toc="Forms II · choices and validation">
+
+<h2><span class="t">Choosing: textarea, select, radio, checkbox</span><span class="src">Phase 4 · Step 13</span></h2>
+<div class="plain"><p>Radio buttons are like the old car-radio presets — press one and the others pop out, so you get exactly one. Checkboxes are a shopping basket: tick as many as you like. A <code>select</code> is a drop-down menu card.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;textarea name="msg" rows="4" cols="30"&gt;&lt;/textarea&gt;
+
+&lt;select name="city"&gt;
+  &lt;optgroup label="India"&gt;
+    &lt;option value="chn" selected&gt;Chennai&lt;/option&gt;   &lt;!-- selected = pre-chosen --&gt;
+    &lt;option value="del"&gt;Delhi&lt;/option&gt;
+  &lt;/optgroup&gt;
+&lt;/select&gt;                                          &lt;!-- add multiple for multi-select --&gt;
+
+&lt;fieldset&gt;
+  &lt;legend&gt;Size&lt;/legend&gt;                              &lt;!-- announced for the whole group --&gt;
+  &lt;label&gt;&lt;input type="radio" name="size" value="s" checked&gt; Small&lt;/label&gt;
+  &lt;label&gt;&lt;input type="radio" name="size" value="l"&gt; Large&lt;/label&gt;   &lt;!-- same name = one group --&gt;
+&lt;/fieldset&gt;
+
+&lt;label&gt;&lt;input type="checkbox" name="news"&gt; Send me news&lt;/label&gt;   &lt;!-- independent --&gt;</code></pre></div>
+<ul class="key">
+  <li><code>&lt;textarea&gt;</code> = multi-line text (<code>rows</code>, <code>cols</code>). <code>&lt;select&gt;</code> + <code>&lt;option&gt;</code>/<code>&lt;optgroup&gt;</code>; <code>multiple</code> for multi-select; <code>selected</code> pre-selects.</li>
+  <li>Radios sharing a <mark class="y">name</mark> form a group — exactly one. Checkboxes are independent. <code>checked</code> pre-selects either.</li>
+  <li><code>&lt;fieldset&gt;</code> + <code>&lt;legend&gt;</code> group related controls and label the whole group.</li>
+</ul>
+<p class="warn">Give radios <em>different</em> names and they stop being a group.</p>
+
+<h2><span class="t">Native validation</span><span class="src">Phase 4 · Step 14</span></h2>
+<div class="plain"><p>Native validation is the polite doorman at a club: he checks you have a ticket (<code>required</code>), the right age (<code>min</code>/<code>max</code>) and the right format (<code>pattern</code>) before you reach the real security desk — the server.</p></div>
+<div class="code" data-t="html + css"><pre><code>&lt;input name="user" required minlength="3" maxlength="12"
+       pattern="[A-Za-z]{3,}" title="Letters only, at least 3"&gt;
+&lt;input type="email" name="mail" required&gt;
+&lt;input type="number" name="age" min="18" max="99"&gt;
+
+/* state-based styling with pseudo-classes */
+input:valid   { border-color: green; }
+input:invalid { border-color: crimson; }
+input:required{ border-left: 4px solid orange; }</code></pre></div>
+<ul class="key">
+  <li>Attributes: <code>required</code>, <code>minlength</code>/<code>maxlength</code>, <code>min</code>/<code>max</code>/<code>step</code>, <code>pattern</code> (regex), and type-based checks like <code>type="email"</code>.</li>
+  <li>CSS pseudo-classes: <code>:valid</code>, <code>:invalid</code>, <code>:required</code>, <code>:optional</code>, <code>:placeholder-shown</code>.</li>
+</ul>
+<p class="warn"><b>CRITICAL:</b> HTML validation is UX only. Anyone can edit the DOM or POST directly. Always re-validate on the server.</p>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b><code>:invalid</code> fires on page load</b>, so empty required fields look like errors before the user has typed anything. A newer pseudo-class, <code>:user-invalid</code>, waits for interaction — I’m not certain of its support everywhere, so check before depending on it.</li>
+  <li><b>Accessible errors:</b> connect each message to its field with <code>aria-describedby</code> and mark bad fields <code>aria-invalid="true"</code>. Never rely on red colour alone.</li>
+  <li><code>novalidate</code> on the <code>&lt;form&gt;</code> turns native checks off when you build your own.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Same <code>name</code> on radios = one choice.</li>
+<li><code>fieldset</code> + <code>legend</code> label a group of controls.</li>
+<li>Client validation is UX; server validation is security.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: media ====================== -->
+<section class="sheet" id="pg-media" data-part="Part 1 · HTML" data-label="Media and embeds" data-toc="Media and embeds">
+
+<h2><span class="t">Audio &amp; video</span><span class="src">Phase 5 · Step 15</span></h2>
+<div class="plain"><p>Native video is like a DVD player built into the browser: no plug-ins. You hand it several copies of the film in different formats and it plays the first one it understands. If it understands none, it shows the note you left inside the tag.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;video controls width="640" poster="thumb.jpg"&gt;
+  &lt;source src="movie.mp4"  type="video/mp4"&gt;    &lt;!-- browser picks the first it supports --&gt;
+  &lt;source src="movie.webm" type="video/webm"&gt;
+  &lt;track kind="subtitles" src="en.vtt" srclang="en" label="English"&gt;   &lt;!-- WebVTT captions --&gt;
+  Your browser does not support video.            &lt;!-- fallback text --&gt;
+&lt;/video&gt;</code></pre></div>
+<ul class="key">
+  <li>Attributes: <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>preload="metadata"</code>.</li>
+  <li><code>&lt;track&gt;</code> adds captions/subtitles (WebVTT) — required for accessibility.</li>
+  <li>Text between the <code>&lt;video&gt;</code> tags is the fallback for browsers that can’t play it.</li>
+</ul>
+<p class="warn">Autoplay with sound is blocked in modern browsers — start <code>muted</code> if you must autoplay.</p>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>“<code>autoplay</code> requires <code>muted</code>” is a good rule of thumb, but browser autoplay policies vary and can also allow sound after user interaction. Treat it as “don’t expect unmuted autoplay to work”, not a hard law.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><code>playsinline</code> stops iOS Safari forcing full-screen playback. Offer a transcript for audio. Use <code>kind="captions"</code> when the track includes speaker sounds and not just translated speech.</p></div>
+
+<h2><span class="t"><code>&lt;iframe&gt;</code> embeds</span><span class="src">Phase 5 · Step 16</span></h2>
+<div class="plain"><p>An iframe is a window cut into your page that shows someone else’s page — a map, a video, a widget. Because it’s someone else’s room, you lock it down: <code>sandbox</code> is a rule list for what the guest is allowed to touch.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;iframe src="https://example.com/map"
+        title="Office location map"       &lt;!-- mandatory: how screen readers announce it --&gt;
+        loading="lazy"                    &lt;!-- big performance win --&gt;
+        sandbox="allow-scripts allow-same-origin"   &lt;!-- whitelist what is allowed --&gt;
+        allow="fullscreen"&gt;&lt;/iframe&gt;        &lt;!-- feature permissions --&gt;</code></pre></div>
+<ul class="key">
+  <li><code>title</code> is mandatory for accessibility. <code>loading="lazy"</code> defers off-screen frames.</li>
+  <li><code>sandbox</code> (no value) blocks scripts, forms and top-level navigation; whitelist what you need. <code>allow="…"</code> controls camera, autoplay, fullscreen.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Senior-level catch:</b> <code>allow-scripts</code> together with <code>allow-same-origin</code> on content from <em>your own</em> origin lets the framed page remove its own sandbox, defeating it. Add <code>referrerpolicy</code> to limit what the embedded site learns about you.</p></div>
+
+<h2><span class="t">Responsive images with <code>&lt;picture&gt;</code></span><span class="src">Phase 5 · Step 17 (title only in the source)</span></h2>
+<div class="plain"><p>A tailor with two suits: a cropped one for phones and a wide one for desktops, in a modern fabric when the browser likes it. <code>&lt;picture&gt;</code> lets the browser choose which image file to download.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p>The source lists “picture, art direction, modern formats, srcset” as a lesson but doesn’t explain them in the README, so here is the core idea:</p>
+<div class="code" data-t="html"><pre><code>&lt;picture&gt;
+  &lt;source media="(min-width: 800px)" srcset="wide.avif" type="image/avif"&gt;  &lt;!-- art direction --&gt;
+  &lt;source srcset="small.avif" type="image/avif"&gt;                              &lt;!-- modern format --&gt;
+  &lt;img src="small.jpg" alt="Mountain at sunrise" width="800" height="450"&gt;   &lt;!-- required fallback --&gt;
+&lt;/picture&gt;</code></pre></div>
+<ul class="key">
+  <li><b>Art direction</b> = different crops at different sizes (<code>media</code>). <b>Format switching</b> = AVIF/WebP first, JPEG as fallback (<code>type</code>).</li>
+  <li>The browser uses the first <code>&lt;source&gt;</code> that matches; the <code>&lt;img&gt;</code> is required and carries the <code>alt</code>.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Offer several <code>&lt;source&gt;</code>s and captions with <code>&lt;track&gt;</code>.</li>
+<li>Every iframe needs a <code>title</code>; sandbox what you don’t trust.</li>
+<li><code>&lt;picture&gt;</code>: sources first, <code>&lt;img&gt;</code> last.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: accessibility ====================== -->
+<section class="sheet" id="pg-a11y" data-part="Part 1 · HTML" data-label="Accessibility and ARIA" data-toc="Accessibility and ARIA">
+
+<h2><span class="t">The four POUR principles</span><span class="src">Phase 6 · Steps 18–19</span></h2>
+<div class="plain"><p>Accessibility is like building a ramp next to the stairs when the building goes up, not afterwards. It helps wheelchair users, but also parents with prams and people carrying boxes. A site built for everyone is simply better built.</p></div>
+<div class="tw"><table>
+<tr><th>Principle</th><th>Means</th></tr>
+<tr><td><b>P</b>erceivable</td><td>Available to every sense — alt text for images, captions for video, enough colour contrast.</td></tr>
+<tr><td><b>O</b>perable</td><td>Everything a mouse can do works with the keyboard too.</td></tr>
+<tr><td><b>U</b>nderstandable</td><td>Predictable navigation, clear language, sensible error messages.</td></tr>
+<tr><td><b>R</b>obust</td><td>Works across browsers, operating systems and assistive tech.</td></tr>
+</table></div>
+
+<h2><span class="t">Practical tactics</span><span class="src">Phase 6 · Step 18</span></h2>
+<ul class="key">
+  <li><mark class="y">Semantic HTML is accessibility for free.</mark> A <code>&lt;button&gt;</code> is focusable, announces itself as a button and answers Enter/Space; a <code>&lt;div onclick&gt;</code> does none of that.</li>
+  <li><b>Labels:</b> every input needs a <code>&lt;label&gt;</code> (or <code>aria-label</code> if no visible text fits). <b>Alt text:</b> describe content or purpose; decorative → <code>alt=""</code>.</li>
+  <li><b>Focus styles:</b> never blanket <code>outline: none</code>. Use <mark class="y">:focus-visible</mark> to keep keyboard rings but skip them on mouse clicks.</li>
+  <li><b>Contrast:</b> WCAG AA needs <mark class="y">4.5:1</mark> for body text, <mark class="y">3:1</mark> for large text. <b><code>lang</code></b> on <code>&lt;html&gt;</code> picks the right pronunciation engine.</li>
+  <li><b>Skip links</b> let keyboard users jump past the nav. A <b>visually-hidden</b> class hides text from sighted users but keeps it for screen readers.</li>
+</ul>
+<div class="code" data-t="html + css"><pre><code>&lt;a href="#main" class="skip-link"&gt;Skip to content&lt;/a&gt;
+&lt;main id="main"&gt;…&lt;/main&gt;
+
+.skip-link { position: absolute; left: -999px; }          /* off-screen until focused */
+.skip-link:focus { left: 8px; top: 8px; }
+
+.visually-hidden {                                         /* hidden to eyes, read by screen readers */
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+button:focus-visible { outline: 3px solid #1d3f94; outline-offset: 2px; }</code></pre></div>
+
+<h2><span class="t">ARIA — only when needed</span><span class="src">Phase 6 · Step 19</span></h2>
+<div class="plain"><p>ARIA is a translator’s note stuck onto an element: “this is actually a toggle button, and it’s currently open”. It only changes what assistive tech is told, never what the element does. Use a native element first; the note is for when none exists.</p></div>
+<div class="code" data-t="html"><pre><code>&lt;button aria-expanded="false" aria-controls="menu"&gt;Menu&lt;/button&gt;   &lt;!-- state: closed --&gt;
+&lt;ul id="menu" hidden&gt;…&lt;/ul&gt;
+&lt;p aria-live="polite" id="status"&gt;&lt;/p&gt;     &lt;!-- announces text changes --&gt;
+&lt;span aria-hidden="true"&gt;★&lt;/span&gt;           &lt;!-- hide decoration from screen readers --&gt;</code></pre></div>
+<ul class="key">
+  <li>Useful: <code>aria-pressed</code>, <code>aria-expanded</code>, <code>aria-live="polite"</code> (announces dynamic updates), <code>aria-hidden</code>, <code>aria-label</code>, <code>role</code>.</li>
+</ul>
+<p class="warn">Misused ARIA is <em>worse</em> than none — a wrong role makes a control lie to its user.</p>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>First rule of ARIA:</b> if a native element or attribute already does the job, use it instead.</li>
+  <li><b>Never</b> put <code>aria-hidden="true"</code> on something focusable — keyboard users can reach it but a screen reader says nothing.</li>
+  <li><b>Test it:</b> unplug the mouse and tab through the page; run an automated checker (axe or Lighthouse); try one screen reader. WCAG 2.2 also asks for reasonably large tap targets — I recall a 24×24 CSS-pixel minimum at AA, so verify against the current guidelines.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Semantic HTML first; ARIA only to fill gaps.</li>
+<li>Labels, alt, focus rings, 4.5:1 contrast.</li>
+<li>If you can’t use it with a keyboard, it’s broken.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: html meets css/js ====================== -->
+<section class="sheet" id="pg-connect" data-part="Part 1 · HTML" data-label="HTML meets CSS and JavaScript · principles" data-toc="HTML meets CSS &amp; JS · principles">
+
+<h2><span class="t">Hooks for CSS: class, id, data-*</span><span class="src">Phase 7 · Steps 20–21</span></h2>
+<div class="plain"><p>Attributes are the handles on a suitcase. CSS and JavaScript grab the handle they need: <code>class</code> for “all red suitcases”, <code>id</code> for “this one suitcase”, <code>data-*</code> for a luggage tag with your own note.</p></div>
+<div class="tw"><table>
+<tr><th>Method</th><th>Looks like</th><th>Use when</th></tr>
+<tr><td>External</td><td><code>&lt;link rel="stylesheet" href="page.css"&gt;</code></td><td>Almost always. Cacheable, reusable, scales.</td></tr>
+<tr><td>Internal</td><td><code>&lt;style&gt;…&lt;/style&gt;</code> in <code>&lt;head&gt;</code></td><td>Single-page demos, critical inline CSS.</td></tr>
+<tr><td>Inline</td><td><code>&lt;p style="color:red"&gt;</code></td><td>Avoid in production; high specificity, untestable.</td></tr>
+</table></div>
+<div class="code" data-t="html + css + js"><pre><code>&lt;span class="badge featured" id="nav-primary" data-state="open"&gt;New&lt;/span&gt;
+
+.badge { … }                      /* class: reusable, many per element, kebab-case */
+#nav-primary { … }                /* id: unique per page; also an anchor + JS hook */
+[data-state="open"] { … }         /* data-*: custom metadata, read by CSS... */
+/* ...and by JS: element.dataset.state */</code></pre></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>The table is introduced as “priority increases left to right”. Specificity doesn’t work that way: external and internal sheets have <em>equal</em> specificity and the later one in the file wins. Only inline <code>style=""</code> truly outranks the other two. (More on the cascade pages.)</p></div>
+
+<h2><span class="t">Connecting JavaScript</span><span class="src">Phase 8 · Steps 22–23</span></h2>
+<div class="plain"><p>A plain script tag is a person who stops the whole assembly line to read a manual before carrying on. <code>defer</code> says “carry on building, I’ll read it when the line finishes”, and <code>async</code> says “read it the moment it arrives”.</p></div>
+<div class="tw"><table>
+<tr><th>Tag</th><th>Download</th><th>Parsing</th><th>Execution</th></tr>
+<tr><td><code>&lt;script&gt;</code></td><td>blocks parser</td><td>pauses HTML</td><td>runs immediately</td></tr>
+<tr><td><code>&lt;script async&gt;</code></td><td>parallel</td><td>continues</td><td>as soon as ready (<b>unordered</b>)</td></tr>
+<tr><td><code>&lt;script defer&gt;</code></td><td>parallel</td><td>continues</td><td><b>after</b> HTML, in order</td></tr>
+<tr><td><code>&lt;script type="module"&gt;</code></td><td>parallel</td><td>continues</td><td>deferred by default</td></tr>
+</table></div>
+<div class="code" data-t="html"><pre><code>&lt;script defer src="app.js"&gt;&lt;/script&gt;        &lt;!-- modern default, goes in head --&gt;
+&lt;script async src="analytics.js"&gt;&lt;/script&gt;  &lt;!-- independent scripts only --&gt;
+&lt;button onclick="alert('hi')"&gt;Say hi&lt;/button&gt; &lt;!-- inline handler: fine for demos --&gt;
+&lt;form onsubmit="event.preventDefault()"&gt;…&lt;/form&gt;   &lt;!-- this = element, event = Event --&gt;</code></pre></div>
+<ul class="key">
+  <li>A plain <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code> <mark class="p">blocks parsing</mark>. Old fix: scripts at the end of <code>&lt;body&gt;</code>. Modern fix: <mark class="y">defer</mark> in the head. <code>type="module"</code> enables <code>import</code>/<code>export</code> and is deferred by default.</li>
+  <li>Inline attributes (<code>onclick</code>, <code>oninput</code>, <code>onsubmit</code>, <code>onkeydown</code>) are fine for tiny demos. In production prefer <code>addEventListener</code>: it keeps behaviour out of the markup and allows several listeners per event.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<div class="code" data-t="js"><pre><code>document.querySelector('button')
+  .addEventListener('click', () =&gt; alert('hi'));</code></pre></div>
+<p>Put a <code>&lt;noscript&gt;</code> message in for people who have scripts off, and make sure links and forms still work without JavaScript (progressive enhancement).</p></div>
+
+<h2><span class="t">The five principles</span><span class="src">HTML README §7</span></h2>
+<div class="plain"><p>These five habits show up on every page of this part. If you remember nothing else, remember them: they are the difference between markup that merely renders and markup that works for everyone.</p></div>
+<ol class="key" style="list-style:none;padding:0">
+  <li>1. <mark class="y">Mean what you mark</mark> — <code>&lt;button&gt;</code> for actions, <code>&lt;a&gt;</code> for navigation, <code>&lt;h2&gt;</code> for real subheadings.</li>
+  <li>2. <mark class="y">Progressive enhancement</mark> — usable as plain HTML first, then enhanced.</li>
+  <li>3. Accessibility is not optional — semantic HTML covers most of it for free.</li>
+  <li>4. <mark class="y">Validate at the boundary</mark> — client for UX, server for security. Both, always.</li>
+  <li>5. The browser is forgiving — don’t rely on it: close tags, quote attributes, validate.</li>
+</ol>
+<div class="added"><b class="tag">+ added</b>
+<p><b><code>&lt;dialog&gt;</code></b> (listed in the categories table) is the native modal: <code>dialog.showModal()</code> opens it with a backdrop, focus handling and Esc-to-close built in.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Use <code>defer</code> for scripts; prefer <code>addEventListener</code>.</li>
+<li><code>class</code> reusable, <code>id</code> unique, <code>data-*</code> your own notes.</li>
+<li>Mean what you mark. Validate at the boundary.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: css basics + cascade ====================== -->
+<section class="sheet" id="pg-css-basics" data-part="Part 2 · CSS" data-label="What CSS is · attaching it · the cascade" data-toc="What CSS is · attaching · the cascade">
+
+<h2><span class="t">What CSS really is</span><span class="src">CSS README §1</span></h2>
+<div class="plain"><p>CSS is like ordering from a menu: you say <em>what</em> you want (“blue headings, big gaps”) and the kitchen — the browser — works out <em>how</em> to cook it. You never describe the cooking steps.</p></div>
+<div class="code" data-t="css — one rule"><pre><code>selector {                 /* picks WHICH elements */
+  property: value;         /* one declaration */
+  property: value;         /* another declaration */
+}
+/* comments use slash-star only; two slashes are NOT valid CSS */</code></pre></div>
+<ul class="key">
+  <li><mark class="y">Cascading Style Sheets</mark> — a <mark class="y">declarative</mark> language. Selector + its declarations = a <mark class="y">rule</mark>; each <code>property: value</code> = a <mark class="y">declaration</mark>.</li>
+  <li>For every element the browser builds a <mark class="y">computed style</mark> (the final value of every property) in three steps: <b>1 Cascade</b> (many rules match — who wins?), <b>2 Inheritance</b> (some properties flow from the parent), <b>3 Defaults</b> (the browser’s own stylesheet fills the rest).</li>
+  <li>Understanding the cascade is the biggest conceptual leap in CSS.</li>
+</ul>
+
+<h2><span class="t">Three ways to attach CSS</span><span class="src">CSS README §2 · Step 1</span></h2>
+<div class="tw"><table>
+<tr><th>Method</th><th>Looks like</th><th>Use when</th></tr>
+<tr><td>External</td><td><code>&lt;link rel="stylesheet" href="page.css"&gt;</code></td><td>Almost always — cacheable, reusable, scales.</td></tr>
+<tr><td>Internal</td><td><code>&lt;style&gt;…&lt;/style&gt;</code> in <code>&lt;head&gt;</code></td><td>One-page demos, critical inline CSS.</td></tr>
+<tr><td>Inline</td><td><code>&lt;p style="color:red"&gt;</code></td><td>Avoid in production — high specificity, untestable, mixes concerns.</td></tr>
+</table></div>
+<p class="warn">Inline beats internal/external on specificity, but that’s a side effect, not a reason to use it.</p>
+
+<h2><span class="t">The cascade — how rules are picked</span><span class="src">CSS README §3 · Step 2</span></h2>
+<div class="plain"><p>Picture a talent contest with three judges who score in a fixed order. Judge 1 looks at <em>who sent the entry and how loudly</em> (origin and importance). If it’s a tie, Judge 2 counts how precisely the entry aimed at its target (specificity). Still a tie? Judge 3 simply picks whoever came last (source order).</p></div>
+
+<div class="sketch">
+<svg viewBox="0 0 660 200" role="img" aria-label="The cascade runs three tests in order: origin and importance, specificity, source order, then a winner">
+  <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#c4302b" stroke-width="1.8" stroke-linecap="round"/></marker></defs>
+  <g fill="#fffef6" stroke="#1d3f94" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 20h130l-12 70H20z"/><rect x="170" y="35" width="130" height="64" rx="10"/><rect x="330" y="35" width="130" height="64" rx="10"/><rect x="490" y="35" width="150" height="64" rx="10"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="22" fill="#1d3f94" text-anchor="middle">
+    <text x="73" y="56">many rules</text><text x="73" y="80">match</text>
+    <text x="235" y="62">1 · origin &amp;</text><text x="235" y="86">importance</text>
+    <text x="395" y="62">2 ·</text><text x="395" y="86">specificity</text>
+    <text x="565" y="62">3 · source</text><text x="565" y="86">order (later wins)</text>
+  </g>
+  <g fill="none" stroke="#c4302b" stroke-width="2.4" stroke-linecap="round">
+    <path d="M140 66C150 56 158 76 167 66" marker-end="url(#ah2)"/><path d="M302 66C312 56 320 76 328 66" marker-end="url(#ah2)"/><path d="M462 66C472 56 480 76 488 66" marker-end="url(#ah2)"/>
+    <path d="M565 102C565 130 540 150 520 160" marker-end="url(#ah2)"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="24" fill="#c4302b"><text x="300" y="175">winner = the value used</text></g>
+  <g font-family="Caveat,cursive" font-size="18" fill="#2b7a3a" text-anchor="middle"><text x="235" y="124">still tied?</text><text x="395" y="124">still tied?</text></g>
+</svg>
+</div>
+
+<h3>Origin &amp; importance</h3>
+<ul class="key">
+  <li>Three sources: <b>user-agent</b> (the browser’s default sheet — <code>&lt;h1&gt;</code> is big, links are blue), <b>user</b> (rare), and <b>author</b> (your stylesheet). Normally <mark class="y">author &gt; user &gt; user-agent</mark>.</li>
+  <li><code>!important</code> is a <mark class="p">code smell</mark>: it locks future contributors out and starts an arms race. Use it only for true overrides (utility classes, escaping a third-party widget).</li>
+</ul>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>“With <code>!important</code> the order partly reverses” is vague. Precisely: for <em>normal</em> declarations author beats user beats browser-default; for <code>!important</code> declarations the order flips, so browser-default <code>!important</code> beats user <code>!important</code> beats author <code>!important</code>. For everyday work, remember “author <code>!important</code> beats author normal”.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Cascade layers (<code>@layer</code>)</b> add a step <em>before</em> specificity: you declare the layer order once and a later layer beats an earlier one regardless of selector strength. They are a modern cure for specificity wars (I believe broadly supported since 2022 — verify for your audience). Under <code>!important</code>, layer order flips again.</p>
+<div class="code" data-t="css"><pre><code>@layer reset, base, components;       /* later = stronger */
+@layer reset      { a { color: inherit; } }
+@layer components { .btn { color: white; } }   /* wins over reset, even with a weaker selector */</code></pre></div></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>CSS is declarative: say what, not how.</li>
+<li>Cascade order: origin &amp; importance → specificity → source order.</li>
+<li>External stylesheet nearly always; <code>!important</code> almost never.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: specificity + inheritance ====================== -->
+<section class="sheet" id="pg-specificity" data-part="Part 2 · CSS" data-label="Specificity · source order · inheritance" data-toc="Specificity · source order · inheritance">
+
+<h2><span class="t">Specificity — the 4-tuple</span><span class="src">CSS README §3 · Step 3</span></h2>
+<div class="plain"><p>Specificity is like a sports league table that compares goals first, then assists, then fouls. Count ids first; only if ids tie do you look at classes; only if those tie do you look at plain elements. One id beats any number of classes.</p></div>
+
+<div class="sketch">
+<svg viewBox="0 0 660 190" role="img" aria-label="Four slots from strongest to weakest: inline style, ids, classes and attributes, elements; compare left to right">
+  <defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#c4302b" stroke-width="1.8" stroke-linecap="round"/></marker></defs>
+  <g fill="#fffef6" stroke="#1d3f94" stroke-width="2.4" stroke-linecap="round">
+    <rect x="10" y="30" width="145" height="90" rx="10"/><rect x="180" y="30" width="145" height="90" rx="10"/><rect x="350" y="30" width="145" height="90" rx="10"/><rect x="520" y="30" width="130" height="90" rx="10"/>
+  </g>
+  <g font-family="Caveat,cursive" fill="#1d3f94" text-anchor="middle">
+    <text x="82" y="62" font-size="30">a</text><text x="252" y="62" font-size="30">b</text><text x="422" y="62" font-size="30">c</text><text x="585" y="62" font-size="30">d</text>
+    <text x="82" y="92" font-size="20">inline style=""</text><text x="252" y="92" font-size="20">#ids</text><text x="422" y="92" font-size="20">.class [attr] :pseudo</text><text x="585" y="92" font-size="20">p ::before</text>
+    <text x="82" y="112" font-size="17" fill="#c4302b">1,0,0,0</text><text x="252" y="112" font-size="17" fill="#c4302b">0,1,0,0</text><text x="422" y="112" font-size="17" fill="#c4302b">0,0,1,0</text><text x="585" y="112" font-size="17" fill="#c4302b">0,0,0,1</text>
+  </g>
+  <path d="M30 150C200 175 400 130 640 158" fill="none" stroke="#c4302b" stroke-width="2.6" stroke-linecap="round" marker-end="url(#ah3)"/>
+  <text x="150" y="178" font-family="Caveat,cursive" font-size="22" fill="#c4302b">compare left → right: strongest first, ties go to the next slot</text>
+</svg>
+</div>
+
+<div class="code" data-t="css — scoring"><pre><code>p               { }   /* 0,0,0,1 */
+.btn            { }   /* 0,0,1,0 */
+p.btn:hover     { }   /* 0,0,2,1  (class + pseudo-class + element) */
+#header .nav a  { }   /* 0,1,1,1 */
+/* style="color:red" on the element itself = 1,0,0,0 */</code></pre></div>
+<ul class="key">
+  <li>Compare left to right: <code>0,1,0,0</code> beats <code>0,0,99,0</code>.</li>
+  <li>The universal selector <code>*</code> and the combinators (<code>&gt;</code> <code>+</code> <code>~</code>) score <mark class="y">0</mark>.</li>
+  <li>When everything ties, <mark class="y">the later rule wins</mark> — that’s source order. “The last imported stylesheet wins” is the same idea at file scale.</li>
+</ul>
+<p class="warn">Needing <code>!important</code> or <code>#id #id .class .class</code> means the architecture is wrong. Lower your selectors instead of raising them.</p>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>The (a, b, c, d) tuple is a popular teaching model. The official specification scores only three numbers — ids, classes/attributes/pseudo-classes, elements/pseudo-elements — and treats inline styles and <code>!important</code> as separate cascade stages. The results are the same, so use whichever you find clearer.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><b>Functional pseudo-classes:</b> <code>:is()</code>, <code>:not()</code> and <code>:has()</code> take the specificity of the <em>most specific</em> selector inside; <code>:where()</code> always counts as zero. <b>Debug tip:</b> in DevTools, the Styles panel lists every matching rule with the losers struck through; the Computed panel shows the winning value.</p></div>
+
+<h2><span class="t">Inheritance</span><span class="src">CSS README §3</span></h2>
+<div class="plain"><p>Some traits run in families — eye colour passes from parent to child, a scar doesn’t. Text traits (colour, font) pass to children; box traits (margin, border) don’t. If you don’t set a value, the child first asks its parent.</p></div>
+<div class="tw"><table>
+<tr><th>Inherit by default</th><th>Don’t inherit</th></tr>
+<tr><td><code>color</code> <code>font-family</code> <code>font-size</code> <code>line-height</code> <code>text-align</code> <code>visibility</code> <code>cursor</code></td><td><code>width</code> <code>height</code> <code>padding</code> <code>margin</code> <code>border</code> <code>background</code> <code>display</code> <code>position</code></td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>.card { color: navy; border: 1px solid red; }   /* children inherit navy; they get NO border */
+a.plain { color: inherit; }     /* copy the parent's value */
+.reset  { margin: initial; }    /* back to the spec default */
+.safe   { padding: unset; }     /* inherit if it naturally inherits, otherwise initial */
+.native { font: revert; }       /* fall back to the browser's own stylesheet */</code></pre></div>
+<ul class="key">
+  <li><code>inherit</code> copy the parent · <code>initial</code> spec default · <code>unset</code> inherit-if-inheritable, else initial · <code>revert</code> back to the user-agent stylesheet.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<p>Custom properties (<code>--brand</code>) inherit too, which is why theming works. The shorthand <code>all: unset</code> resets every property of an element — handy for stripping a button of its default look, but remember to restore a focus style afterwards.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Score: inline → ids → classes → elements; compare left to right.</li>
+<li>Tie = later rule wins. <code>*</code> and combinators score 0.</li>
+<li>Text properties inherit; box properties don’t.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: selectors I ====================== -->
+<section class="sheet" id="pg-selectors-1" data-part="Part 2 · CSS" data-label="Selectors I · basic · attribute · combinators" data-toc="Selectors I · basic · attribute · combinators">
+
+<h2><span class="t">Basic &amp; attribute selectors</span><span class="src">CSS README §4 · Step 4</span></h2>
+<div class="plain"><p>Selectors are how you point at things in a crowd: “everyone”, “all the doctors”, “the person called Priya”, “anyone wearing a red badge”. Mastery of selectors is mastery of CSS.</p></div>
+<div class="tw"><table>
+<tr><th>Selector</th><th>Matches</th></tr>
+<tr><td><code>*</code></td><td>Everything</td></tr>
+<tr><td><code>h1</code></td><td>All <code>&lt;h1&gt;</code> elements</td></tr>
+<tr><td><code>.badge</code></td><td>All elements with class <code>badge</code></td></tr>
+<tr><td><code>#lead</code></td><td>The element with id <code>lead</code></td></tr>
+<tr><td><code>h1, h2, h3</code></td><td>Group — any in the list</td></tr>
+<tr><td><code>[disabled]</code></td><td>Has the attribute (any value)</td></tr>
+<tr><td><code>[type="text"]</code></td><td>Exact match</td></tr>
+<tr><td><code>[class~="card"]</code></td><td>Word match (one of the space-separated values)</td></tr>
+<tr><td><code>[href^="https"]</code></td><td><b>Starts with</b></td></tr>
+<tr><td><code>[href$=".pdf"]</code></td><td><b>Ends with</b></td></tr>
+<tr><td><code>[href*="example"]</code></td><td><b>Contains</b></td></tr>
+<tr><td><code>[lang|="en"]</code></td><td>Equals <code>en</code> or starts with <code>en-</code> (such as <code>en-US</code>)</td></tr>
+<tr><td><code>[type="text" i]</code></td><td>Case-<b>i</b>nsensitive match</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>a[href^="https"]::after { content: " ↗"; }   /* mark external links */
+a[href$=".pdf"]         { font-weight: 700; } /* PDF links stand out */
+input[type="email"]     { border-color: teal; }
+[data-state="open"]     { display: block; }    /* style from a data-* hook */</code></pre></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>In the source’s selector table the row for the language matcher is garbled — the pipe character in <code>[lang|="en"]</code> splits the Markdown table cell. I’ve restored its meaning above; the “hyphen-prefix” matcher is correct CSS.</p></div>
+
+<h2><span class="t">Combinators — relationships in the DOM</span><span class="src">CSS README §4 · Step 5</span></h2>
+<div class="plain"><p>Combinators describe family ties: “anyone living in this house” (descendant), “only the children” (child), “the sibling right after” (adjacent), “every later sibling” (general).</p></div>
+<div class="tw"><table>
+<tr><th>Combinator</th><th>Meaning</th></tr>
+<tr><td><code>A B</code> (space)</td><td>Descendant — any <code>B</code> inside <code>A</code>, at any depth</td></tr>
+<tr><td><code>A &gt; B</code></td><td>Child — a <code>B</code> that is a <em>direct</em> child of <code>A</code></td></tr>
+<tr><td><code>A + B</code></td><td>Adjacent sibling — the <code>B</code> immediately after <code>A</code></td></tr>
+<tr><td><code>A ~ B</code></td><td>General sibling — any <code>B</code> after <code>A</code>, same parent</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>nav a        { color: navy; }       /* every link anywhere inside nav */
+ul &gt; li      { list-style: none; }   /* only direct children of ul */
+h2 + p       { font-size: 1.2em; }   /* the paragraph right after each h2 */
+h2 ~ p       { color: gray; }        /* every later paragraph sibling */</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Keep selectors short</b> (one or two levels). Long chains like <code>.page .main .list li a</code> are strong, brittle and break whenever the HTML changes.</li>
+  <li>The descendant combinator is the easiest to misuse: <code>.card a</code> also styles links inside nested cards. Use <code>&gt;</code> when you mean “direct child”.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>^=</code> starts, <code>$=</code> ends, <code>*=</code> contains.</li>
+<li>Space = any depth; <code>&gt;</code> = direct child.</li>
+<li><code>+</code> next sibling; <code>~</code> all later siblings.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: selectors II ====================== -->
+<section class="sheet" id="pg-selectors-2" data-part="Part 2 · CSS" data-label="Selectors II · pseudo-classes · pseudo-elements" data-toc="Selectors II · pseudo-classes · pseudo-elements">
+
+<h2><span class="t">Pseudo-classes — element <em>state</em> (one colon)</span><span class="src">CSS README §4 · Step 6</span></h2>
+<div class="plain"><p>A pseudo-class is a mood or a position, not a name: “when the mouse is over it”, “when it’s ticked”, “when it’s the third in line”. The element is the same; the selector reacts to its current situation.</p></div>
+<ul class="key">
+  <li><b>State:</b> <code>:hover</code> <code>:focus</code> <mark class="y">:focus-visible</mark> (keyboard-only focus — the modern way to keep focus rings without showing them on every mouse click) <code>:active</code> <code>:visited</code>. <b>Form state:</b> <code>:disabled</code> <code>:checked</code> <code>:placeholder-shown</code> <code>:required</code> <code>:optional</code> <code>:valid</code> <code>:invalid</code>.</li>
+  <li><b>Structural:</b> <code>:first-child</code> <code>:last-child</code> <code>:only-child</code> <code>:empty</code> <code>:nth-child(n)</code> <code>:nth-of-type(n)</code>. The argument is a formula: <code>2n</code> (even), <code>2n+1</code> (odd), <code>3</code> (third), <code>n+4</code> (fourth onward).</li>
+  <li><b>Functional:</b> <code>:not(.foo)</code>; <code>:is(h1, h2, h3)</code> (specificity = highest inside); <code>:where(…)</code> (same, but <mark class="y">specificity 0</mark> — perfect for resets); <code>:has(.unread)</code> (the long-awaited parent selector, see the Modern CSS page).</li>
+</ul>
+<div class="code" data-t="css"><pre><code>a:hover, a:focus-visible { text-decoration: underline; }
+li:nth-child(odd)  { background: #f4f4f4; }   /* zebra stripes */
+li:nth-child(n+4)  { opacity: .6; }           /* fourth onward */
+input:not([type="checkbox"]):disabled { opacity: .5; }
+:where(ul, ol) { padding-left: 1.2rem; }      /* easy-to-override default */</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Link order — LVHA:</b> write <code>:link</code>, <code>:visited</code>, <code>:hover</code>, <code>:active</code> in that order or the later ones get overridden (same specificity, later wins).</li>
+  <li><code>:visited</code> is deliberately limited for privacy — you can change colours but not, say, its size.</li>
+  <li>Handy extras: <code>:focus-within</code> (a parent when any child has focus), <code>:target</code> (the element a URL <code>#fragment</code> points at), <code>:root</code> (the <code>&lt;html&gt;</code> element — home of global custom properties).</li>
+</ul></div>
+
+<h2><span class="t">Pseudo-elements — virtual children (two colons)</span><span class="src">CSS README §4 · Step 7</span></h2>
+<div class="plain"><p>A pseudo-element is a sticker you add without touching the HTML — a bullet, a badge, the first letter in a fancy font. It exists only in CSS, as if the element had an extra invisible child.</p></div>
+<div class="tw"><table>
+<tr><th>Pseudo-element</th><th>Use</th></tr>
+<tr><td><code>::before</code>, <code>::after</code></td><td>Inject content (must declare <code>content: "…"</code>). CSS-only icons, badges, tooltips, decorative shapes.</td></tr>
+<tr><td><code>::first-letter</code></td><td>Drop caps.</td></tr>
+<tr><td><code>::first-line</code></td><td>First line of a paragraph (adapts on resize).</td></tr>
+<tr><td><code>::placeholder</code></td><td>Placeholder text style.</td></tr>
+<tr><td><code>::selection</code></td><td>Highlighted text.</td></tr>
+<tr><td><code>::marker</code></td><td>List bullets / numbers.</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>.price::before { content: "₹"; }                  /* decoration injected before the text */
+.tip::after    { content: attr(data-label); }     /* pull data from an HTML attribute */
+p::first-letter{ font-size: 2.4em; float: left; } /* drop cap */
+::selection    { background: #ffe14d; }
+li::marker     { color: crimson; }</code></pre></div>
+<p class="warn">Without <code>content</code>, <code>::before</code> / <code>::after</code> don’t render at all.</p>
+<div class="added"><b class="tag">+ added</b>
+<p>Don’t put essential information in generated content — support in assistive tech varies and it can’t be selected or translated reliably. Old single-colon forms (<code>:before</code>) still work for compatibility, but write <code>::</code> so you can tell pseudo-elements from pseudo-classes.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>:</code> = state or position; <code>::</code> = a virtual piece.</li>
+<li><code>:focus-visible</code> for keyboard rings; <code>:where()</code> for zero specificity.</li>
+<li><code>::before/::after</code> need <code>content</code>.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: box model ====================== -->
+<section class="sheet" id="pg-boxmodel" data-part="Part 2 · CSS" data-label="The box model" data-toc="The box model">
+
+<h2><span class="t">Content, padding, border, margin</span><span class="src">CSS README §5 · Step 8</span></h2>
+<div class="plain"><p>Every element is a framed picture on a wall. The picture is the content; the matting round it is padding; the frame is the border; the empty wall between this frame and its neighbour is the margin.</p></div>
+
+<div class="sketch">
+<svg viewBox="0 0 700 270" role="img" aria-label="Box model: content inside padding inside border inside margin">
+  <defs><marker id="ah4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#c4302b" stroke-width="1.8" stroke-linecap="round"/></marker></defs>
+  <g stroke="#1d3f94" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="30" y="15" width="400" height="240" rx="6" fill="#fff4dc" stroke-dasharray="7 6"/>
+    <rect x="65" y="48" width="330" height="174" rx="4" fill="#ffd9d9"/>
+    <rect x="100" y="80" width="260" height="110" rx="4" fill="#dff0d4" stroke-dasharray="3 5"/>
+    <rect x="140" y="106" width="180" height="58" rx="4" fill="#cfe4ff"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="22" fill="#1d3f94" text-anchor="middle">
+    <text x="230" y="140">content</text><text x="230" y="68" font-size="19">border</text><text x="230" y="102" font-size="19">padding</text><text x="230" y="38" font-size="19">margin</text>
+  </g>
+  <g fill="none" stroke="#c4302b" stroke-width="2.4" stroke-linecap="round">
+    <path d="M474 40C460 34 448 32 434 36" marker-end="url(#ah4)"/><path d="M474 100C450 98 424 86 398 72" marker-end="url(#ah4)"/>
+    <path d="M474 160C440 156 400 130 364 118" marker-end="url(#ah4)"/><path d="M474 220C420 214 370 170 324 142" marker-end="url(#ah4)"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="21" fill="#c4302b">
+    <text x="484" y="46">margin: outside</text><text x="484" y="106">border: visible edge</text>
+    <text x="484" y="166">padding: inside</text><text x="484" y="226">content: text / image</text>
+  </g>
+</svg>
+</div>
+<ul class="key">
+  <li><b>content</b> — the text or image itself. <b>padding</b> — clear space <em>inside</em> the border (the background colour extends here).</li>
+  <li><b>border</b> — the visible edge. <b>margin</b> — clear space <em>outside</em> the border; transparent, so the parent’s background shows through.</li>
+</ul>
+
+<h2><span class="t"><code>box-sizing</code> — the most important reset</span><span class="src">CSS README §5 · Step 8</span></h2>
+<div class="plain"><p>Imagine ordering a 200 cm wardrobe and being told “200 cm of wood, plus the doors and handles on top”. That’s <code>content-box</code>. <code>border-box</code> is the sane promise: the finished wardrobe is 200 cm, doors included.</p></div>
+<div class="code" data-t="css"><pre><code>.box { width: 200px; padding: 20px; border: 2px solid; }
+/* content-box (default): 200 + 20+20 + 2+2 = 244px wide  &lt;-- the classic layout bug */
+
+*, *::before, *::after { box-sizing: border-box; }   /* universal modern reset */
+/* now width: 200px means the whole box is 200px */</code></pre></div>
+<p class="warn">With the default <code>content-box</code>, “two 50% columns with padding” overflow their row. Reset once, globally.</p>
+
+<h2><span class="t">Shorthand &amp; margin collapsing</span><span class="src">CSS README §5 · Step 9</span></h2>
+<div class="plain"><p>Two neighbouring paragraphs each “want” breathing room. Instead of stacking both gaps, the browser lets them share, using the bigger one. It’s like two people each wanting an arm’s length of personal space: one arm’s length between them satisfies both.</p></div>
+<div class="code" data-t="css"><pre><code>margin: 10px;                  /* all four sides */
+margin: 10px 20px;             /* vertical | horizontal */
+margin: 10px 20px 30px;        /* top | horizontal | bottom */
+margin: 10px 20px 30px 40px;   /* top | right | bottom | left — clockwise */
+
+/* p { margin-bottom: 30px }  then  p + p { margin-top: 20px }  =>  gap = 30px, not 50px */</code></pre></div>
+<ul class="key">
+  <li><mark class="y">Vertical margins between adjacent block siblings collapse</mark> — the gap is the <em>larger</em>, not the sum. It also happens between a parent and its first/last child, <em>unless</em> something separates them: a border, padding, <code>overflow: hidden/auto</code>, <code>display: flex/grid</code> or <code>display: flow-root</code>.</li>
+  <li>It does <mark class="p">not</mark> happen on flex/grid items, floats or positioned elements — one reason flex and grid feel saner. <b>Negative margins</b> are legal and pull elements together (“bleed” overlaps).</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Centre a block horizontally:</b> give it a width and <code>margin-inline: auto</code> (or <code>margin: 0 auto</code>).</li>
+  <li><b>Percent padding/margin</b> are relative to the parent’s <em>width</em>, even for the vertical sides.</li>
+  <li><code>gap</code> (flex/grid) replaces most margin hacks between siblings, and <code>outline</code> never adds to the box size.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Four layers: content → padding → border → margin.</li>
+<li>Start every project with <code>box-sizing: border-box</code>.</li>
+<li>Vertical margins collapse (bigger wins); flex/grid items don’t.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: visual ====================== -->
+<section class="sheet" id="pg-visual" data-part="Part 2 · CSS" data-label="Colour · backgrounds · borders · shadows" data-toc="Colour · backgrounds · borders · shadows">
+
+<h2><span class="t">Colours</span><span class="src">CSS README §6 · Step 10</span></h2>
+<div class="plain"><p>Colour formats are different ways to describe the same paint. Hex is a catalogue code, <code>rgb</code> is mixing three lights, and <code>hsl</code> is a dial — turn hue, saturation or lightness separately, which makes tweaking easy.</p></div>
+<div class="tw"><table>
+<tr><th>Format</th><th>Looks like</th><th>When</th></tr>
+<tr><td>Named</td><td><code>red</code>, <code>tomato</code></td><td>Quick demos.</td></tr>
+<tr><td>Hex</td><td><code>#ff5733</code>, <code>#f53</code>, <code>#ff573380</code> (alpha)</td><td>Most common.</td></tr>
+<tr><td><code>rgb()</code></td><td><code>rgb(255 87 51)</code>, <code>rgb(0 0 0 / 0.5)</code></td><td>Modern syntax — no commas.</td></tr>
+<tr><td><code>hsl()</code></td><td><code>hsl(12 100% 60%)</code></td><td>Best for <em>tweaking</em> hue / saturation / lightness.</td></tr>
+<tr><td><code>oklch()</code></td><td><code>oklch(0.6 0.2 30)</code></td><td>Perceptually uniform: equal numeric jumps look like equal visual jumps.</td></tr>
+</table></div>
+<ul class="key">
+  <li><b>Magic values:</b> <code>transparent</code>; <mark class="y">currentColor</mark> (the element’s own <code>color</code> — borders, SVG fills and shadows follow the text colour automatically); <code>inherit</code>.</li>
+</ul>
+<div class="code" data-t="css"><pre><code>.btn { color: #1d3f94; border: 2px solid currentColor; }   /* border tracks the text colour */
+.overlay { background: rgb(0 0 0 / 0.5); }                 /* 50% black */</code></pre></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>Calling <code>oklch()</code> “the 2024+ standard” is an opinion, not a fact. It is a modern, well-supported option, but hex/<code>hsl()</code> remain perfectly standard. Check browser support for your audience.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p>Colour alone never carries meaning (red/green errors fail for colour-blind users); pair it with an icon or text, and check contrast (4.5:1 for body text). <code>color-mix()</code> blends two colours in CSS — I believe it is widely supported now, but verify.</p></div>
+
+<h2><span class="t">Backgrounds &amp; gradients</span><span class="src">CSS README §6 · Step 11</span></h2>
+<div class="plain"><p>A background is a wallpaper stack: bottom layer a colour, then images or gradients on top, each with its own position, size and tiling. The first one you list sits <em>on top</em>.</p></div>
+<div class="code" data-t="css"><pre><code>background: url("hero.jpg") center / cover no-repeat fixed;
+/*          image          position size  repeat   attachment */
+
+background:                                       /* layered: first listed = on top */
+  linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)),   /* dark overlay */
+  url("photo.jpg") center/cover no-repeat;
+
+linear-gradient(45deg, red, blue)                    /* angle, then colour stops */
+radial-gradient(circle at top right, #fff, #333)
+conic-gradient(from 0deg, red, blue, red)            /* pie charts, colour wheels */
+repeating-linear-gradient(45deg, #eee 0 10px, #fff 10px 20px)   /* stripes */</code></pre></div>
+<ul class="key">
+  <li>Sub-properties: <code>background-color</code>, <code>-image</code>, <code>-size</code> (<code>cover</code> fills and may crop, <code>contain</code> fits and may letterbox), <code>-position</code>, <code>-repeat</code>, <code>-attachment</code> (<code>fixed</code> = parallax), <code>-clip</code> (<code>text</code> = gradient text), <code>-origin</code>.</li>
+  <li>Gradients are <mark class="y">images</mark> — they live in <code>background-image</code>.</li>
+</ul>
+
+<h2><span class="t">Borders, radius &amp; outline</span><span class="src">CSS README §6 · Step 12</span></h2>
+<div class="plain"><p>A border is the frame; <code>outline</code> is a highlighter line drawn <em>round</em> the frame that takes up no room. That’s why outline is the focus ring: it can appear and disappear without nudging the layout.</p></div>
+<div class="tw"><table>
+<tr><th>Write</th><th>Result</th></tr>
+<tr><td><code>border: 1px solid #ccc</code></td><td>width style colour; per side <code>border-top</code> etc. Styles: solid, dotted, dashed, double, groove, ridge, inset, outset.</td></tr>
+<tr><td><code>border-radius: 8px</code></td><td>All four corners rounded.</td></tr>
+<tr><td><code>border-radius: 999px</code></td><td>Pill (wider than tall).</td></tr>
+<tr><td><code>border-radius: 50%</code></td><td>Circle (on a square).</td></tr>
+<tr><td><code>border-radius: 30px / 60px</code></td><td>Elliptical (horizontal / vertical radius). Per corner: TL, TR, BR, BL.</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>button:focus-visible { outline: 3px solid #1d3f94; outline-offset: 3px; }  /* accessible focus ring */</code></pre></div>
+<p class="warn">Never <code>outline: none</code> without a replacement — you’re switching off keyboard focus.</p>
+
+<h2><span class="t">Shadows</span><span class="src">CSS README §6 · Step 13</span></h2>
+<div class="plain"><p>Real objects cast several soft shadows (one close and sharp, one far and faint), not a single hard black blob. Stack two or three gentle shadows and the card seems to float.</p></div>
+<div class="code" data-t="css"><pre><code>box-shadow: 0 1px 3px rgba(0,0,0,.1);          /* x  y  blur  colour */
+box-shadow: 0 0 0 3px #6366f1 inset;           /* x y blur spread colour inset */
+
+box-shadow:                                    /* modern: stacked soft shadows */
+  0 1px 3px rgba(0,0,0,.05),
+  0 8px 24px rgba(0,0,0,.10);</code></pre></div>
+<ul class="key">
+  <li><code>inset</code> paints the shadow inside; <code>spread</code> (the 4th length) grows it without blur — perfect for ring outlines. <code>text-shadow</code> uses the same recipe without spread or inset.</li>
+</ul>
+<p class="warn">Shadows are expensive to animate — prefer <code>transform</code> and <code>opacity</code>.</p>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>currentColor</code> keeps borders and icons in sync with text.</li>
+<li>First-listed background is on top; gradients are images.</li>
+<li>Replace — never remove — the focus outline.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: typography ====================== -->
+<section class="sheet" id="pg-type" data-part="Part 2 · CSS" data-label="Typography" data-toc="Typography">
+
+<h2><span class="t">Font stacks &amp; web fonts</span><span class="src">CSS README §7 · Step 14</span></h2>
+<div class="plain"><p>A font stack is a list of outfits in priority order: “wear the fancy dress if it’s in the wardrobe, otherwise the jacket, otherwise anything formal”. It guarantees the page is still readable if your custom font never arrives.</p></div>
+<div class="code" data-t="css + html"><pre><code>font-family: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;   /* ends with a generic */
+
+font: italic bold 1rem / 1.5 'Inter', sans-serif;
+/*    style  weight size  line-height family */
+
+&lt;link href="https://fonts.googleapis.com/css2?family=Inter&amp;display=swap" rel="stylesheet"&gt;</code></pre></div>
+<ul class="key">
+  <li>Generic families: <code>serif</code>, <code>sans-serif</code>, <code>monospace</code>, <code>cursive</code>, <code>system-ui</code> (the OS’s UI font — fast, no download).</li>
+  <li>Web fonts: a <code>&lt;link&gt;</code> to Google Fonts (easy, third-party) or self-hosted <code>@font-face</code> (more control, no third-party request).</li>
+  <li><mark class="y">font-display: swap</mark> (or <code>&amp;display=swap</code> in Google URLs) shows the fallback immediately and swaps when the custom font loads — avoiding invisible text (FOIT).</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<div class="code" data-t="css — self-hosting"><pre><code>@font-face {
+  font-family: "MyFont";
+  src: url("/fonts/myfont.woff2") format("woff2");   /* woff2 = smallest, best supported */
+  font-display: swap;
+}</code></pre></div>
+<p>Load only the weights you use — every extra weight is another download. Size text in <code>rem</code> so users’ browser font-size settings still work.</p></div>
+
+<h2><span class="t">Text properties</span><span class="src">CSS README §7 · Step 15</span></h2>
+<div class="plain"><p>Think of text styling as the settings in a word processor: alignment, spacing between letters, between lines, how long words may break. Good line height and line length matter more than which font you pick.</p></div>
+<div class="tw"><table>
+<tr><th>Property</th><th>What it controls</th></tr>
+<tr><td><code>color</code></td><td>Foreground (text) colour</td></tr>
+<tr><td><code>text-align</code></td><td><code>left</code> <code>right</code> <code>center</code> <code>justify</code> <code>start</code> <code>end</code></td></tr>
+<tr><td><code>text-decoration</code></td><td><code>underline</code>, <code>line-through</code>, plus <code>-style</code> <code>-color</code> <code>-thickness</code></td></tr>
+<tr><td><code>text-transform</code></td><td><code>uppercase</code> <code>lowercase</code> <code>capitalize</code></td></tr>
+<tr><td><code>letter-spacing</code></td><td>Tracking — space between letters</td></tr>
+<tr><td><code>word-spacing</code></td><td>Space between words</td></tr>
+<tr><td><code>line-height</code></td><td>Leading. <b>Unit-less is best</b> (<code>1.5</code> scales with font-size)</td></tr>
+<tr><td><code>text-indent</code></td><td>First-line indent</td></tr>
+<tr><td><code>white-space</code></td><td><code>normal</code> <code>nowrap</code> <code>pre</code> <code>pre-wrap</code> <code>pre-line</code></td></tr>
+<tr><td><code>word-break</code>, <code>overflow-wrap</code></td><td>How long words break</td></tr>
+<tr><td><code>text-overflow: ellipsis</code></td><td>“…” when text clips</td></tr>
+<tr><td><code>font-variant-numeric: tabular-nums</code></td><td>Equal-width digits — tables and prices</td></tr>
+<tr><td><code>writing-mode</code></td><td><code>vertical-rl</code>, <code>vertical-lr</code> (vertical layouts)</td></tr>
+</table></div>
+
+<h2><span class="t">Truncation tricks</span><span class="src">CSS README §7 · Step 15</span></h2>
+<div class="code" data-t="css"><pre><code>/* one line, then "…" */
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+
+/* three lines, then "…"  (still vendor-prefixed) */
+display: -webkit-box;
+-webkit-line-clamp: 3;
+-webkit-box-orient: vertical;
+overflow: hidden;</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Readable lines:</b> <code>max-width: 65ch</code> keeps lines around 65 characters. Body text <code>line-height</code> of about 1.5 reads comfortably.</li>
+  <li>An unprefixed <code>line-clamp</code> and <code>text-wrap: balance</code> (balanced headlines) exist or are arriving; I’m not certain about their support in every browser, so test before using.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Font stack always ends with a generic family.</li>
+<li><code>font-display: swap</code> avoids invisible text.</li>
+<li>Unit-less <code>line-height</code>; the one-line truncation trio.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: display + hiding ====================== -->
+<section class="sheet" id="pg-display" data-part="Part 2 · CSS" data-label="Layout fundamentals I · display and hiding" data-toc="Layout I · display and hiding">
+
+<h2><span class="t"><code>display</code></span><span class="src">CSS README §8 · Step 16</span></h2>
+<div class="plain"><p><code>display</code> decides how an element behaves in the queue: does it take its own row (block), sit in the line like a word (inline), or sit in the line but still hold a size (inline-block)? Before flex or grid, you must understand this.</p></div>
+<div class="tw"><table>
+<tr><th>Value</th><th>Behaviour</th></tr>
+<tr><td><code>block</code></td><td>New line, fills the container width.</td></tr>
+<tr><td><code>inline</code></td><td>Flows with text; <code>width</code>/<code>height</code>/vertical margin are <b>ignored</b>.</td></tr>
+<tr><td><code>inline-block</code></td><td>Inline flow, but respects width/height/margins.</td></tr>
+<tr><td><code>none</code></td><td>Removed from rendering <em>and</em> the accessibility tree.</td></tr>
+<tr><td><code>contents</code></td><td>Removes the element’s own box but keeps its children in the flow (a flex/grid trick).</td></tr>
+<tr><td><code>flow-root</code></td><td>Like block, but makes a new block formatting context — <b>stops margin collapse</b> and <b>contains floats</b>.</td></tr>
+<tr><td><code>flex</code>, <code>grid</code></td><td>See the next pages.</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>span.badge { display: inline-block; padding: 4px 10px; width: 6rem; }  /* now width/padding behave */
+a.cta      { display: block; }                                         /* whole row is clickable */
+.clearfix-fix { display: flow-root; }                                   /* contain floated children */</code></pre></div>
+<p class="warn">Setting <code>width</code> or <code>height</code> on a plain inline element does nothing.</p>
+<div class="added"><b class="tag">+ added</b>
+<p><code>display: contents</code> has had accessibility bugs in some browsers where it strips an element’s semantics (buttons, lists, tables). I can’t say whether they are all fixed, so test with a screen reader before using it on semantic elements.</p></div>
+
+<h2><span class="t">Hiding — three subtly different ways</span><span class="src">CSS README §8 · Step 16</span></h2>
+<div class="plain"><p>Hiding is like clearing a restaurant table: you can remove the table altogether (<code>display: none</code>), leave an empty chair-shaped gap (<code>visibility: hidden</code>), or make a ghost that’s still there and still bumps into people (<code>opacity: 0</code>).</p></div>
+<div class="tw"><table>
+<tr><th>Method</th><th>Visible?</th><th>Takes space?</th><th>Clickable?</th><th>In assistive tech?</th></tr>
+<tr><td><code>display: none</code></td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td><code>visibility: hidden</code></td><td>no</td><td><b>yes</b></td><td>no</td><td>no</td></tr>
+<tr><td><code>opacity: 0</code></td><td>no</td><td>yes</td><td><b>yes</b> (add <code>pointer-events: none</code> to fix)</td><td>yes</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>.gone     { display: none; }                /* removed completely */
+.reserved { visibility: hidden; }           /* invisible but keeps its space */
+.fade-out { opacity: 0; pointer-events: none; }   /* animatable; ghost clicks fixed */</code></pre></div>
+<ul class="key">
+  <li>Pick by need: take it out of layout (<code>none</code>), keep the gap (<code>visibility</code>), or animate a fade (<code>opacity</code>).</li>
+</ul>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>block = new line; inline ignores width/height; inline-block gets both.</li>
+<li><code>flow-root</code> = stop margin collapse and contain floats.</li>
+<li><code>none</code> removes; <code>visibility</code> keeps space; <code>opacity</code> stays clickable.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: position ====================== -->
+<section class="sheet" id="pg-position" data-part="Part 2 · CSS" data-label="Layout fundamentals II · position · z-index · overflow · float" data-toc="Layout II · position · z-index · overflow · float">
+
+<h2><span class="t"><code>position</code></span><span class="src">CSS README §8 · Step 17</span></h2>
+<div class="plain"><p>Normal layout is people standing in a queue. <code>relative</code> lets one person shuffle sideways while keeping their place. <code>absolute</code> lifts someone out of the queue to stand at an exact spot measured from the nearest “anchor” relative to them. <code>fixed</code> sticks a notice to the window; <code>sticky</code> is a notice that rides along until it reaches the top, then stays there.</p></div>
+<div class="tw"><table>
+<tr><th>Value</th><th>Meaning</th></tr>
+<tr><td><code>static</code></td><td>Default — in flow, can’t be offset.</td></tr>
+<tr><td><code>relative</code></td><td>In flow, but <code>top/right/bottom/left</code> shift it visually. Crucially becomes a <b>containing block</b> for <code>absolute</code> descendants.</td></tr>
+<tr><td><code>absolute</code></td><td>Removed from flow. Anchored to the nearest <b>positioned</b> ancestor (or the viewport if none).</td></tr>
+<tr><td><code>fixed</code></td><td>Removed from flow. Pinned to the <b>viewport</b>.</td></tr>
+<tr><td><code>sticky</code></td><td>In flow, acts like <code>relative</code> until a scroll threshold is crossed, then “sticks” like <code>fixed</code>.</td></tr>
+</table></div>
+<div class="code" data-t="css"><pre><code>.card  { position: relative; }                       /* the anchor */
+.badge { position: absolute; top: 8px; right: 8px; } /* measured from .card */
+.bar   { position: sticky; top: 0; }                 /* sticks at the top while scrolling */
+.fab   { position: fixed; bottom: 16px; right: 16px; }  /* floating button */</code></pre></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>Two lines are loose. (1) <code>fixed</code> “scrolls with the page only if its containing block is transformed” — the accurate version: an ancestor with <code>transform</code> (or <code>filter</code>) becomes the containing block, so the “fixed” element is positioned against <em>that ancestor</em> rather than the viewport. (2) <code>sticky</code> “needs a scrollable ancestor” — it needs a threshold such as <code>top: 0</code> and sticks within its parent while scrolling the nearest scrolling ancestor (the page by default). An ancestor with <code>overflow: hidden</code> is the usual reason it fails.</p></div>
+
+<h2><span class="t"><code>z-index</code> &amp; stacking contexts</span><span class="src">CSS README §8 · Step 17</span></h2>
+<div class="plain"><p>Stacking contexts are like folders on a desk. A sheet with z-index 9999 inside folder “1” can never rise above a sheet in folder “2” — the folders are compared first, then the sheets inside each folder.</p></div>
+<ul class="key">
+  <li><code>z-index</code> only works on <mark class="y">positioned</mark> elements (or flex/grid items).</li>
+  <li>The classic gotcha: <code>z-index: 9999</code> inside a parent with <code>z-index: 1</code> will <mark class="p">never</mark> beat a sibling of that parent with <code>z-index: 2</code>. z-index is compared only inside the same stacking context.</li>
+  <li>New stacking contexts come from: <code>position</code> relative/absolute/fixed/sticky + a non-<code>auto</code> z-index; <code>opacity &lt; 1</code>; <code>transform</code>, <code>filter</code>, <code>will-change</code>; <code>isolation: isolate</code>.</li>
+</ul>
+<div class="code" data-t="css"><pre><code>.modal-wrap { isolation: isolate; }    /* a tidy new stacking context: z-index battles stay inside */</code></pre></div>
+
+<h2><span class="t"><code>overflow</code> &amp; float</span><span class="src">CSS README §8 · Step 18</span></h2>
+<div class="tw"><table>
+<tr><th>overflow</th><th>Behaviour</th></tr>
+<tr><td><code>visible</code></td><td>Default — content spills past the box.</td></tr>
+<tr><td><code>hidden</code></td><td>Clip; no scrollbar.</td></tr>
+<tr><td><code>scroll</code></td><td>Scrollbars always.</td></tr>
+<tr><td><code>auto</code></td><td>Scrollbars only when needed (preferred).</td></tr>
+<tr><td><code>clip</code></td><td>Like hidden but lighter (no scroll context).</td></tr>
+</table></div>
+<ul class="key">
+  <li>Per axis: <code>overflow-x</code>, <code>overflow-y</code>. A non-visible overflow also <mark class="y">creates a new block formatting context</mark>: it stops margin collapse and contains floats.</li>
+  <li><code>float: left/right</code> pulls an element out of flow so text wraps around it. Once the layout tool, now mainly for text wrapping round figures; the old clearfix is replaced by <code>display: flow-root</code>.</li>
+</ul>
+<div class="code" data-t="css"><pre><code>figure.pull { float: left; margin: 0 1rem 1rem 0; }   /* text wraps around the figure */
+.row        { display: flow-root; }                      /* contain the float */</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<p>Shorthand <code>inset: 0</code> sets top/right/bottom/left together (handy for overlays). When something refuses to stay on top, DevTools’ layers panel helps visualise stacking; the cure is usually <code>isolation: isolate</code> on the right parent, not a bigger number.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>relative</code> parent + <code>absolute</code> child is the anchoring pattern.</li>
+<li>z-index only compares inside the same stacking context.</li>
+<li>Float is for text wrap now; use flex/grid for layout.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: flexbox ====================== -->
+<section class="sheet" id="pg-flexbox" data-part="Part 2 · CSS" data-label="Flexbox — one-dimensional layout" data-toc="Flexbox — one-dimensional layout">
+
+<h2><span class="t">One axis at a time</span><span class="src">CSS README §9 · Step 19</span></h2>
+<div class="plain"><p>Flexbox is like a shelf of books where you decide how they spread along the shelf — squeezed to the left, centred, or evenly spaced — and how they line up vertically (tops aligned or centred). It handles <em>one line</em> at a time: a row of nav links, a column of sidebar cards.</p></div>
+
+<div class="sketch">
+<svg viewBox="0 0 660 230" role="img" aria-label="Flexbox with flex-direction row: the main axis runs left to right, the cross axis runs top to bottom">
+  <defs><marker id="ah5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#c4302b" stroke-width="1.8" stroke-linecap="round"/></marker></defs>
+  <rect x="60" y="20" width="540" height="140" rx="8" fill="#fffef6" stroke="#1d3f94" stroke-width="2.4" stroke-dasharray="7 6"/>
+  <g fill="#cfe4ff" stroke="#1d3f94" stroke-width="2.4"><rect x="85" y="45" width="110" height="60" rx="6"/><rect x="225" y="45" width="150" height="90" rx="6"/><rect x="405" y="45" width="120" height="50" rx="6"/></g>
+  <g font-family="Caveat,cursive" font-size="24" fill="#1d3f94" text-anchor="middle"><text x="140" y="82">item 1</text><text x="300" y="95">item 2</text><text x="465" y="76">item 3</text></g>
+  <g fill="none" stroke="#c4302b" stroke-width="2.6" stroke-linecap="round">
+    <path d="M70 190C250 205 420 175 596 192" marker-end="url(#ah5)"/><path d="M34 30C22 70 46 110 34 152" marker-end="url(#ah5)"/>
+  </g>
+  <g font-family="Caveat,cursive" font-size="22" fill="#c4302b"><text x="230" y="222">main axis (flex-direction: row) — justify-content</text><text x="64" y="14" font-size="20">cross axis — align-items</text></g>
+</svg>
+</div>
+<div class="code" data-t="css"><pre><code>.row { display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
+/* flex-direction: column swaps the axes: then justify-content works vertically */</code></pre></div>
+<p class="warn">Flip <code>flex-direction</code> to <code>column</code> and the axes swap — <code>justify-content</code> now acts <em>vertically</em>.</p>
+
+<h2><span class="t">Container properties (set on the parent)</span><span class="src">CSS README §9 · Step 19</span></h2>
+<div class="tw"><table>
+<tr><th>Property</th><th>What it does</th></tr>
+<tr><td><code>display: flex</code> (or <code>inline-flex</code>)</td><td>Activates flex layout</td></tr>
+<tr><td><code>flex-direction</code></td><td><code>row</code> (default), <code>row-reverse</code>, <code>column</code>, <code>column-reverse</code> — sets the main axis</td></tr>
+<tr><td><code>flex-wrap</code></td><td><code>nowrap</code> (default), <code>wrap</code>, <code>wrap-reverse</code></td></tr>
+<tr><td><code>gap</code></td><td>Space between items (<b>no margin hacks</b>)</td></tr>
+<tr><td><code>justify-content</code></td><td>Along the <b>main axis</b>: <code>flex-start</code> <code>flex-end</code> <code>center</code> <code>space-between</code> <code>space-around</code> <code>space-evenly</code></td></tr>
+<tr><td><code>align-items</code></td><td>Along the <b>cross axis</b> (single line): <code>stretch</code> <code>flex-start</code> <code>flex-end</code> <code>center</code> <code>baseline</code></td></tr>
+<tr><td><code>align-content</code></td><td>Alignment of <b>wrapped lines</b> along the cross axis</td></tr>
+</table></div>
+
+<h2><span class="t">Item properties (set on the children)</span><span class="src">CSS README §9 · Step 20</span></h2>
+<div class="tw"><table>
+<tr><th>Property</th><th>What it does</th></tr>
+<tr><td><code>flex-grow</code></td><td>Share of <em>leftover</em> space (<code>0</code> none, <code>1</code> equal share, <code>2</code> double)</td></tr>
+<tr><td><code>flex-shrink</code></td><td>How much to shrink when space is tight (<code>1</code> default, <code>0</code> rigid)</td></tr>
+<tr><td><code>flex-basis</code></td><td>Starting size before grow/shrink (<code>auto</code>, <code>0</code>, <code>200px</code>)</td></tr>
+<tr><td><code>flex</code></td><td>Shorthand: <code>flex: 1</code> = <code>1 1 0</code> (fill equally), <code>flex: auto</code> = <code>1 1 auto</code>, <code>flex: none</code> = <code>0 0 auto</code></td></tr>
+<tr><td><code>align-self</code></td><td>Override the container’s <code>align-items</code> for this one item</td></tr>
+<tr><td><code>order</code></td><td>Visual reorder. <b>The DOM is unchanged</b> — beware breaking keyboard tab order</td></tr>
+</table></div>
+
+<h2><span class="t">Iconic patterns</span><span class="src">CSS README §9 · Step 21</span></h2>
+<div class="code" data-t="css"><pre><code>/* Centre anything */
+.box { display: flex; justify-content: center; align-items: center; }
+
+/* Push the last item right */
+.nav { display: flex; gap: 1rem; }
+.nav .login { margin-left: auto; }
+
+/* Sticky footer */
+body { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }                    /* takes leftover height; footer sits at the bottom */
+
+/* Sidebar + main */
+.shell   { display: flex; }
+.sidebar { flex: 0 0 240px; }        /* fixed width */
+.content { flex: 1; }                /* fills the rest */</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Text overflowing a flex item?</b> Flex items have <code>min-width: auto</code>, so long text won’t shrink. Set <code>min-width: 0</code> on the item to let it shrink and truncate.</li>
+  <li><b>Flex or grid?</b> One direction, content decides the size → flex. Rows <em>and</em> columns, layout decides the size → grid. They combine well: grid for the page, flex inside the cards.</li>
+  <li><code>margin: auto</code> on a flex item absorbs spare space — the “push right” trick above.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>justify-content</code> = main axis; <code>align-items</code> = cross axis.</li>
+<li><code>flex: 1</code> fills equally; <code>gap</code> beats margin hacks.</li>
+<li><code>order</code> changes looks, not tab order.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: grid ====================== -->
+<section class="sheet" id="pg-grid" data-part="Part 2 · CSS" data-label="Grid — two-dimensional layout" data-toc="Grid — two-dimensional layout">
+
+<h2><span class="t">Defining tracks</span><span class="src">CSS README §10 · Step 22</span></h2>
+<div class="plain"><p>Grid is a sheet of graph paper you draw yourself: you decide how many columns and rows, then drop items into the squares — or let them flow in. Flex lays things out along a line; grid lays them out across a page.</p></div>
+
+<div class="sketch">
+<svg viewBox="0 0 660 215" role="img" aria-label="A three-column grid with numbered grid lines 1 to 4; an item spanning from line 1 to line 3">
+  <defs><marker id="ah6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#c4302b" stroke-width="1.8" stroke-linecap="round"/></marker></defs>
+  <g fill="#fffef6" stroke="#1d3f94" stroke-width="2.4"><rect x="60" y="40" width="540" height="120" rx="4" stroke-dasharray="7 6"/></g>
+  <g stroke="#1d3f94" stroke-width="1.6" stroke-dasharray="4 5"><path d="M240 40V160M420 40V160M60 100H600"/></g>
+  <g fill="#cfe4ff" stroke="#1d3f94" stroke-width="2.4"><rect x="70" y="50" width="360" height="40" rx="6"/><rect x="430" y="110" width="160" height="40" rx="6" fill="#dff0d4"/></g>
+  <g font-family="Caveat,cursive" font-size="22" fill="#1d3f94" text-anchor="middle"><text x="250" y="78">.hero  grid-column: 1 / 3</text><text x="510" y="138">1fr cell</text></g>
+  <g font-family="Caveat,cursive" font-size="24" fill="#c4302b" text-anchor="middle"><text x="60" y="28">line 1</text><text x="240" y="28">line 2</text><text x="420" y="28">line 3</text><text x="600" y="28">line 4</text></g>
+  <path d="M120 195C250 210 330 190 420 172" fill="none" stroke="#c4302b" stroke-width="2.4" stroke-linecap="round" marker-end="url(#ah6)"/>
+  <text x="70" y="212" font-family="Caveat,cursive" font-size="20" fill="#c4302b">3 columns = 4 vertical lines (count lines, not boxes)</text>
+</svg>
+</div>
+<div class="code" data-t="css"><pre><code>.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;     /* three columns, in ratios */
+  grid-template-rows: auto 1fr auto;      /* header / body / footer */
+  gap: 1rem;
+}</code></pre></div>
+<ul class="key">
+  <li><mark class="y">fr</mark> = a fraction of the <em>leftover</em> space. <code>repeat(3, 1fr)</code> = <code>1fr 1fr 1fr</code>. <code>minmax(200px, 1fr)</code> = at least 200px, grow to fill. <code>auto</code> = size to content.</li>
+</ul>
+
+<h2><span class="t">The responsive one-liner</span><span class="src">CSS README §10 · Steps 22, 24</span></h2>
+<div class="plain"><p>“Fit as many 220px-wide cards as the screen allows, and share the leftover space.” That single line replaces a whole pile of media queries.</p></div>
+<div class="code" data-t="css"><pre><code>grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));</code></pre></div>
+<ul class="key">
+  <li><code>auto-fit</code> <mark class="y">collapses</mark> empty columns (items stretch); <code>auto-fill</code> <mark class="y">keeps</mark> them (empty slots stay).</li>
+</ul>
+
+<h2><span class="t">Placing items</span><span class="src">CSS README §10 · Step 23</span></h2>
+<div class="plain"><p>You can place items by <em>line numbers</em> (“from line 1 to line 3”) or by <em>name</em> (“you live in the header”). Named areas read like a floor plan.</p></div>
+<div class="code" data-t="css"><pre><code>.hero { grid-column: 1 / 3; }     /* lines 1 -&gt; 3 = spans two columns */
+.full { grid-column: 1 / -1; }    /* line 1 to the last line = full width */
+.tall { grid-row: span 2; }       /* span two tracks from the auto position */
+
+.layout {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "side   main"
+    "foot   foot";
+  grid-template-columns: 200px 1fr;
+}
+.layout &gt; .h { grid-area: header; }
+.layout &gt; .s { grid-area: side; }
+.layout &gt; .m { grid-area: main; }
+.layout &gt; .f { grid-area: foot; }</code></pre></div>
+
+<h2><span class="t">Alignment &amp; patterns</span><span class="src">CSS README §10 · Steps 23–24</span></h2>
+<div class="tw"><table>
+<tr><th>Move the <em>items</em> in their cells</th><th>Move the <em>whole grid</em> in its container</th></tr>
+<tr><td><code>justify-items</code>, <code>align-items</code></td><td><code>justify-content</code>, <code>align-content</code></td></tr>
+<tr><td><code>place-items</code> (shorthand)</td><td><code>place-content</code> (shorthand)</td></tr>
+</table></div>
+<ul class="key">
+  <li>Per item: <code>justify-self</code>, <code>align-self</code>, <code>place-self</code>.</li>
+  <li><b>RAM grid</b> — <code>repeat(auto-fit, minmax(220px, 1fr))</code>: instant responsive. <b>Holy Grail</b> — header / sidebar / main / footer via named areas, one column on mobile.</li>
+  <li><b>Magazine</b> — <code>grid-auto-flow: dense</code> lets later items fill earlier holes. <b>Overlap</b> — put several items in one cell (<code>grid-area: 1 / 1</code>) and stack with <code>z-index</code>.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Implicit grid:</b> items beyond your defined rows create new ones automatically; size them with <code>grid-auto-rows</code> (for example <code>minmax(120px, auto)</code>).</li>
+  <li><b>Subgrid</b> lets a nested grid reuse its parent’s tracks so card contents line up across cards. I believe it is supported in current major browsers, but verify before depending on it.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Grid = rows <em>and</em> columns; <code>fr</code> shares leftover space.</li>
+<li><code>repeat(auto-fit, minmax(220px, 1fr))</code> = responsive cards.</li>
+<li>Count grid <em>lines</em>, not boxes; named areas read like a floor plan.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: responsive ====================== -->
+<section class="sheet" id="pg-responsive" data-part="Part 2 · CSS" data-label="Responsive design · units · queries" data-toc="Responsive design · units · queries">
+
+<h2><span class="t">Units</span><span class="src">CSS README §11 · Step 25</span></h2>
+<div class="plain"><p>Units are different kinds of ruler. <code>px</code> is a fixed ruler. <code>rem</code> is “a multiple of the page’s base text size”, so everything scales if a reader enlarges their text. <code>vw</code>/<code>vh</code> are “a slice of the window”. <code>%</code> is “a slice of my parent”.</p></div>
+<div class="tw"><table>
+<tr><th>Unit</th><th>Relative to</th><th>Notes</th></tr>
+<tr><td><code>px</code></td><td>Absolute</td><td>Pixel — device-independent since high-DPI screens.</td></tr>
+<tr><td><code>em</code></td><td>Parent’s font-size</td><td>Compounds when nested.</td></tr>
+<tr><td><code>rem</code></td><td>Root (<code>&lt;html&gt;</code>) font-size</td><td>Predictable — the typography workhorse.</td></tr>
+<tr><td><code>ch</code></td><td>Width of the “0” character</td><td><code>max-width: 65ch</code> for readable line length.</td></tr>
+<tr><td><code>lh</code></td><td>Line-height of the element</td><td>Spacing that tracks typography.</td></tr>
+<tr><td><code>%</code></td><td>Parent’s <em>width</em> (even for vertical padding/margin!)</td><td>Surprising and important.</td></tr>
+<tr><td><code>vw</code>, <code>vh</code></td><td>Viewport width / height</td><td><code>100vw</code>/<code>100vh</code> = full screen.</td></tr>
+<tr><td><code>vmin</code>, <code>vmax</code></td><td>The smaller / larger of vw and vh</td><td>Square hero shapes.</td></tr>
+<tr><td><code>dvh</code>, <code>svh</code>, <code>lvh</code></td><td>Dynamic / small / large viewport height</td><td>Account for mobile browser bars showing and hiding.</td></tr>
+<tr><td><code>fr</code></td><td>Grid leftover space</td><td>Grid only.</td></tr>
+</table></div>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>“<code>em</code> — Parent’s font-size” is true for the <code>font-size</code> property only. For every other property (padding, margin, width…), <code>em</code> is relative to the element’s <em>own</em> font-size. That’s why <code>padding: 1em</code> grows when you enlarge the element’s text.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<p><b><code>100vw</code> includes the scrollbar width</b>, so <code>width: 100vw</code> on a page with a vertical scrollbar causes a sideways scroll. Prefer <code>width: 100%</code> or <code>max-width: 100%</code>. Use <code>min-height: 100dvh</code> instead of <code>100vh</code> for full-screen sections on phones.</p></div>
+
+<h2><span class="t">Math functions</span><span class="src">CSS README §11 · Step 25</span></h2>
+<div class="plain"><p><code>clamp(min, ideal, max)</code> is a thermostat with safety limits: aim for the ideal, but never go below the floor or above the ceiling. Perfect for text that should grow with the screen but stay sensible.</p></div>
+<div class="code" data-t="css"><pre><code>width: calc(100% - 2rem);                     /* mix units */
+font-size: clamp(1rem, 2vw + 0.5rem, 2rem);   /* floor, fluid, ceiling — fluid type, no media queries */
+width: min(100%, 60ch);                        /* whichever is smaller */
+padding: max(1rem, 2vw);                       /* whichever is larger */</code></pre></div>
+
+<h2><span class="t">Media queries &amp; mobile-first</span><span class="src">CSS README §11 · Step 26</span></h2>
+<div class="plain"><p>A media query is an “if” for CSS: <em>if the screen is at least this wide, or the user prefers this, apply these rules</em>. Mobile-first means you write the phone layout as the default and add extras for bigger screens — like starting with a small tent and adding rooms.</p></div>
+<div class="code" data-t="css"><pre><code>@media (min-width: 600px) { … }
+@media (max-width: 599px) and (orientation: portrait) { … }
+@media (prefers-color-scheme: dark) { … }
+@media (prefers-reduced-motion: reduce) { … }
+@media (hover: none) { … }      /* touch-only devices */
+@media print { … }
+
+/* mobile-first: base = phone, then upgrade */
+.grid { grid-template-columns: 1fr; }
+@media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }</code></pre></div>
+<ul class="key">
+  <li>Combine conditions with <code>and</code>; OR with a comma; <code>not</code> inverts.</li>
+  <li>Why mobile-first? The base styles are simplest, additions are predictable, and CSS with no query works on every device.</li>
+</ul>
+
+<h2><span class="t">Modern responsive — fewer breakpoints</span><span class="src">CSS README §11 · Step 27</span></h2>
+<ul class="key">
+  <li><mark class="y">clamp()</mark> — fluid sizing. <mark class="y">repeat(auto-fit, minmax(…))</mark> — auto-flowing columns. <code>aspect-ratio: 16 / 9</code> — keep proportions without padding-bottom hacks.</li>
+  <li><mark class="y">Container queries</mark> respond to the <em>parent’s</em> width, not the viewport: set <code>container-type: inline-size</code> on the parent, then <code>@container card (min-width: 400px) { … }</code>. Component-level responsiveness.</li>
+  <li><code>prefers-color-scheme: dark</code> — free dark mode. <code>prefers-reduced-motion: reduce</code> — respect motion-sensitive users.</li>
+</ul>
+<div class="code" data-t="css"><pre><code>.card-wrap { container-type: inline-size; container-name: card; }
+.card { display: grid; gap: 1rem; }
+@container card (min-width: 400px) { .card { grid-template-columns: 120px 1fr; } }
+.thumb { aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }</code></pre></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Range syntax:</b> <code>@media (width &gt;= 600px)</code> is a newer, more readable form of <code>min-width</code>; I believe it is widely supported but verify for old browsers.</li>
+  <li><b>Choose breakpoints by content</b> (where your layout breaks), not by specific phone models. Test by dragging the window narrow and using DevTools’ device mode.</li>
+  <li>Responsive needs the viewport meta tag from page 2, or phones ignore your queries and show a zoomed-out page.</li>
+</ul></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>rem</code> for type, <code>%</code>/<code>fr</code> for layout, <code>clamp()</code> for fluid.</li>
+<li>Mobile-first: base styles + <code>min-width</code> upgrades.</li>
+<li>Container queries ask “how wide is my parent?”.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: animations ====================== -->
+<section class="sheet" id="pg-animations" data-part="Part 2 · CSS" data-label="Transitions · transforms · keyframes" data-toc="Transitions · transforms · keyframes">
+
+<h2><span class="t">Transitions — between two states</span><span class="src">CSS README §12 · Step 28</span></h2>
+<div class="plain"><p>A transition is a dimmer switch instead of a light switch. Rather than snapping from “off” to “on”, the browser slides smoothly between the two states over the time you choose.</p></div>
+<div class="code" data-t="css"><pre><code>.btn       { background: blue; transition: background 0.25s ease; }
+.btn:hover { background: navy; }
+/* transition: property duration timing-function delay */</code></pre></div>
+<div class="tw"><table>
+<tr><th>Timing function</th><th>Feels like</th></tr>
+<tr><td><code>ease</code></td><td>Slow-fast-slow (default).</td></tr>
+<tr><td><code>linear</code></td><td>Constant speed.</td></tr>
+<tr><td><code>ease-in</code></td><td>Slow-fast (entering).</td></tr>
+<tr><td><code>ease-out</code></td><td>Fast-slow (exiting) — <b>feels best for UI</b>.</td></tr>
+<tr><td><code>ease-in-out</code></td><td>Slow-fast-slow.</td></tr>
+<tr><td><code>cubic-bezier(.2, .8, .4, 1)</code></td><td>Custom curve.</td></tr>
+</table></div>
+<ul class="key">
+  <li>Several properties: comma-separate them, or <code>transition: all .2s ease</code> (simpler, but can over-trigger).</li>
+</ul>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>“Not animatable: <code>display</code>…” is the traditional rule but is partly outdated: newer CSS (<code>transition-behavior: allow-discrete</code> and <code>@starting-style</code>) can animate display changes. I’m not certain how widely this is supported, so verify before relying on it.</p></div>
+
+<h2><span class="t">Transforms — move, scale, rotate</span><span class="src">CSS README §12 · Step 29</span></h2>
+<div class="plain"><p>A transform moves the <em>picture</em> of an element without moving its place in the layout, like sliding a photo on a table while the frame it came from stays put. That makes it cheap — nothing else has to re-flow.</p></div>
+<div class="code" data-t="css"><pre><code>.card { transition: transform .2s; }
+.card:hover { transform: translateY(-4px) scale(1.02); }
+
+transform: translateY(-10px) rotate(15deg) scale(1.1);   /* applied right to left: scale, rotate, then translate */
+transform-origin: top left;                              /* the pivot (default 50% 50%) */</code></pre></div>
+<ul class="key">
+  <li>2D: <code>translate(x, y)</code> <code>translateX/Y</code> <code>scale(x, y)</code> <code>rotate(deg)</code> <code>skew(x, y)</code>. 3D: <code>rotateX/Y/Z</code> <code>translate3d</code> <code>scale3d</code> (needs <code>perspective</code> on the parent).</li>
+  <li>Transforms are <mark class="y">GPU-accelerated</mark> and don’t trigger layout or paint. Animating <code>width</code>, <code>height</code>, <code>top</code> or <code>left</code> <mark class="p">does</mark> trigger layout (slow). If a transform can express the change, use it.</li>
+</ul>
+
+<h2><span class="t">Keyframes — multi-stage choreography</span><span class="src">CSS README §12 · Step 30</span></h2>
+<div class="plain"><p>Keyframes are the storyboard of an animation: “at the start do this, halfway do that, at the end do this”. The browser fills in all the frames between.</p></div>
+<div class="code" data-t="css"><pre><code>@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+.dot { animation: pulse 1.2s ease-in-out infinite; }
+/* animation: name duration timing-function delay iteration-count direction fill-mode play-state */</code></pre></div>
+<ul class="key">
+  <li><code>animation-iteration-count</code>: <code>1</code>, <code>3</code>, <code>infinite</code>. <code>animation-direction</code>: <code>normal</code>, <code>reverse</code>, <code>alternate</code>, <code>alternate-reverse</code>. <code>animation-play-state</code>: <code>running</code>, <code>paused</code>.</li>
+  <li><code>animation-fill-mode</code>: <code>none</code>, <mark class="y">forwards</mark> (keep the final state — the most useful), <code>backwards</code> (apply the first frame during the delay), <code>both</code>.</li>
+</ul>
+
+<h2><span class="t">Always respect reduced motion</span><span class="src">CSS README §12</span></h2>
+<div class="code" data-t="css"><pre><code>@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}</code></pre></div>
+<p class="warn">Vestibular disorders are real — and so is the OS setting that says “I don’t want motion”.</p>
+<div class="added"><b class="tag">+ added</b>
+<div class="tw"><table>
+<tr><th>Cost</th><th>Changing these…</th><th>Verdict</th></tr>
+<tr><td>Layout (reflows neighbours)</td><td><code>width</code> <code>height</code> <code>top</code> <code>left</code> <code>margin</code></td><td>Avoid animating</td></tr>
+<tr><td>Paint (redraws pixels)</td><td><code>color</code> <code>background</code> <code>box-shadow</code></td><td>OK sparingly</td></tr>
+<tr><td>Composite only</td><td><code>transform</code> <code>opacity</code></td><td>Best choice</td></tr>
+</table></div>
+<p>Use <code>will-change</code> sparingly and only on things about to animate — adding it everywhere wastes memory.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Animate <code>transform</code> and <code>opacity</code>; <code>ease-out</code> feels best.</li>
+<li><code>animation-fill-mode: forwards</code> keeps the final frame.</li>
+<li>Always honour <code>prefers-reduced-motion</code>.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: modern CSS ====================== -->
+<section class="sheet" id="pg-modern" data-part="Part 2 · CSS" data-label="Modern CSS · variables · :has() · nesting · logical" data-toc="Modern CSS · variables · :has() · nesting">
+
+<h2><span class="t">Custom properties (CSS variables)</span><span class="src">CSS README §13 · Step 31</span></h2>
+<div class="plain"><p>Custom properties are labelled paint pots. Instead of writing “that indigo” in forty places, you label one pot <code>--brand</code> and refer to it. Change the pot, and everything using it changes — even while the page is running.</p></div>
+<div class="code" data-t="css"><pre><code>:root {                              /* global pots */
+  --brand: #6366f1;
+  --space: 1rem;
+  --radius: 0.5rem;
+}
+.card {
+  background: var(--brand);
+  padding: var(--space);
+  border-radius: var(--radius, 4px);   /* 4px = fallback if undefined */
+}
+body[data-theme="dark"] { --brand: #76d6ff; }   /* theming = swap an attribute */</code></pre></div>
+<ul class="key">
+  <li>Unlike Sass variables, custom properties <mark class="y">inherit</mark> through the cascade (define at <code>:root</code>, override per component), are <mark class="y">live at runtime</mark> (<code>el.style.setProperty('--brand', 'red')</code>), and power theming with a single attribute swap.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<p><code>@property</code> can give a custom property a type (and make it animatable). I believe it is supported in current major browsers, but I’m not certain of the exact versions — verify. Use <code>@supports (selector(:has(*)))</code> or <code>@supports (display: grid)</code> to test for a feature before relying on it.</p></div>
+
+<h2><span class="t"><code>:is()</code>, <code>:where()</code> and <code>:has()</code></span><span class="src">CSS README §13 · Step 32</span></h2>
+<div class="plain"><p><code>:is</code> and <code>:where</code> are shorthand for “any of these”. <code>:has</code> finally lets a parent ask about its children: “style me <em>if</em> I contain an unread message” — something CSS couldn’t do before.</p></div>
+<div class="code" data-t="css"><pre><code>:is(h1, h2, h3)  { font-family: 'Inter'; }          /* specificity = highest inside (matters!) */
+:where(button, input, select) { font: inherit; }    /* same, but ZERO specificity — great for resets */
+
+.card:has(.unread)       { border-color: orange; }  /* parent selector */
+form:has(input:invalid)  { background: #fdecea; }
+li:has(+ li:hover)       { opacity: 0.5; }          /* based on the NEXT sibling's state */</code></pre></div>
+<ul class="key">
+  <li><code>:has()</code> enables CSS-only patterns that once needed JavaScript: dropdowns that style their parent when open, forms that highlight on validation errors, lists that fade un-hovered items.</li>
+</ul>
+<div class="added"><b class="tag">+ added</b>
+<p>My understanding is that <code>:has()</code> became available in all major browsers around the end of 2023, but check a support table for your audience. If it matters, write a safe fallback first and wrap the <code>:has()</code> rule in <code>@supports selector(:has(*))</code>.</p></div>
+
+<h2><span class="t">Native nesting</span><span class="src">CSS README §13 · Step 33</span></h2>
+<div class="plain"><p>Nesting is writing the rules for a card inside the card’s braces, like folders inside a folder, instead of repeating “.card” in front of every rule.</p></div>
+<div class="code" data-t="css"><pre><code>.card {
+  padding: 1rem;
+
+  &amp; h2     { color: navy; }        /* &amp; = the parent selector */
+  &amp;:hover  { background: #fafafa; }
+  &amp; .badge { color: white; }
+
+  @media (min-width: 600px) { padding: 2rem; }   /* media queries nest too */
+}</code></pre></div>
+<ul class="key">
+  <li>Reduces repetition without a preprocessor. <code>&amp;</code> is the reference to the parent; you can usually omit it before a tag or class, but it is required before pseudo-classes such as <code>&amp;:hover</code>.</li>
+</ul>
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p>“You can usually omit <code>&amp;</code>” is true for current browsers, but earlier nesting implementations required <code>&amp;</code> before bare tag names. For safest results while support settles, keep writing <code>&amp;</code> — it always works.</p></div>
+
+<h2><span class="t">Logical properties</span><span class="src">CSS README §13 · Step 33</span></h2>
+<div class="plain"><p>“Left” and “right” are wrong in Arabic or Hebrew, which read right-to-left. <em>Start</em> and <em>end</em> follow the reading direction instead, so the same stylesheet works in every language.</p></div>
+<div class="tw"><table>
+<tr><th>Physical</th><th>Logical</th></tr>
+<tr><td><code>margin-left</code></td><td><code>margin-inline-start</code></td></tr>
+<tr><td><code>margin-right</code></td><td><code>margin-inline-end</code></td></tr>
+<tr><td><code>padding-top</code></td><td><code>padding-block-start</code></td></tr>
+<tr><td><code>width</code></td><td><code>inline-size</code></td></tr>
+<tr><td><code>height</code></td><td><code>block-size</code></td></tr>
+<tr><td><code>border-left</code></td><td><code>border-inline-start</code></td></tr>
+</table></div>
+<ul class="key">
+  <li>Switch <code>dir="rtl"</code> and the same CSS just works — Arabic, Hebrew, vertical Japanese, all from one stylesheet. Future-proof for internationalisation.</li>
+</ul>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li><code>var(--x)</code> + <code>:root</code> = themeable design tokens.</li>
+<li><code>:where()</code> zero specificity; <code>:is()</code> highest-inside; <code>:has()</code> = parent.</li>
+<li>Use logical properties so layouts flip for RTL languages.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: projects, principles, performance, mistakes ====================== -->
+<section class="sheet" id="pg-projects" data-part="Part 2 · CSS" data-label="Principles · performance · common mistakes" data-toc="Principles · performance · mistakes">
+
+<h2><span class="t">The seven cross-cutting principles</span><span class="src">CSS README §15</span></h2>
+<ul class="key">
+  <li><b>1. The cascade is the system.</b> Most “weird CSS” is a cascade misunderstanding — read DevTools’ Computed (winner) and Styles (all matches).</li>
+  <li><b>2.</b> Reset <mark class="y">box-sizing: border-box</mark> once, globally. <b>3.</b> Animate <mark class="y">transform and opacity</mark> only.</li>
+  <li><b>4.</b> Mobile-first, content-first. <b>5.</b> Prefer modern over historical: flex/grid over float, <code>gap</code> over margin hacks, <code>clamp()</code> over breakpoint chains, <code>:has()</code> over JS toggles.</li>
+  <li><b>6.</b> Respect user preferences: <code>prefers-color-scheme</code>, <code>prefers-reduced-motion</code>, <code>:focus-visible</code>. <b>7.</b> Specificity wars are a smell — <code>!important</code> or <code>#id #id .class .class</code> means the architecture is wrong.</li>
+</ul>
+
+<h2><span class="t">Performance basics</span><span class="src">added topic</span></h2>
+<div class="plain"><p>A page is a delivery van: the less it has to carry before the customer can start looking, the faster they see something. CSS is “render-blocking” — the browser waits for it before painting — so keep it lean and put the important bits first.</p></div>
+<div class="added"><b class="tag">+ added</b>
+<ul class="key">
+  <li><b>Keep stylesheets small</b> and remove unused rules. Critical above-the-fold CSS can be inlined; the rest loaded normally.</li>
+  <li><b>Give images dimensions</b> (<code>width</code>/<code>height</code> or <code>aspect-ratio</code>) so the layout doesn’t jump; lazy-load below-the-fold images, but not the hero.</li>
+  <li><b>Fonts:</b> few weights, <code>font-display: swap</code>, prefer WOFF2.</li>
+  <li><b>Animate cheaply:</b> <code>transform</code>/<code>opacity</code> only. <b>Use DevTools’ Performance and Lighthouse panels</b> to measure instead of guessing.</li>
+  <li><code>content-visibility: auto</code> can skip work on off-screen sections; I’m not certain about its support in all browsers, so measure and verify.</li>
+</ul></div>
+
+<h2><span class="t">Common mistakes</span><span class="src">added topic</span></h2>
+<div class="added"><b class="tag">+ added</b>
+<div class="tw"><table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td>Styling with <code>!important</code> everywhere</td><td>Lower selector specificity; use <code>@layer</code> or <code>:where()</code></td></tr>
+<tr><td>Forgetting <code>box-sizing: border-box</code></td><td>Reset once at the top of the stylesheet</td></tr>
+<tr><td><code>outline: none</code> with no replacement</td><td>Style <code>:focus-visible</code> instead</td></tr>
+<tr><td>Using <code>&lt;div&gt;</code> as a button or link</td><td><code>&lt;button&gt;</code> for actions, <code>&lt;a href&gt;</code> for navigation</td></tr>
+<tr><td>Skipping heading levels for size</td><td>Pick level by meaning; size with CSS</td></tr>
+<tr><td>Missing <code>alt</code> or <code>label</code></td><td>Every image needs <code>alt</code>; every input needs a <code>label</code></td></tr>
+<tr><td>No viewport meta tag</td><td>Add it; phones otherwise show a shrunken desktop page</td></tr>
+<tr><td>Fixed pixel widths everywhere</td><td><code>max-width</code>, <code>%</code>, <code>fr</code>, <code>clamp()</code></td></tr>
+<tr><td>z-index arms race (9999)</td><td>Fix the stacking context (<code>isolation: isolate</code>)</td></tr>
+<tr><td>Trusting client-side validation</td><td>Always validate on the server too</td></tr>
+</table></div></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Good CSS = a few principles applied everywhere.</li>
+<li>Reset box-sizing, animate transform/opacity, respect user preferences.</li>
+<li>Measure performance in DevTools — don’t guess.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: wrap-up ====================== -->
+<section class="sheet" id="pg-wrapup" data-part="Part 3 · Wrap-up" data-label="Wrap-up · gaps filled · quick check" data-toc="Wrap-up · gaps filled · quick check">
+
+<h2><span class="t">Gaps I filled</span><span class="src">my additions, by topic</span></h2>
+<div class="added"><b class="tag">+ added</b>
+<p><b>HTML</b></p>
+<ul class="key">
+  <li><b>Foundations:</b> DOCTYPE in depth (modes, <code>compatMode</code>, placement) · View source vs the live DOM · extra void elements · boolean attributes · title and favicon tips · Open Graph sample · viewport zoom gotcha.</li>
+  <li><b>Elements &amp; text:</b> nesting rules · positive <code>tabindex</code> · <code>hidden</code> vs CSS · heading outline test · <code>pre</code>, <code>mark</code>, <code>lang</code> on foreign phrases.</li>
+  <li><b>Links, images, structure:</b> good link text · <code>noopener</code> note · width-based <code>srcset</code>/<code>sizes</code> · don’t lazy-load the hero · landmark↔role mapping · article vs section · responsive tables · <code>headers</code>/<code>id</code>.</li>
+  <li><b>Forms:</b> button <code>type</code> · <code>enctype</code> for uploads · label wrapping · <code>autocomplete</code> · number vs <code>inputmode</code> · <code>datalist</code> · <code>:invalid</code> on load · accessible errors · <code>novalidate</code>.</li>
+  <li><b>Media &amp; a11y:</b> <code>playsinline</code>, transcripts, caption kinds · iframe sandbox catch · <code>&lt;picture&gt;</code> in full · first rule of ARIA · <code>aria-hidden</code> on focusables · testing · tap-target size.</li>
+  <li><b>JS &amp; interactive:</b> <code>addEventListener</code> · <code>noscript</code> · <code>&lt;dialog&gt;</code>.</li>
+</ul>
+<p><b>CSS</b></p>
+<ul class="key">
+  <li><b>Cascade &amp; selectors:</b> <code>@layer</code> · specificity of <code>:is/:not/:has</code> · DevTools debug tip · <code>all: unset</code> · custom properties inherit · short selectors · descendant misuse · LVHA · <code>:visited</code> limits · <code>:focus-within</code>/<code>:target</code>/<code>:root</code> · generated-content accessibility.</li>
+  <li><b>Box, visual, type:</b> centring with <code>margin-inline: auto</code> · percent padding · colour-alone rule · <code>color-mix()</code> · <code>@font-face</code> · <code>rem</code> text · 65ch lines · <code>line-clamp</code>/<code>text-wrap</code> notes.</li>
+  <li><b>Layout:</b> <code>display: contents</code> caution · <code>inset</code> · <code>isolation</code> · flex <code>min-width: 0</code> · flex vs grid · implicit grid · subgrid.</li>
+  <li><b>Responsive, motion, modern:</b> <code>100vw</code> scrollbar trap · <code>dvh</code> · range syntax · breakpoints by content · animation cost table · <code>will-change</code> · <code>@property</code> · <code>@supports</code> · <code>:has()</code> fallback.</li>
+  <li><b>Whole topics:</b> Performance basics · Common mistakes table.</li>
+</ul>
+<p>Items marked with “I’m not certain / verify” are <b>unverified</b> — check a browser-support table (such as caniuse) before relying on them.</p></div>
+
+<div class="slip"><b class="tag">⚑ check the source</b>
+<p><b>Slips flagged in the source:</b> quirks-mode box-model claim · reserved characters overstated · “exactly one h1” as a rule · <code>autoplay</code> needs <code>muted</code> · attach-method “priority” table · cascade origin order for <code>!important</code> · 4-tuple vs spec · garbled <code>[lang|=]</code> row · <code>oklch</code> “2024+ standard” · <code>position: fixed</code> and <code>sticky</code> wording · <code>em</code> definition · <code>display</code> “not animatable” · nesting <code>&amp;</code> · <code>b</code>/<code>i</code> “just visual” · <code>twitter:card</code> naming.</p></div>
+
+<h2><span class="t">Quick check</span><span class="src">5 questions · tap to reveal</span></h2>
+<details class="fold"><summary>1. A box has width: 200px, padding: 20px, border: 2px solid. How wide is it by default, and how do you make it 200px?</summary>
+<p>244px (200 + 20 + 20 + 2 + 2) because the default is <code>content-box</code>. Fix it with <code>*, *::before, *::after { box-sizing: border-box; }</code>.</p></details>
+<details class="fold"><summary>2. Which wins for a link: <code>#nav a</code> or <code>.menu .item a.link</code>?</summary>
+<p><code>#nav a</code> scores 0,1,0,1; the other scores 0,0,3,1. One id beats any number of classes, so <code>#nav a</code> wins.</p></details>
+<details class="fold"><summary>3. How do <code>display: none</code>, <code>visibility: hidden</code> and <code>opacity: 0</code> differ?</summary>
+<p><code>none</code>: gone, no space, no clicks, hidden from assistive tech. <code>visibility: hidden</code>: invisible but keeps its space. <code>opacity: 0</code>: invisible, keeps space, <em>still clickable</em> and still read by assistive tech.</p></details>
+<details class="fold"><summary>4. Why can <code>z-index: 9999</code> still lose to <code>z-index: 2</code>?</summary>
+<p>z-index is compared only inside one stacking context. If the 9999 element’s parent made a context at a lower level than the 2’s, the whole parent group sits below it. Fix the stacking context (for example <code>isolation: isolate</code>), not the number.</p></details>
+<details class="fold"><summary>5. Give two reasons to use <code>&lt;button&gt;</code> instead of <code>&lt;div onclick&gt;</code>.</summary>
+<p>A button is keyboard-focusable and announces itself as a button, and it answers Enter and Space for free. A div does none of that, so you’d have to rebuild it with <code>tabindex</code>, a role and key handlers.</p></details>
+
+<h2><span class="t">Three-line summary</span><span class="src">the short version</span></h2>
+<div class="plain"><p><b>1.</b> HTML is meaning: pick the element whose meaning matches, label every control, and keep it accessible.<br><b>2.</b> CSS is the cascade plus the box: specificity decides ties, <code>border-box</code> keeps sizes honest, flex handles lines and grid handles pages.<br><b>3.</b> Go modern and kind: custom properties, <code>clamp()</code>, <code>:focus-visible</code>, reduced motion — and verify support when you’re unsure.</p></div>
+
+<div class="slip"><b class="tag">⚑ no interview questions</b>
+<p>No interview questions were supplied with the references, so there is no interview part in this notebook. Send me a list and I’ll add a Part 3 with “Say this” answers, follow-ups and “Interview edge” boxes.</p></div>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Green boxes = my additions; pink dotted = check the source.</li>
+<li>Re-do the Quick check in a week without peeking.</li>
+<li>Type the code boxes out — don’t only read them.</li></ul></aside>
+</section>
+
+<!-- ====================== PAGE: cheat sheet ====================== -->
+<section class="sheet" id="pg-cheat" data-part="Part 3 · Wrap-up" data-label="Cheat sheet · where next" data-toc="Cheat sheet · where next">
+
+<h2><span class="t">Cheat sheet: I want to… → use…</span><span class="src">one-page quick reference</span></h2>
+<div class="tw"><table>
+<tr><th>I want to…</th><th>Use…</th></tr>
+<tr><td>Label what a page region is</td><td><code>&lt;header&gt; &lt;nav&gt; &lt;main&gt; &lt;article&gt; &lt;aside&gt; &lt;footer&gt;</code></td></tr>
+<tr><td>Make text important / stressed</td><td><code>&lt;strong&gt;</code> / <code>&lt;em&gt;</code></td></tr>
+<tr><td>Link to a new tab safely</td><td><code>target="_blank" rel="noopener noreferrer"</code></td></tr>
+<tr><td>Describe an image (or skip a decorative one)</td><td><code>alt="…"</code> / <code>alt=""</code></td></tr>
+<tr><td>Stop images shifting the layout</td><td><code>width</code> + <code>height</code> or <code>aspect-ratio</code></td></tr>
+<tr><td>Show tabular data accessibly</td><td><code>&lt;table&gt; &lt;caption&gt; &lt;th scope&gt;</code></td></tr>
+<tr><td>Connect a label to an input</td><td><code>&lt;label for="x"&gt;</code> + <code>&lt;input id="x" name="x"&gt;</code></td></tr>
+<tr><td>Validate a form field natively</td><td><code>required</code>, <code>type="email"</code>, <code>pattern</code> — plus server checks</td></tr>
+<tr><td>Load a script without blocking</td><td><code>&lt;script defer src="…"&gt;</code></td></tr>
+<tr><td>Size boxes predictably</td><td><code>*, *::before, *::after { box-sizing: border-box }</code></td></tr>
+<tr><td>Centre something both ways</td><td><code>display: flex; justify-content: center; align-items: center</code></td></tr>
+<tr><td>Space siblings evenly</td><td><code>gap</code> on flex/grid</td></tr>
+<tr><td>Make cards that fill the row responsively</td><td><code>grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))</code></td></tr>
+<tr><td>Name a page layout</td><td><code>grid-template-areas</code> + <code>grid-area</code></td></tr>
+<tr><td>Anchor a badge to a card corner</td><td>parent <code>position: relative</code>; child <code>position: absolute</code></td></tr>
+<tr><td>Make a bar stick while scrolling</td><td><code>position: sticky; top: 0</code></td></tr>
+<tr><td>Stop margins collapsing / contain floats</td><td><code>display: flow-root</code></td></tr>
+<tr><td>Hide but keep for screen readers</td><td>a <code>.visually-hidden</code> clip utility</td></tr>
+<tr><td>Show a keyboard-only focus ring</td><td><code>:focus-visible { outline: … }</code></td></tr>
+<tr><td>Scale text smoothly with screen width</td><td><code>font-size: clamp(1rem, 2vw + .5rem, 2rem)</code></td></tr>
+<tr><td>Restyle a component by its container width</td><td><code>container-type: inline-size</code> + <code>@container</code></td></tr>
+<tr><td>Theme with one switch</td><td>custom properties + <code>data-theme</code></td></tr>
+<tr><td>Style a parent from its child</td><td><code>.card:has(.unread)</code></td></tr>
+<tr><td>Animate smoothly and cheaply</td><td><code>transition</code> / <code>@keyframes</code> on <code>transform</code> and <code>opacity</code></td></tr>
+<tr><td>Respect users who dislike motion</td><td><code>@media (prefers-reduced-motion: reduce)</code></td></tr>
+<tr><td>Make layouts work right-to-left</td><td>logical properties (<code>margin-inline-start</code>…)</td></tr>
+<tr><td>Beat a specificity fight cleanly</td><td>lower selectors, <code>@layer</code>, or <code>:where()</code> — not <code>!important</code></td></tr>
+</table></div>
+
+<h2><span class="t">Where next?</span><span class="src">after these notes</span></h2>
+<div class="plain"><p>You now have the two foundation layers. The next steps add behaviour, polish and confidence — in roughly this order.</p></div>
+<ul class="key">
+  <li><mark class="y">JavaScript</mark> — the DOM, events, <code>fetch</code>. It brings the third layer of the web to life.</li>
+  <li><mark class="y">Accessibility testing</mark> — keyboard-only runs, axe or Lighthouse, and a screen reader such as NVDA or VoiceOver.</li>
+  <li><mark class="y">CSS frameworks</mark> (Tailwind, Bootstrap) — easier once you understand the cascade and box model they sit on.</li>
+  <li><mark class="y">Sass</mark> — optional now: native nesting and custom properties cover much of what it was once needed for.</li>
+  <li>Web performance (Core Web Vitals), responsive images, and building real pages of your own.</li>
+</ul>
+
+<aside class="sticky"><h3>Remember!</h3><ul>
+<li>Meaning in HTML, the cascade in CSS.</li>
+<li>Retype the code boxes from memory — it cements the theory.</li>
+<li>Check browser support whenever a feature feels new.</li></ul></aside>
+</section>
+
+<script>
+(function () {
+  var sheets = [].slice.call(document.querySelectorAll('.sheet[data-label]'));
+  var toc = document.querySelector('.toc');
+  var lastPart = null;
+
+  sheets.forEach(function (s, i) {
+    var n = i + 1;
+    var prev = sheets[i - 1], next = sheets[i + 1];
+
+    /* header: Page N + topic label */
+    var head = document.createElement('header');
+    head.className = 'pghead';
+    var pn = document.createElement('span'); pn.className = 'pn'; pn.textContent = 'Page ' + n;
+    var lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = s.getAttribute('data-label');
+    head.appendChild(pn); head.appendChild(lbl);
+    s.insertBefore(head, s.firstChild);
+
+    /* footer: previous / page number / next */
+    var foot = document.createElement('footer');
+    foot.className = 'pgfoot';
+    var a1 = document.createElement('a');
+    a1.href = prev ? '#' + prev.id : '#pg-cover';
+    a1.textContent = prev ? '← previous' : '← cover';
+    var mid = document.createElement('span'); mid.textContent = '— ' + n + ' —';
+    var a2 = document.createElement('a');
+    a2.href = next ? '#' + next.id : '#contents';
+    a2.textContent = next ? 'next →' : '↑ contents';
+    foot.appendChild(a1); foot.appendChild(mid); foot.appendChild(a2);
+    s.appendChild(foot);
+
+    /* contents list, grouped into parts */
+    var part = s.getAttribute('data-part');
+    if (part !== lastPart) {
+      var h = document.createElement('h4'); h.textContent = part; toc.appendChild(h);
+      lastPart = part;
+    }
+    var link = document.createElement('a');
+    link.href = '#' + s.id;
+    var b = document.createElement('b'); b.textContent = n + '.';
+    link.appendChild(b);
+    link.appendChild(document.createTextNode(s.getAttribute('data-toc') || s.getAttribute('data-label')));
+    toc.appendChild(link);
+  });
+
+  /* tint comments inside code boxes */
+  [].slice.call(document.querySelectorAll('.code pre code')).forEach(function (c) {
+    c.innerHTML = c.innerHTML.replace(/(&lt;!--[\s\S]*?--&gt;|\/\*[\s\S]*?\*\/)/g, '<span class="c">$1</span>');
+  });
+})();
+</script>
+</body>
+</html>

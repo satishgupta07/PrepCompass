@@ -11,7 +11,7 @@ import { AuthNavLinks } from "@/components/layout/AuthNavLinks";
 import { Logo } from "@/components/layout/Logo";
 
 /**
- * App-wide top nav: brand link plus Tracker/Reminders/Activity links. An
+ * App-wide top nav: brand link plus Tracker/Reminders/Activity/Study links. An
  * async Server Component — it loads problem data itself (via the cached
  * `loadAppData`, so this doesn't cost an extra DB round trip when a page
  * also calls it in the same request) to compute how many problems are due
@@ -57,8 +57,15 @@ function NavLink({ href, children }: { href: string; children: ReactNode }) {
 }
 
 async function LoggedInNav({ name, role }: { name: string; role: Role }) {
-  const { problems } = await loadAppData();
-  const dueCount = getDueProblems(problems, todayDateKey()).length;
+  // The badge is a nicety: if the database is unreachable, show the nav
+  // without a count instead of failing every page that renders this header.
+  let dueCount = 0;
+  try {
+    const { problems } = await loadAppData();
+    dueCount = getDueProblems(problems, todayDateKey()).length;
+  } catch (error) {
+    console.error("Header: couldn't load due-count", error);
+  }
   const initial = name.trim().charAt(0).toUpperCase() || "?";
 
   return (
@@ -75,6 +82,7 @@ async function LoggedInNav({ name, role }: { name: string; role: Role }) {
         </span>
       </NavLink>
       <NavLink href="/activity">Activity</NavLink>
+      <NavLink href="/study">Study</NavLink>
 
       <span className="mx-2 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
 

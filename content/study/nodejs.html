@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Node.js Study Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&amp;family=Patrick+Hand&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --paper:#fbf8ee; --desk:#e4dfd0; --ink:#1f3fa8; --red:#c0392b; --green:#1c6b39; --greenbg:#eef8ea;
+  --rule:#cfe1f3; --yellow:#fff176; --pink:#ffc2dc; --mx:84px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-right:env(safe-area-inset-right,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px); padding-left:env(safe-area-inset-left,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--desk)}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive;font-size:22px;line-height:32px;-webkit-text-size-adjust:100%}
+a{color:var(--red);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.lbl,.tag,.src,th,td,.phead,.pfoot,summary,.fab,.legend span{font-family:'Patrick Hand','Segoe Print','Comic Sans MS',cursive}
+
+/* ---------- notebook sheet ---------- */
+.sheet{position:relative;max-width:880px;margin:30px auto;padding:18px 30px 26px calc(var(--mx) + 26px);
+  background-color:var(--paper);
+  background-image:linear-gradient(90deg,transparent calc(var(--mx) - 1px),#e57373 calc(var(--mx) - 1px),#e57373 calc(var(--mx) + 1px),transparent calc(var(--mx) + 1px)),
+                   repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--rule) 31px,var(--rule) 32px);
+  border-radius:7px 16px 10px 20px/18px 8px 16px 9px;
+  box-shadow:0 1px 2px rgba(0,0,0,.18),0 14px 30px rgba(70,55,20,.20);
+}
+.sheet::before{content:"";position:absolute;left:20px;top:0;bottom:0;width:28px;pointer-events:none;
+  background:
+   radial-gradient(circle,var(--desk) 0 9px,#b8b097 10px,transparent 11px) 0 12%/28px 28px no-repeat,
+   radial-gradient(circle,var(--desk) 0 9px,#b8b097 10px,transparent 11px) 0 50%/28px 28px no-repeat,
+   radial-gradient(circle,var(--desk) 0 9px,#b8b097 10px,transparent 11px) 0 88%/28px 28px no-repeat;}
+.cover::after{content:"";position:absolute;right:46px;top:36px;width:150px;height:150px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,transparent 56px,rgba(120,78,36,.20) 58px,rgba(120,78,36,.09) 66px,transparent 70px);transform:rotate(18deg)}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:3px solid var(--red);margin:0 0 14px;padding-bottom:2px;font-size:20px;color:var(--red);line-height:30px}
+.phead .pn{font-size:24px;transform:rotate(-1.5deg);display:inline-block}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:26px;padding-top:6px;border-top:2px dashed var(--red);font-size:19px;color:var(--red)}
+.pfoot a{padding:2px 4px}
+
+/* ---------- headings & text ---------- */
+h1{font-size:60px;line-height:62px;color:var(--red);margin:6px 0 4px;font-weight:700;transform:rotate(-1.2deg)}
+h2{display:flex;align-items:center;gap:12px;font-size:32px;line-height:36px;color:var(--red);font-weight:700;margin:34px 0 12px;border-bottom:2px wavy rgba(192,57,43,.45);padding-bottom:2px}
+h2 .num{flex:none;width:38px;height:38px;border:2.5px solid var(--red);border-radius:52% 48% 55% 45%/48% 55% 45% 52%;display:grid;place-items:center;font-size:24px;line-height:1;transform:rotate(-6deg)}
+h2 .src{margin-left:auto;font-size:16px;line-height:20px;font-weight:400;color:var(--ink);border:1.5px solid var(--ink);padding:1px 8px;border-radius:12px 4px 10px 5px;white-space:nowrap}
+h2:nth-of-type(even){transform:rotate(.5deg)} h2:nth-of-type(odd){transform:rotate(-.4deg)}
+h3{font-size:26px;line-height:32px;margin:14px 0 4px;color:var(--red)}
+p{margin:0 0 10px}
+code.i{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.72em;background:rgba(31,63,168,.08);padding:1px 5px;border-radius:4px;color:#17306f}
+.y{background:linear-gradient(transparent 52%,var(--yellow) 52%,var(--yellow) 92%,transparent 92%);padding:0 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.p{background:linear-gradient(transparent 52%,var(--pink) 52%,var(--pink) 92%,transparent 92%);padding:0 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+ul.ar,ul.rm{list-style:none;margin:6px 0 12px;padding:0 0 0 6px}
+ul.ar li{position:relative;padding-left:26px;margin:2px 0}
+ul.ar li::before{content:"→";position:absolute;left:0;color:var(--red);font-weight:700}
+ul.ar li:nth-child(odd){transform:rotate(-.35deg)} ul.ar li:nth-child(even){transform:rotate(.3deg)}
+.warn{color:var(--red);margin:4px 0;padding-left:26px;position:relative}
+.warn::before{content:"⚠";position:absolute;left:2px}
+.warn:nth-of-type(odd){transform:rotate(.3deg)}
+
+/* ---------- boxes ---------- */
+.box{margin:16px 2px;padding:10px 16px 8px;position:relative}
+.box:nth-of-type(odd){transform:rotate(-.35deg)} .box:nth-of-type(even){transform:rotate(.3deg)}
+.plain{display:flex;gap:12px;align-items:flex-start;border:2.5px dashed #4a73d6;background:rgba(214,230,255,.45);border-radius:255px 18px 225px 18px/18px 225px 18px 255px;padding:12px 24px 8px 18px}
+.plain .bulb{flex:none;width:40px;height:50px;margin-top:2px}
+.plain b{color:var(--red)}
+.added{border:2.5px dashed var(--green);background:var(--greenbg);color:var(--green);border-radius:16px 230px 14px 240px/240px 16px 230px 14px;padding:16px 16px 6px;margin:26px 2px 18px;position:relative}
+.added .box,.added .code{color:var(--ink)}
+.added h3{color:var(--green)}
+.added ul.ar li::before{color:var(--green)}
+.added .plain{color:var(--ink)}
+.tag{position:absolute;top:-14px;left:18px;background:var(--green);color:#fff;font-size:17px;line-height:22px;padding:0 12px;border-radius:12px 4px 12px 5px;transform:rotate(-2deg)}
+.tag.red{background:var(--red)}
+.old{border:2.5px solid var(--red);background:#fff1ee;color:var(--red);border-radius:8px 22px 10px 24px/22px 8px 24px 10px;padding:8px 16px 6px;margin:14px 2px 4px}
+.new{border:2.5px dashed var(--green);background:var(--greenbg);color:var(--green);border-radius:20px 8px 22px 10px/8px 22px 10px 20px;padding:12px 16px 6px;margin:16px 2px 14px;position:relative}
+.new .code{color:var(--ink)}
+.err{border:2.5px dashed var(--red);background:#fff5f2;color:var(--red);border-radius:18px 230px 14px 240px/240px 16px 230px 14px;padding:8px 16px 6px;margin:16px 2px}
+.err b{text-decoration:underline wavy}
+.sticky{background:#fff48c;width:min(100%,520px);margin:26px 0 8px auto;padding:20px 22px 12px;border-radius:3px 3px 18px 4px;box-shadow:2px 6px 12px rgba(0,0,0,.22);transform:rotate(1.6deg);color:#3d3a10;position:relative}
+.sticky::before{content:"";position:absolute;top:-13px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(210,205,190,.7);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.sticky h3{margin:0 0 2px;color:var(--red);font-size:28px}
+.sticky ul{margin:0;padding-left:22px}.sticky li{margin:0}
+.say{background:var(--yellow);border:2px solid #d9c400;border-radius:6px 16px 8px 14px;padding:8px 14px;margin:14px 2px}
+
+/* ---------- code ---------- */
+.code{position:relative;margin:20px 2px 14px;padding:12px 14px 8px;background:#fffdf4;border:2px dashed #7e8fbd;border-radius:10px 4px 12px 5px/5px 12px 4px 10px;box-shadow:1px 3px 6px rgba(0,0,0,.10);transform:rotate(-.2deg)}
+.code::before{content:"";position:absolute;top:-11px;left:22px;width:78px;height:22px;background:rgba(215,208,185,.75);transform:rotate(-2.5deg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.code .cap{font-family:'Patrick Hand',cursive;font-size:15px;line-height:20px;color:#6a6a6a;margin:0 0 4px}
+pre{margin:0;overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;color:#17306f;tab-size:2;-webkit-text-size-adjust:none}
+.out{font-family:'Patrick Hand',cursive;font-size:18px;line-height:24px;color:var(--green);margin:6px 0 2px;white-space:pre-wrap}
+.out::before{content:"output → ";color:var(--red)}
+.out.wh::before{content:"what happens → "}
+
+.edge{position:relative;border:2.5px dashed var(--red);background:#fff5f2;color:var(--red);border-radius:16px 230px 14px 240px/240px 16px 230px 14px;padding:14px 16px 8px;margin:22px 2px 16px}
+.edge code.i{color:#8a2418;background:rgba(192,57,43,.1)}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:14px 2px;-webkit-overflow-scrolling:touch}
+table{border-collapse:separate;border-spacing:0;min-width:100%;font-size:17px;line-height:23px;background:rgba(255,255,255,.55);border:2px solid var(--ink);border-radius:8px 14px 8px 12px;overflow:hidden}
+th,td{border-bottom:1.5px solid rgba(31,63,168,.35);border-right:1.5px solid rgba(31,63,168,.25);padding:5px 9px;text-align:left;vertical-align:top}
+th{background:linear-gradient(transparent 20%,rgba(255,241,118,.85) 20%);color:var(--red);white-space:nowrap}
+tr:last-child td{border-bottom:0} td:last-child,th:last-child{border-right:0}
+td code,th code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:rgba(31,63,168,.08);padding:0 3px;border-radius:3px}
+.added table{color:var(--ink)}
+
+/* ---------- diagrams ---------- */
+.dia{display:block;width:100%;height:auto;margin:14px 0;overflow:visible}
+.dia text{font-family:'Caveat','Comic Sans MS',cursive;font-size:20px;fill:#1f3fa8}
+.dia .bx{fill:#fffdf4;stroke:#1f3fa8;stroke-width:2.2;stroke-linejoin:round}
+.dia .hot{fill:#fff7a8}
+.dia .ar{fill:none;stroke:#c0392b;stroke-width:2.8;stroke-linecap:round;marker-end:url(#arr)}
+.dia .note{fill:#c0392b;font-size:19px}
+.dia .grn{fill:#1c6b39}
+
+/* ---------- cover ---------- */
+.sub{font-size:28px;line-height:34px;margin:0 0 14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 4px;font-size:17px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:22px;height:16px;border-radius:4px;border:2px solid var(--ink)}
+.toc{columns:2;column-gap:34px;margin-top:6px}
+.toc .part{break-inside:avoid;margin-bottom:12px}
+.toc h3{margin:0 0 2px;font-size:25px}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{line-height:27px;transform:rotate(-.25deg)}
+.toc a{text-decoration:none;color:var(--ink)} .toc a:hover{background:var(--yellow)}
+.toc .pg{display:inline-block;min-width:26px;color:var(--red);font-family:'Patrick Hand',cursive}
+details{margin:8px 2px;border:2px dashed var(--ink);border-radius:12px 5px 14px 6px;padding:4px 14px;background:rgba(255,255,255,.5)}
+summary{cursor:pointer;color:var(--red);font-size:19px;line-height:30px}
+details[open]{background:rgba(255,248,170,.4)}
+
+.fab{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));z-index:20;background:var(--red);color:#fff;text-decoration:none;font-size:18px;line-height:22px;padding:8px 16px;border-radius:22px 8px 22px 10px;box-shadow:0 3px 8px rgba(0,0,0,.3);transform:rotate(-2deg)}
+.svgdefs{position:absolute;width:0;height:0;overflow:hidden}
+
+@media (max-width:680px){
+  :root{--mx:30px}
+  body{font-size:20px;line-height:30px}
+  .sheet{margin:14px 6px;padding:12px 12px 20px calc(var(--mx) + 12px);background-image:linear-gradient(90deg,transparent calc(var(--mx) - 1px),#e57373 calc(var(--mx) - 1px),#e57373 calc(var(--mx) + 1px),transparent calc(var(--mx) + 1px)),repeating-linear-gradient(to bottom,transparent 0,transparent 29px,var(--rule) 29px,var(--rule) 30px)}
+  .sheet::before{left:3px;width:22px;background:
+   radial-gradient(circle,var(--desk) 0 6px,#b8b097 7px,transparent 8px) 0 12%/22px 22px no-repeat,
+   radial-gradient(circle,var(--desk) 0 6px,#b8b097 7px,transparent 8px) 0 50%/22px 22px no-repeat,
+   radial-gradient(circle,var(--desk) 0 6px,#b8b097 7px,transparent 8px) 0 88%/22px 22px no-repeat}
+  h1{font-size:44px;line-height:46px} h2{font-size:27px;line-height:31px;flex-wrap:wrap} h2 .src{margin-left:50px}
+  .toc{columns:1} .plain{padding:10px 14px 6px 12px} .sticky{margin-right:0}
+  .cover::after{width:100px;height:100px;right:10px;top:20px;background:radial-gradient(circle,transparent 36px,rgba(120,78,36,.20) 38px,rgba(120,78,36,.09) 44px,transparent 48px)}
+}
+@media print{
+  :root{padding:0}
+  html,body{background:#fff}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fab{display:none!important}
+  .sheet{margin:0;max-width:none;box-shadow:none;break-after:page;page-break-after:always;border-radius:0}
+  .sheet:last-of-type{break-after:auto;page-break-after:auto}
+  details>*{display:block} details{border-style:solid}
+}
+</style>
+</head>
+<body id="top">
+
+<svg class="svgdefs" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1.5 1.5 L10.5 6 L1.5 10.5" fill="none" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <symbol id="bulb" viewBox="0 0 40 50">
+      <path d="M20 5c-8 0-14 6-14 13 0 5 3 8 5 11 1 2 1 4 1 6h16c0-2 0-4 1-6 2-3 5-6 5-11 0-7-6-13-14-13z" fill="#fff6a8" stroke="#1f3fa8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14 39h12M15 44h10M17 48h6" stroke="#1f3fa8" stroke-width="2" stroke-linecap="round"/>
+      <path d="M20 1v-1M5 7l-2-2M35 7l2-2M2 19H0M38 19h2" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+      <path d="M15 17c0-3 2-5 5-5" fill="none" stroke="#1f3fa8" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<a class="fab" href="#contents">↑ contents</a>
+
+<!-- ======================= COVER ======================= -->
+<section class="sheet cover" id="pg-cover">
+  <p class="lbl" style="margin:0;font-size:20px;color:var(--red)">my study notebook · backend edition</p>
+  <h1>Node.js, Express &amp; MongoDB</h1>
+  <p class="sub">A page-by-page study reference, built from the <span class="y">videotube</span> backend notes by satishgupta07, with the missing pieces filled in.</p>
+
+  <div class="box plain">
+    <svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg>
+    <div><b>How to use these notes.</b> Each page is one topic group. Read the blue ink first: that is your reference, in its own order, with its own code. Then read the <span class="y">green boxes</span>: those are gaps I filled. Red lines are warnings, older patterns, or errors I spotted. Finish every page by reading the yellow sticky note out loud.</div>
+  </div>
+
+  <div class="legend" aria-label="Colour legend">
+    <span><i style="background:#fffdf4"></i>blue ink = from your reference</span>
+    <span><i style="background:var(--greenbg);border-color:var(--green);border-style:dashed"></i>green = + added by me</span>
+    <span><i style="background:#fff1ee;border-color:var(--red)"></i>red = ⚠ warning / older pattern / error</span>
+    <span><i style="background:var(--yellow);border-color:#d9c400"></i>yellow / <i style="background:var(--pink);border-color:#d98aae"></i>pink = key terms</span>
+  </div>
+
+  <div class="box added">
+    <span class="tag">+ added</span>
+    <h3 style="margin-top:0">Assumptions I made</h3>
+    <p>The level, goal and “I already know” lines in your request were still blank, so I assumed: <b>intermediate</b>, goal <b>building backend APIs</b>, and you already know <b>JavaScript ES6 and async/await</b>. Tell me if that is off and I will re-pitch the pages.</p>
+    <p><b>Node.js version:</b> these notes target <b>Node.js 26 (LTS)</b>. nodejs.org lists v26 “Lithium” as LTS (latest 26.13.0), v24 “Krypton” and v22 “Jod” as LTS lines, v20 as end-of-life, and v27 as alpha, checked on 3 Nov 2026. Version-specific facts carry a version number.</p>
+    <p><b>Sources:</b> two references, merged page by page in topic order. Headings labelled <b>Ref §</b> come from the GitHub README (22 sections, read in full). Headings labelled <b>Notes ep-</b> come from your uploaded handwritten course notes (42 pages, episodes 1–13), now sitting inside the matching topic pages (mainly pages 2–5, 9 and 16). The notes are scanned images and OCR failed on the handwriting, so I read every page by eye; a word or two may be misread. The LinkedIn post page itself can’t be opened, but the upload covers the notes. You gave no interview question list, so pages 22–23 are eight likely questions I built from topics the notes flag. Paste a real list and I will swap it in.</p>
+  </div>
+
+  <h2 id="contents" style="margin-top:26px">Contents</h2>
+  <div class="toc" id="toc"></div>
+  <svg class="dia" viewBox="0 0 700 60" aria-hidden="true" style="max-width:420px;margin:10px 0 0 auto"><path class="ar" d="M20 38 Q 200 8 400 34 T 660 24"/><text x="430" y="54" class="note">start at page 1 →</text></svg>
+</section>
+<!-- ======================= PAGE: WHAT NODE IS ======================= -->
+<section class="sheet" id="pg-what" data-part="A · Foundations" data-label="What Node is and how it runs">
+
+<h2>What Node.js is<span class="src">Ref §3</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Think of Node as a restaurant. V8 is the chef who reads your recipe (JavaScript) and cooks it very fast. libuv is the manager who takes slow jobs, like fetching ingredients from the cellar, and rings a bell when they are ready. You, the recipe writer, never wait around in the cellar.</div></div>
+<ul class="ar">
+<li><span class="y">Node.js</span> = JavaScript runtime built on Chrome’s <span class="p">V8</span> engine, so JS runs outside the browser</li>
+<li><span class="y">Single-threaded</span> with a non-blocking, event-driven I/O model</li>
+<li><span class="y">Module-based</span>: CommonJS or ES Modules</li>
+<li><span class="y">npm-powered</span>: the largest package ecosystem</li>
+<li>This repo uses ES Modules via <code class="i">"type": "module"</code> in package.json</li>
+</ul>
+<svg class="dia" viewBox="0 0 720 190" role="img" aria-label="Node architecture: your code to V8 to bindings to libuv to the operating system">
+  <g transform="rotate(-.8 70 90)"><rect class="bx" x="6" y="40" width="118" height="76" rx="10"/><text x="65" y="74" text-anchor="middle">Your JS</text><text x="65" y="98" text-anchor="middle">code</text></g>
+  <g transform="rotate(.7 205 90)"><rect class="bx hot" x="150" y="40" width="118" height="76" rx="10"/><text x="209" y="74" text-anchor="middle">V8</text><text x="209" y="98" text-anchor="middle">runs the JS</text></g>
+  <g transform="rotate(-.6 350 90)"><rect class="bx" x="294" y="40" width="118" height="76" rx="10"/><text x="353" y="74" text-anchor="middle">C++ bindings</text><text x="353" y="98" text-anchor="middle">+ core modules</text></g>
+  <g transform="rotate(.8 495 90)"><rect class="bx hot" x="438" y="40" width="130" height="76" rx="10"/><text x="503" y="68" text-anchor="middle">libuv</text><text x="503" y="90" text-anchor="middle">event loop +</text><text x="503" y="110" text-anchor="middle">thread pool</text></g>
+  <g transform="rotate(-.7 645 90)"><rect class="bx" x="594" y="40" width="118" height="76" rx="10"/><text x="653" y="74" text-anchor="middle">Operating</text><text x="653" y="98" text-anchor="middle">system</text></g>
+  <path class="ar" d="M126 78 Q138 70 148 78"/><path class="ar" d="M270 78 Q282 70 292 78"/><path class="ar" d="M414 78 Q426 70 436 78"/><path class="ar" d="M570 78 Q582 70 592 78"/>
+  <text x="360" y="160" text-anchor="middle" class="note">calls go right → ; callbacks come back ←</text>
+</svg>
+<div class="code"><p class="cap">check what you are running</p><pre><code>// whoami.js
+console.log(process.version);          // the Node version
+console.log(process.versions.v8);      // the V8 inside it
+console.log(typeof window, typeof globalThis);</code></pre>
+<div class="out">v26.x.x · 14.6.x · undefined object</div></div>
+<p class="warn">“Single-threaded” describes <i>your JavaScript</i>. Node itself uses more threads underneath (see the green box).</p>
+
+<div class="added"><span class="tag">+ added</span>
+<h3 style="margin-top:0">Node = V8 + libuv + the rest</h3>
+<ul class="ar">
+<li><span class="y">V8</span> compiles and runs JS; <span class="y">libuv</span> provides the event loop, sockets, timers and a <span class="p">thread pool</span> (4 threads by default)</li>
+<li>File system, DNS lookups, <code class="i">crypto</code> and <code class="i">zlib</code> work run in that pool, so they do not block your JS thread</li>
+<li>So Node is one JS thread <i>plus</i> helper threads, not “one thread total”</li>
+</ul>
+<div class="tw"><table><tr><th>Browser JS</th><th>Node.js</th></tr>
+<tr><td><code>window</code>, DOM, <code>localStorage</code></td><td><code>globalThis</code>, <code>process</code>, no DOM</td></tr>
+<tr><td>Sandboxed, no file access</td><td>Full <code>fs</code>, <code>net</code>, <code>http</code>, <code>child_process</code></td></tr>
+<tr><td>ES modules by default</td><td>CommonJS and ESM (see page 5)</td></tr></table></div>
+</div>
+
+<h2>Prerequisites &amp; setup<span class="src">Ref §1</span></h2>
+<ul class="ar">
+<li>Comfortable with modern JS: <span class="y">ES modules</span>, <span class="y">async/await</span>, destructuring, spread/rest</li>
+<li>HTTP basics: methods, status codes, headers, cookies</li>
+<li>A package manager (<code class="i">npm</code> or <code class="i">yarn</code>), Node <span class="p">LTS</span>, MongoDB (local or Atlas), and Postman or Thunder Client</li>
+</ul>
+<div class="code"><pre><code>git clone https://github.com/satishgupta07/JavaScript-Backend-NodeJS.git
+cd JavaScript-Backend-NodeJS
+npm install</code></pre><div class="out wh">dependencies land in node_modules/; then create a .env file (page 13)</div></div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>Install Node with a version manager (<code class="i">nvm</code>, <code class="i">fnm</code>) so you can switch versions per project</li>
+<li>Pin the version with <code class="i">"engines": { "node": "&gt;=24" }</code> in package.json so teammates and servers match</li></ul></div>
+
+<h2>Project structure<span class="src">Ref §2</span></h2>
+<div class="code"><pre><code>src/
+├── index.js              ← entry point: load env, connect DB, start server
+├── app.js                ← Express app: middlewares + routes
+├── constants.js          ← shared constants (DB name, enums)
+├── db/
+│   └── index.js          ← MongoDB connection logic
+├── models/               ← Mongoose schemas (User, Video, Subscription)
+├── controllers/          ← business logic per resource
+├── routes/               ← URL → controller mapping
+├── middlewares/          ← auth, multer (file upload)
+└── utils/                ← ApiError, ApiResponse, asyncHandler, cloudinary</code></pre></div>
+<ul class="ar"><li><span class="y">Why this split?</span> Each layer has one job: routes declare URLs, controllers hold logic, models talk to the DB, middlewares run cross-cutting concerns</li>
+<li>Swapping one layer does not ripple through the others</li></ul>
+
+<h2>The bootstrap sequence<span class="src">Ref §3 · src/index.js</span></h2>
+<div class="code"><pre><code>import dotenv from "dotenv";
+import connectDB from "./db/index.js";
+import { app } from "./app.js";
+
+dotenv.config({ path: "./.env" });
+
+connectDB()
+  .then(() =&gt; {
+    app.listen(process.env.PORT || 8000, () =&gt; {
+      console.log(`Server is running at port : ${process.env.PORT}`);
+    });
+  })
+  .catch((err) =&gt; console.log("MONGO db connection failed !!! ", err));</code></pre><div class="out wh">DB connects first, then the server starts listening</div></div>
+<ul class="ar"><li><span class="y">Why connect first, then <code class="i">listen</code>?</span> A server with no DB can only return errors. Fail fast at startup instead of accepting requests you cannot serve</li></ul>
+<div class="err"><b>⚠ possible error in the reference.</b> The log prints <code class="i">process.env.PORT</code>, which is <code class="i">undefined</code> when PORT is not set, even though the server really listens on the fallback <code class="i">8000</code>. Compute the port once: <code class="i">const port = process.env.PORT || 8000;</code> and log <code class="i">port</code>.</div>
+<div class="err"><b>⚠ import order trap.</b> ES-module <code class="i">import</code> lines are hoisted and run <i>before</i> <code class="i">dotenv.config()</code>. Any imported file that reads <code class="i">process.env</code> at its top level (like a Cloudinary config) sees nothing. That is exactly why the dev script preloads dotenv (page 13).</div>
+
+<div class="sticky"><h3>Remember!</h3><ul><li>Node = V8 + libuv + bindings; your JS is one thread, Node is not</li><li>One job per layer: routes, controllers, models, middleware</li><li>Connect the DB first, then listen; fail fast</li></ul></div>
+</section>
+<!-- ======================= PAGE: NODE STORY, V8 AND REPL ======================= -->
+<section class="sheet" id="pg-v8" data-part="A · Foundations" data-label="Node’s story, V8 and the REPL">
+
+<h2>What is Node.js? A short history<span class="src">Notes ep-1</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Before Node, JavaScript was a chef who could only cook in the browser’s kitchen. Ryan Dahl took the chef’s engine out of that kitchen so it could cook on any laptop or server, and he built it so the chef never stands idle waiting for the oven.</div></div>
+<ul class="ar">
+<li><span class="y">Node.js</span> = JavaScript runtime built on Chrome’s <span class="p">V8</span> engine</li>
+<li>Built by <span class="y">Ryan Dahl</span> in 2009; maintained by the <span class="y">OpenJS Foundation</span></li>
+<li>Executes JavaScript <span class="p">outside the web browser</span>: “Run JavaScript everywhere”</li>
+<li>To run JS you always need a <span class="y">JS engine</span>. Ryan began with SpiderMonkey (Firefox), then switched to V8 within two days</li>
+<li>Joyent, a company building something similar, hired Ryan and funded the project</li>
+<li>Original name: <span class="y">web.js</span>; renamed Node.js because its scope goes beyond web servers</li>
+<li>Why it exists: the Apache HTTP Server was a <span class="y">blocking</span> server, so Ryan wanted a <span class="y">non-blocking I/O</span> one that handles many requests with fewer threads</li>
+</ul>
+<div class="tw"><table><tr><th>Year</th><th>What happened</th></tr>
+<tr><td>2009</td><td>Node.js created by Ryan Dahl</td></tr>
+<tr><td>2010</td><td>NPM introduced: Node wouldn’t be as successful without it</td></tr>
+<tr><td>2011</td><td>Windows support (at first only macOS and Linux)</td></tr>
+<tr><td>2012</td><td>Isaac Z. Schlueter starts maintaining Node (he also created NPM)</td></tr>
+<tr><td>2014</td><td>Fedor Indutny forks Node as <b>io.js</b>, causing controversy in the company; some developers maintain the io.js branch</td></tr>
+<tr><td>2015</td><td>Node.js and io.js merge, forming the Node.js Foundation</td></tr>
+<tr><td>2019</td><td>JS Foundation and Node.js Foundation merge into the <b>OpenJS Foundation</b></td></tr></table></div>
+
+<h2>Node.js: JS on the server<span class="src">Notes ep-2</span></h2>
+<ul class="ar">
+<li>Node lets developers use JavaScript on the <span class="y">client and the server</span>: one language, one ecosystem</li>
+<li><span class="y">A server</span> is just a remote computer (a CPU working remotely) that provides resources and services over a network</li>
+<li><span class="y">V8</span> (Google): open-source, high-performance JavaScript and WebAssembly engine written in <span class="p">C++</span>; used in Chrome and Node; cross-platform; embeddable in any C++ application</li>
+<li><span class="y">Node.js is a C++ application with V8 embedded into it</span>, plus “other superpowers” (modules and APIs)</li>
+<li><span class="y">ECMAScript</span> = the standard/rules a JavaScript engine follows</li>
+<li><span class="y">Why is V8 C++?</span> Your JS is processed by a C++ program (the engine) that converts the high-level code into low-level machine code, which the computer understands as binary</li></ul>
+<div class="code"><p class="cap">the notes’ diagram, as text</p><pre><code>you write JS ──► V8 (a C++ program) ──► machine code / assembly ──► binary the CPU runs</code></pre></div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>“Straight to machine code” is a simplification: V8 first makes <span class="y">bytecode</span> and only optimizes hot code (see “V8 deep dive” below)</li>
+<li>Node = V8 + libuv + core modules; compare with the architecture diagram on page 1</li>
+<li><code class="i">globalThis</code> (see “Global objects” below) arrived in ECMAScript 2020: another example of “the standard” V8 follows</li></ul></div><h2>Let’s write some code: install, verify, REPL<span class="src">Notes ep-3</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> The REPL is a scratchpad: type a line, see the answer, repeat. It’s great for quick tests, but you don’t write a house on a napkin, so real projects go in files.</div></div>
+<ul class="ar">
+<li><span class="y">1. Install</span> the latest version from nodejs.org; it includes <code class="i">npm</code></li>
+<li><span class="y">2. Verify</span> with <code class="i">node -v</code> and <code class="i">npm -v</code></li>
+<li><span class="y">3. Write code</span> with the <span class="p">REPL</span> (Read, Evaluate, Print, Loop): an interactive terminal environment, like a browser console, but running on your system so it can touch files and the OS</li>
+<li>The REPL is clumsy for bigger projects: no syntax highlighting, weak debugging tools, no project organisation</li>
+<li>Node is a runtime environment; behind the scenes V8 compiles your JS to machine code</li></ul>
+<div class="code"><pre><code>// app.js
+let name = "NodeJs";
+let a = 5;
+let b = 10;
+let c = a + b;
+
+console.log(name);
+console.log(c);</code></pre><div class="out">NodeJs · 15 (run it with: node app.js)</div></div>
+
+<h2>Global objects<span class="src">Notes ep-3</span></h2>
+<ul class="ar">
+<li>Global objects are available in <span class="y">all scopes</span>, with no <code class="i">require</code> needed</li>
+<li><span class="y">Browser:</span> the global object is <code class="i">window</code>: DOM, <code class="i">alert()</code>, <code class="i">setTimeout()</code>, <code class="i">setInterval()</code>. It is provided by the browser, not by V8</li>
+<li><span class="y">Node:</span> the global object is <code class="i">global</code>: <code class="i">setTimeout</code>, <code class="i">setInterval</code>, <code class="i">console</code>, <code class="i">process</code></li>
+<li>Globals are <span class="p">not part of V8</span>: Node adds them on top, enabling file handling, OS access and async events</li>
+<li><span class="y">globalThis</span> is always the global object, introduced in ECMAScript 2020: equals <code class="i">window</code> in browsers and <code class="i">global</code> in Node</li></ul>
+<div class="code"><pre><code>console.log(global === globalThis);
+console.log(typeof window);</code></pre><div class="out">true · undefined</div></div>
+
+<h2>V8 deep dive: from code to execution<span class="src">Notes ep-8</span></h2>
+<svg class="dia" viewBox="0 0 720 300" role="img" aria-label="V8 pipeline: parsing, AST, Ignition bytecode, TurboFan optimization and deoptimization, garbage collection">
+  <g transform="rotate(-.6 54 55)"><rect class="bx" x="6" y="30" width="96" height="50" rx="9"/><text x="54" y="62" text-anchor="middle">Code</text></g>
+  <g transform="rotate(.6 195 55)"><rect class="bx" x="140" y="30" width="110" height="50" rx="9"/><text x="195" y="52" text-anchor="middle" style="font-size:18px">Parsing</text><text x="195" y="72" text-anchor="middle" style="font-size:15px">tokens → AST</text></g>
+  <g transform="rotate(-.6 360 55)"><rect class="bx hot" x="290" y="30" width="140" height="50" rx="9"/><text x="360" y="52" text-anchor="middle" style="font-size:18px">Ignition</text><text x="360" y="72" text-anchor="middle" style="font-size:15px">interpreter</text></g>
+  <g transform="rotate(.6 595 55)"><rect class="bx hot" x="520" y="30" width="150" height="50" rx="9"/><text x="595" y="52" text-anchor="middle" style="font-size:18px">TurboFan</text><text x="595" y="72" text-anchor="middle" style="font-size:15px">optimizing compiler</text></g>
+  <g transform="rotate(.5 360 153)"><rect class="bx" x="290" y="130" width="140" height="46" rx="9"/><text x="360" y="159" text-anchor="middle" style="font-size:18px">Byte code</text></g>
+  <g transform="rotate(-.5 595 153)"><rect class="bx" x="500" y="130" width="190" height="46" rx="9"/><text x="595" y="159" text-anchor="middle" style="font-size:17px">optimised machine code</text></g>
+  <g transform="rotate(.4 460 258)"><rect class="bx" x="380" y="235" width="160" height="46" rx="9" style="fill:#e6f4e0"/><text x="460" y="264" text-anchor="middle" style="font-size:18px">Execution</text></g>
+  <path class="ar" d="M104 55 Q122 48 138 55"/><path class="ar" d="M252 55 Q270 48 288 55"/>
+  <path class="ar" d="M432 42 Q476 12 518 40"/><text x="472" y="12" text-anchor="middle" class="note" style="font-size:16px">optimization</text>
+  <path class="ar" d="M595 82 Q600 106 596 128"/>
+  <path class="ar" d="M498 152 Q462 122 432 84"/><text x="452" y="118" class="note" style="font-size:16px">deoptimization</text>
+  <path class="ar" d="M360 82 Q362 106 360 128"/>
+  <path class="ar" d="M360 178 Q364 208 392 233"/><path class="ar" d="M595 178 Q580 212 530 233"/>
+  <rect x="6" y="110" width="230" height="130" rx="12" fill="#eef8ea" stroke="#1c6b39" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="121" y="136" text-anchor="middle" class="grn" style="font-size:19px">Garbage collector</text>
+  <text x="121" y="162" text-anchor="middle" class="grn" style="font-size:17px">Orinoco · Oilpan</text><text x="121" y="184" text-anchor="middle" class="grn" style="font-size:17px">Scavenger</text><text x="121" y="206" text-anchor="middle" class="grn" style="font-size:17px">Mark-Compact</text>
+</svg>
+<ul class="ar">
+<li><span class="y">1. Parsing:</span> <span class="p">lexical analysis</span> (tokenization) breaks code into tokens; <span class="p">syntax analysis</span> turns tokens into an <span class="y">AST</span> (Abstract Syntax Tree)</li>
+<li><span class="y">2. Interpreter (Ignition)</span> converts the AST to <span class="y">bytecode</span>, which is executed; garbage collection runs alongside</li>
+<li><span class="y">3. Optimization:</span> if Ignition spots hot code, it passes it to the <span class="y">TurboFan</span> compiler, which makes optimised machine code that is executed</li>
+<li><span class="y">4. Deoptimization:</span> if the optimised code can’t hold, Ignition turns it back to bytecode and runs that</li></ul>
+<div class="tw"><table><tr><th>Interpreted languages</th><th>Compiled languages</th></tr>
+<tr><td>run line by line</td><td>first compile high-level code to machine code</td></tr>
+<tr><td>fast initial execution</td><td>heavy up front, then executes fast</td></tr>
+<tr><td>need an interpreter</td><td>need a compiler</td></tr></table></div>
+<ul class="ar"><li>JavaScript in V8 uses <span class="y">both</span>: <span class="p">JIT compilation</span> (Just-In-Time compilation)</li></ul>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>Node 26 ships V8 14.6 per release summaries I found (a third-party source; not re-checked on nodejs.org)</li>
+<li>Newer V8 versions also have middle compiler tiers (Sparkplug, Maglev) that the notes’ diagram doesn’t show; I did not re-verify them for V8 14.6</li></ul></div><div class="sticky"><h3>Remember!</h3><ul><li>Node = V8 (C++) plus extras, built to be non-blocking</li><li>2009 Ryan Dahl → 2015 merge → 2019 OpenJS Foundation; ECMAScript is the rulebook</li><li>Code → tokens → AST → bytecode → (hot) optimised machine code; V8 = JIT + GC</li></ul></div>
+
+</section>
+<!-- ======================= PAGE: SYNC VS ASYNC ======================= -->
+<section class="sheet" id="pg-sync" data-part="A · Foundations" data-label="Sync vs async, libuv and the call stack">
+
+<h2>JavaScript is synchronous and single-threaded<span class="src">Notes ep-6</span></h2>
+<ul class="ar">
+<li><span class="y">Synchronous</span> = one after another. V8 runs code as soon as it’s sent; line 4 runs after line 3</li>
+<li>JS needs only <span class="y">one thread</span> to run</li>
+<li>In synchronous programming, execution is <span class="p">blocked</span> until the current task finishes</li>
+<li>Inefficient for I/O-bound tasks (file reading, network requests): it can block the entire thread</li></ul>
+<div class="err"><b>⚠ imprecise in the notes.</b> “It can run on a single thread or a single process.” A thread and a process are different things: JavaScript runs on one <i>thread</i> inside a Node <i>process</i>.</div>
+<p><b>The notes’ restaurant example</b> (Coke 0 min, Noodles 5 min, Pizza 10 min):</p>
+<div class="tw"><table><tr><th>Customer → item</th><th>Synchronous</th><th>Asynchronous</th></tr>
+<tr><td>A → Coke</td><td>0 min</td><td>0 min</td></tr><tr><td>B → Noodles</td><td>5 min</td><td>5 min</td></tr>
+<tr><td>C → Pizza</td><td>15 min</td><td>10 min</td></tr><tr><td>D → Coke</td><td>15 min</td><td>0 min</td></tr>
+<tr><td>E → Noodles</td><td>20 min</td><td>5 min</td></tr></table></div>
+<ul class="ar"><li>Synchronous: an order is fulfilled only after the previous one: <span class="y">blocking</span>, generally not a good way</li>
+<li>Asynchronous: all Coke orders arrive at 0 min, the pizza at 10, all noodles at 5; <span class="y">nobody waits for another’s order</span> (non-blocking)</li></ul>
+
+<h2>How sync and async code really execute<span class="src">Notes ep-6</span></h2>
+<svg class="dia" viewBox="0 0 720 200" role="img" aria-label="V8 offloads async work to libuv, which talks to the OS and returns callbacks">
+  <g transform="rotate(-.6 110 90)"><rect class="bx" x="6" y="30" width="210" height="120" rx="10"/><text x="111" y="62" text-anchor="middle">V8 JS engine</text><text x="111" y="92" text-anchor="middle" style="font-size:18px">call stack (GEC)</text><text x="111" y="114" text-anchor="middle" style="font-size:18px">memory heap + GC</text></g>
+  <g transform="rotate(.6 360 90)"><rect class="bx hot" x="270" y="30" width="180" height="120" rx="10"/><text x="360" y="62" text-anchor="middle">libuv</text><text x="360" y="92" text-anchor="middle" style="font-size:18px">event loop</text><text x="360" y="114" text-anchor="middle" style="font-size:18px">thread pool + queues</text></g>
+  <g transform="rotate(-.6 610 90)"><rect class="bx" x="510" y="30" width="200" height="120" rx="10"/><text x="610" y="62" text-anchor="middle">Operating system</text><text x="610" y="92" text-anchor="middle" style="font-size:18px">files · DB · network</text><text x="610" y="114" text-anchor="middle" style="font-size:18px">timers</text></g>
+  <path class="ar" d="M218 68 Q244 56 268 68"/><text x="244" y="50" text-anchor="middle" class="note" style="font-size:17px">offload</text>
+  <path class="ar" d="M452 68 Q480 56 508 68"/>
+  <path class="ar" d="M508 118 Q480 132 452 118"/>
+  <path class="ar" d="M268 118 Q244 132 218 118"/><text x="244" y="152" text-anchor="middle" class="note" style="font-size:17px">callback</text>
+  <text x="360" y="186" text-anchor="middle" class="grn" style="font-size:18px">V8 is synchronous; Node + libuv make the whole thing asynchronous</text>
+</svg>
+<ul class="ar">
+<li><span class="y">Sync run:</span> a Global Execution Context (GEC) is pushed on the <span class="p">call stack</span>; each function call gets its own context on top; values live in the <span class="p">memory heap</span>; when a function finishes, its result returns to the GEC and it leaves the stack. At the end the stack is empty and the garbage collector cleans the heap</li>
+<li><span class="y">libuv</span> = a multiplatform C library providing async, event-loop-based I/O: “Asynchronous I/O made simple”</li>
+<li>Whenever V8 sees an <span class="y">API call, file read or setTimeout</span>, it offloads it to libuv; libuv registers it and keeps the callback while V8 moves to the next line</li>
+<li>When libuv finishes a task and sees the <span class="p">call stack is empty</span>, it puts the callback on the call stack and V8 runs it quickly</li>
+<li>So even with a single thread, Node does many async operations together</li></ul><h2>Sync, async and setTimeout(0)<span class="src">Notes ep-7</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> “Do it right now” in a timer really means “do it as soon as I’m free”. A callback waits politely at the door until the call stack has nothing left to do.</div></div>
+<div class="code"><p class="cap">async.js, as in the notes (CommonJS)</p><pre><code>const fs = require("fs");
+const https = require("https");
+
+console.log("Hello world");
+
+var a = 1074298;
+var b = 254670;
+
+https.get("https://dummyjson.com/1", (res) =&gt; {
+  console.log("Fetched Data Successfully");
+});
+
+setTimeout(() =&gt; {
+  console.log("setTimeout called after 5 sec");
+}, 5000);
+
+fs.readFile("./file.txt", "utf8", (err, data) =&gt; {
+  console.log("File Data:", data);
+});
+
+function multiplyFn(x, y) {
+  const result = a * b;
+  return result;
+}
+
+var c = multiplyFn(a, b);
+console.log("multiplication result is:", c);</code></pre>
+<div class="out">Hello world · multiplication result is: 273591471660 · File Data: … · Fetched Data Successfully · setTimeout called after 5 sec</div></div>
+<div class="err"><b>⚠ in the notes’ code.</b> It writes <code class="i">fs.readfiles</code>; the real function is <code class="i">fs.readFile</code>. Also <code class="i">multiplyFn</code> ignores its parameters <code class="i">x, y</code> and multiplies the globals <code class="i">a * b</code>. The order of “File Data” vs “Fetched Data” depends on disk and network speed.</div>
+<ul class="ar"><li>A <span class="y">synchronous function blocks the main thread</span>: don’t use it in servers (the notes say so plainly)</li>
+<li><code class="i">setTimeout(cb, 0)</code>: the callback runs <span class="p">only once the call stack is empty</span>, i.e. after all synchronous code finishes</li>
+<li><span class="y">UTF-8</span> = a variable-length character encoding for electronic communication, defined by the Unicode standard; the name comes from “Unicode Transformation Format - 8 bit” (the <code class="i">"utf8"</code> option in <code class="i">readFile</code>)</li></ul>
+<div class="added"><span class="tag">+ added</span>
+<div class="code"><p class="cap">prove it: a timer of 0 ms still waits for blocking code (checked in Node v22)</p><pre><code>setTimeout(() =&gt; console.log('timer'), 0);
+const end = Date.now() + 1000;
+while (Date.now() &lt; end) {}      // busy-wait 1 second
+console.log('sync done');</code></pre><div class="out">sync done (after 1 s) · timer</div></div></div>
+
+<div class="sticky"><h3>Remember!</h3><ul><li>Sync blocks the one thread; async work is offloaded to libuv</li><li>Callbacks run only when the call stack is empty</li><li>Even <code>setTimeout(cb, 0)</code> waits for all sync code to finish</li></ul></div>
+
+</section>
+<!-- ======================= PAGE: EVENT LOOP ======================= -->
+<section class="sheet" id="pg-loop" data-part="A · Foundations" data-label="The event loop and thread pool">
+
+<h2>The event loop<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> The event loop is one waiter in a busy restaurant. He takes an order, hands it to the kitchen (the OS or thread pool), and immediately takes the next table’s order. When the kitchen rings the bell, he delivers the dish. He is never standing idle at the kitchen door, unless he stops to cook himself, and then <i>every</i> table waits.</div></div>
+<ul class="ar">
+<li>Phases in order: <span class="y">timers</span> → <span class="y">pending callbacks</span> → <span class="y">poll</span> (I/O) → <span class="y">check</span> (<code class="i">setImmediate</code>) → <span class="y">close callbacks</span>, then around again</li>
+<li>Between callbacks, Node empties the <span class="p">process.nextTick</span> queue, then the <span class="p">promise microtask</span> queue</li>
+<li><code class="i">setTimeout(fn, 0)</code> means “not before 1 ms”, never “right now”</li>
+<li>If poll has nothing to do, it waits for I/O; if <code class="i">setImmediate</code> is queued, it moves on to check</li>
+</ul>
+<svg class="dia" viewBox="0 0 720 250" role="img" aria-label="Event loop phases in order">
+  <g transform="rotate(-.8 66 80)"><rect class="bx" x="6" y="40" width="118" height="72" rx="10"/><text x="65" y="72" text-anchor="middle">1 timers</text><text x="65" y="95" text-anchor="middle">setTimeout</text></g>
+  <g transform="rotate(.7 205 80)"><rect class="bx" x="150" y="40" width="118" height="72" rx="10"/><text x="209" y="72" text-anchor="middle">2 pending</text><text x="209" y="95" text-anchor="middle">callbacks</text></g>
+  <g transform="rotate(-.6 350 80)"><rect class="bx hot" x="294" y="40" width="118" height="72" rx="10"/><text x="353" y="72" text-anchor="middle">3 poll</text><text x="353" y="95" text-anchor="middle">I/O callbacks</text></g>
+  <g transform="rotate(.8 495 80)"><rect class="bx" x="438" y="40" width="118" height="72" rx="10"/><text x="497" y="72" text-anchor="middle">4 check</text><text x="497" y="95" text-anchor="middle">setImmediate</text></g>
+  <g transform="rotate(-.7 640 80)"><rect class="bx" x="582" y="40" width="128" height="72" rx="10"/><text x="646" y="72" text-anchor="middle">5 close</text><text x="646" y="95" text-anchor="middle">callbacks</text></g>
+  <path class="ar" d="M126 76 Q138 68 148 76"/><path class="ar" d="M270 76 Q282 68 292 76"/><path class="ar" d="M414 76 Q426 68 436 76"/><path class="ar" d="M558 76 Q570 68 580 76"/>
+  <path class="ar" d="M646 116 Q 600 190 360 186 T 70 118"/>
+  <text x="360" y="212" text-anchor="middle" class="note">…and around again while there is work</text>
+  <rect x="60" y="226" width="600" height="22" rx="6" fill="#e6f4e0" stroke="#1c6b39" stroke-width="1.5" stroke-dasharray="5 4" transform="translate(0 -4)"/>
+  <text x="360" y="240" text-anchor="middle" class="grn" style="font-size:17px">after every callback: nextTick queue first, then promise microtasks</text>
+</svg>
+<div class="code"><p class="cap">guess the order before you read the output</p><pre><code>// order.js (CommonJS)
+console.log('1 start');
+setTimeout(() =&gt; console.log('2 timeout'), 0);
+setImmediate(() =&gt; console.log('3 immediate'));
+process.nextTick(() =&gt; console.log('4 nextTick'));
+Promise.resolve().then(() =&gt; console.log('5 promise'));
+console.log('6 end');</code></pre>
+<div class="out">1 start · 6 end · 4 nextTick · 5 promise · then 2 timeout / 3 immediate</div></div>
+<p class="warn">From the main module, “timeout vs immediate” can come out in either order. Inside an I/O callback, <code class="i">setImmediate</code> is always first.</p>
+<p class="warn">In an ES module (.mjs) the promise callback can run <i>before</i> nextTick, because module code itself runs inside a microtask. Run it and see.</p>
+<div class="tw"><table><tr><th>API</th><th>Runs when</th><th>Use it for</th></tr>
+<tr><td><code>process.nextTick</code></td><td>right after the current operation, before promises</td><td>emit an event after a constructor returns; rarely needed</td></tr>
+<tr><td><code>Promise.then</code> / <code>await</code></td><td>microtask queue, after nextTick</td><td>normal async code</td></tr>
+<tr><td><code>setTimeout(fn, 0)</code></td><td>timers phase, at least 1 ms later</td><td>deferring work a little</td></tr>
+<tr><td><code>setImmediate</code></td><td>check phase, right after poll</td><td>run after I/O callbacks</td></tr></table></div>
+</div>
+
+<h2>libuv &amp; the event loop<span class="src">Notes ep-9</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> The event loop is a supervisor with a clipboard, walking round the same five stations again and again. At each station he empties that station’s queue, and between every stop he handles anything marked urgent.</div></div>
+<ul class="ar">
+<li>While V8’s call stack is busy, libuv collects finished async tasks in the <span class="y">callback queue</span></li>
+<li>The event loop’s job: keep checking the call stack and callback queue, and run <span class="p">the right thing, at the right time, in the right order</span> (FIFO per queue)</li>
+<li>Before every phase, <code class="i">process.nextTick()</code> and <b>promise</b> callbacks run (the notes draw them in the middle of the cycle)</li>
+<li>One full cycle of the event loop = one <span class="y">tick</span></li>
+<li>JavaScript itself stays “a synchronous single-threaded language”; async I/O is handled by libuv + the OS</li></ul>
+<div class="tw"><table><tr><th>Phase</th><th>What it does (notes)</th></tr>
+<tr><td><b>timers</b></td><td>callbacks scheduled by <code>setTimeout()</code> and <code>setInterval()</code></td></tr>
+<tr><td><b>pending callbacks</b></td><td>I/O callbacks deferred to the next loop iteration</td></tr>
+<tr><td><b>idle, prepare</b></td><td>used only internally</td></tr>
+<tr><td><b>poll</b></td><td>retrieves new I/O events and runs I/O-related callbacks (almost all, except close callbacks, timers and <code>setImmediate()</code>); Node may block here when appropriate. Examples: incoming connections, data, <code>fs</code>, <code>crypto</code>, <code>http.get</code></td></tr>
+<tr><td><b>check</b></td><td><code>setImmediate()</code> callbacks run here</td></tr>
+<tr><td><b>close callbacks</b></td><td>some close callbacks, e.g. <code>socket.on('close')</code></td></tr></table></div>
+<p class="warn" style="color:var(--red)">The phases diagram with <code class="i">nextTick</code> and microtasks is drawn above; this section adds the notes’ own worked examples.</p>
+
+<h2>Predict the output: the notes’ four puzzles<span class="src">Notes ep-9 · Code 1–4</span></h2>
+<div class="code"><p class="cap">Code 1 (fs required as <code>fs</code>, file.txt exists)</p><pre><code>const a = 100;
+setImmediate(() =&gt; console.log("SetImmediate"));
+fs.readFile("./file.txt", "utf8", () =&gt; { console.log("File reading CB"); });
+setTimeout(() =&gt; console.log("Timer expired"), 0);
+function printA() { console.log("a=", a); }
+printA();
+console.log("Last line of the file");</code></pre><div class="out">a= 100 · Last line of the file · Timer expired · SetImmediate · File reading CB</div></div>
+<div class="code"><p class="cap">Code 2: adds a promise and process.nextTick (promise line corrected, see the red box)</p><pre><code>setImmediate(() =&gt; console.log("SetImmediate"));
+Promise.resolve().then(() =&gt; console.log("Promise"));
+fs.readFile("./file.txt", "utf8", () =&gt; { console.log("File Reading CB"); });
+setTimeout(() =&gt; console.log("Timer expired"), 0);
+process.nextTick(() =&gt; console.log("Process.nextTick"));
+// ...printA() and "Last line of the file" as before</code></pre><div class="out">a= 100 · Last line of the file · Process.nextTick · Promise · Timer expired · SetImmediate · File Reading CB</div></div>
+<div class="code"><p class="cap">Code 3: callbacks scheduled inside the file callback</p><pre><code>setImmediate(() =&gt; console.log("SetImmediate"));
+setTimeout(() =&gt; console.log("Timer expired"), 0);
+Promise.resolve().then(() =&gt; console.log("Promise"));
+fs.readFile("./file.txt", "utf8", () =&gt; {
+  setTimeout(() =&gt; console.log("2nd Timer"), 0);
+  process.nextTick(() =&gt; console.log("2nd nextTick"));
+  setImmediate(() =&gt; console.log("2nd SetImmediate"));
+  console.log("File reading CB");
+});
+process.nextTick(() =&gt; console.log("nextTick"));
+console.log("Last line of the file");</code></pre><div class="out">Last line of the file · nextTick · Promise · Timer expired · SetImmediate · File reading CB · 2nd nextTick · 2nd SetImmediate · 2nd Timer</div></div>
+<div class="code"><p class="cap">Code 4: a nextTick inside a nextTick</p><pre><code>process.nextTick(() =&gt; {
+  process.nextTick(() =&gt; console.log("inner nextTick"));
+  console.log("nextTick");
+});
+// plus the setImmediate, setTimeout, Promise and readFile lines from Code 3's top half</code></pre><div class="out">Last line of the file · nextTick · inner nextTick · Promise · Timer expired · SetImmediate · File Reading CB</div></div>
+<div class="err"><b>⚠ bug in the notes’ code (Codes 2–4).</b> They write <code class="i">Promise.resolve(() =&gt; console.log("Promise"))</code>. That passes a function <i>into</i> the promise as its value and schedules nothing, so “Promise” never prints (I ran it: it prints nothing). The notes’ outputs for Codes 3 and 4 only come out as shown with <code class="i">Promise.resolve().then(() =&gt; ...)</code>, which is what I used above. Code 2’s printed output in the notes omits “Promise”, which matches the buggy version.</div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>I ran Codes 2–4 with the <code class="i">.then</code> fix in Node v22 here, and they printed exactly the outputs above</li>
+<li>Inside the file callback (an I/O callback), <code class="i">setImmediate</code> beats <code class="i">setTimeout</code> every time: that’s why “2nd SetImmediate” comes before “2nd Timer”. From the main module, timer-vs-immediate order is not guaranteed</li></ul></div>
+
+<h2>Blocking vs non-blocking<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Blocking code is the waiter deciding to cook a 10-minute dish himself. For ten minutes nobody gets served. Non-blocking code hands the dish to the kitchen and walks away.</div></div>
+<div class="code"><pre><code>import fs from 'node:fs';
+import { readFile } from 'node:fs/promises';
+
+// BLOCKS: nothing else can run until the file is read
+const a = fs.readFileSync('./big.txt', 'utf8');
+
+// DOESN'T BLOCK: the loop keeps serving other requests
+const b = await readFile('./big.txt', 'utf8');</code></pre><div class="out wh">sync version freezes every other request for as long as the disk takes</div></div>
+<p class="warn">Event-loop killers: <code class="i">*Sync</code> file calls in request handlers, huge <code class="i">JSON.parse</code>, long <code class="i">for</code> loops, <code class="i">crypto.pbkdf2Sync</code>, and catastrophic regexes (ReDoS).</p>
+<p class="warn">Your reference’s Cloudinary helper calls <code class="i">fs.unlinkSync</code> inside an async upload path. It is small, but it is exactly this mistake (page 17).</p>
+<ul class="ar"><li>Rule: in servers, use async APIs; sync versions are fine in start-up scripts</li>
+<li>CPU-heavy work belongs in <span class="y">worker_threads</span> (page 20)</li>
+<li>The libuv pool defaults to 4 threads (<code class="i">UV_THREADPOOL_SIZE</code>), so 5 simultaneous bcrypt hashes queue up</li></ul>
+</div><h2>Thread pool, and “single- or multi-threaded?”<span class="src">Notes ep-10</span></h2>
+<ul class="ar">
+<li>libuv’s <span class="y">thread pool</span> has <span class="p">4 threads by default</span> (<code class="i">UV_THREADPOOL_SIZE = 4</code>)</li>
+<li>It is used for: <code class="i">fs</code>, <code class="i">dns lookup</code>, <code class="i">crypto</code>, user-specified input</li>
+<li><span class="y">Networking happens on sockets</span>; API calls do <b>not</b> use the thread pool. libuv talks to the OS through <code class="i">epoll</code> (Linux) and <code class="i">kqueue</code> (macOS): scalable I/O event notification mechanisms</li>
+<li><span class="y">Is Node single- or multi-threaded?</span> If you give it a synchronous task it is single-threaded; for async tasks it uses libuv’s 4-thread pool and acts multi-threaded. <span class="p">The answer: “it depends” on the task</span></li>
+<li>Change the size: <code class="i">process.env.UV_THREADPOOL_SIZE = 8;</code></li></ul>
+<div class="added"><span class="tag">+ added</span>
+<div class="code"><p class="cap">watch the pool: 5 hashes, 4 threads (checked in Node v22)</p><pre><code>const crypto = require('node:crypto');
+const start = Date.now();
+for (let i = 1; i &lt;= 5; i++) {
+  crypto.pbkdf2('pw', 'salt', 300000, 64, 'sha512',
+    () =&gt; console.log(`hash ${i}: ${Date.now() - start} ms`));
+}</code></pre><div class="out">four hashes finish together (~850 ms here); the fifth waits for a free thread (~1040 ms)</div></div>
+<p class="warn" style="color:var(--red)">Set the size before the pool is first used. The safest way is from the environment: <code class="i">UV_THREADPOOL_SIZE=8 node app.js</code>. Setting <code class="i">process.env</code> inside the script only works if it runs before any pool work, and not reliably on Windows (from my knowledge of libuv, not re-verified).</p></div>
+<div class="box" style="border:2.5px solid var(--red);border-radius:16px 6px 18px 8px;background:rgba(255,241,238,.5)"><h3 style="margin-top:0">Main teachings (from the notes)</h3>
+<ul class="ar"><li><span class="y">Don’t block the main thread:</span> synchronous methods, heavy JSON objects, complex regex, complex calculations and loops</li>
+<li>“Data structure is important” · “Naming is very important”</li></ul></div><div class="sticky"><h3>Remember!</h3><ul><li>Order: sync, nextTick, promises, then timers / immediate</li><li>Never block the loop; CPU work goes to a worker</li><li>Pool of 4 for fs, dns, crypto; single or multi-threaded? It depends</li></ul></div>
+
+</section>
+<!-- ======================= PAGE: MODULES & NPM ======================= -->
+<section class="sheet" id="pg-modules" data-part="A · Foundations" data-label="Modules, require and npm">
+
+<h2>Modules: module.exports and require<span class="src">Notes ep-4</span></h2>
+<ul class="ar">
+<li>Two files with unrelated code are two <span class="y">separate modules</span>; <code class="i">require()</code> is the built-in function that pulls one into another</li>
+<li><code class="i">module.exports</code> is an <span class="y">empty object by default</span>; you must export what other files should use, because variables and functions stay private to the module</li>
+<li>You can <span class="p">omit the .js extension</span> in <code class="i">require</code>; Node resolves it for you</li></ul>
+<div class="code"><pre><code>// sum.js
+let x = "export in React exports in Node";
+function calculateSum(a, b) {
+  let sum = a + b;
+  console.log(sum);
+}
+module.exports = { x: x, calculateSum: calculateSum };
+
+// app.js
+const obj = require("./sum.js");
+obj.calculateSum(5, 10);
+console.log(obj.x);
+
+// destructuring import (extension omitted)
+const { x, calculateSum } = require("./sum");</code></pre><div class="out">15 · export in React exports in Node</div></div>
+
+<h2>How require() works behind the scenes<span class="src">Notes ep-5</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> <code class="i">require</code> is a librarian. She finds the book (resolve), opens it (load), puts it in a private reading room so it can’t scribble on other books (wrap), reads it out (evaluate), and keeps a copy at the desk so the next person gets it instantly (cache).</div></div>
+<ul class="ar">
+<li><span class="y">1. Resolving:</span> Node finds the path: a local file (<code class="i">./local</code>), a JSON file, or a module in <code class="i">node_modules</code>, among other possibilities</li>
+<li><span class="y">2. Loading:</span> the file content is loaded; the process varies for JavaScript, JSON or other types</li>
+<li><span class="y">3. Wrapping in an IIFE:</span> the module code is wrapped in an Immediately Invoked Function Expression, which keeps its variables and functions private</li>
+<li><span class="y">4. Evaluation:</span> the wrapped code runs; <code class="i">module.exports</code> is set and becomes visible to other files</li>
+<li><span class="y">5. Caching</span> (<span class="p">very important</span>): the result of <code class="i">require()</code> is cached, so a module loads and executes <b>only once</b></li></ul>
+<ul class="ar"><li><span class="y">Why can’t we reach another file’s variables?</span> All of a module’s code is wrapped inside a function when you <code class="i">require</code> it</li>
+<li><span class="y">IIFE</span> = Immediately Invoked Function Expression. Node passes <code class="i">module</code> and <code class="i">require</code> in as parameters, then hands the wrapped code to V8, which knows how to run an IIFE</li></ul>
+<div class="code"><p class="cap">the notes’ sketch</p><pre><code>(function (module, require) {
+  require("./path");        // "given by Node"
+  module.exports = {};
+})();</code></pre></div>
+<div class="added"><span class="tag">+ added</span>
+<p>The real wrapper has five parameters: <code class="i">(exports, require, module, __filename, __dirname)</code>. Proof, plus the caching rule (checked in Node v22):</p>
+<div class="code"><pre><code>// counter.js
+console.log('counter loaded');
+module.exports = { n: 0 };
+
+// main.js (CommonJS)
+const a = require('./counter');
+a.n++;
+const b = require('./counter');
+console.log(b.n, a === b, arguments.length);</code></pre><div class="out">counter loaded (printed once) · 1 true 5</div></div>
+<p class="warn" style="color:var(--red)">Because of the cache, editing a required file isn’t picked up until you restart (or clear <code class="i">require.cache</code>).</p></div>
+
+<h2>CommonJS vs ES Modules<span class="src">Notes ep-4</span></h2>
+<div class="tw"><table><tr><th>CommonJS (cjs)</th><th>ES Modules (esm, .mjs)</th></tr>
+<tr><td><code>module.exports</code>, <code>require()</code></td><td><code>import</code>, <code>export</code></td></tr>
+<tr><td>By default used in Node.js</td><td>By default used in frameworks like React, Angular</td></tr>
+<tr><td>Older way</td><td>Newer way</td></tr>
+<tr><td>Synchronous</td><td>Async</td></tr>
+<tr><td>Non-strict</td><td>Strict</td></tr></table></div>
+<ul class="ar"><li><span class="y">Sync vs async:</span> CommonJS loads a module synchronously (the next line waits). ES modules load asynchronously, which is more flexible. <b>The notes flag this as an interview point</b></li>
+<li><span class="y">Strict mode:</span> CommonJS runs non-strict; ES modules run strict, with stricter parsing and error handling, so they’re generally safer</li>
+<li>To use ES modules, create <span class="p">package.json</span> and add the setting below</li></ul>
+<div class="code"><pre><code>{
+  "type": "module"
+}</code></pre><div class="out wh">your .js files now use import/export syntax</div></div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>The notes name only <code class="i">.mjs</code>; <code class="i">"type": "module"</code> makes plain <code class="i">.js</code> files ESM too (the GitHub reference uses this)</li>
+<li>A fuller side-by-side comparison, including <code class="i">__dirname</code> and required file extensions, is in the green table under “ES Modules in this repo” below</li></ul></div><h2>ES Modules in this repo<span class="src">Ref §3</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A module is a labelled box of code. <code class="i">export</code> puts things on the outside of the box; <code class="i">import</code> reaches into another box to borrow them.</div></div>
+<ul class="ar"><li>Switched on by <code class="i">"type": "module"</code> in <span class="y">package.json</span></li>
+<li>Relative imports need the <span class="p">file extension</span>: <code class="i">./db/index.js</code>, as the reference does</li></ul>
+<div class="code"><pre><code>// package.json (excerpt)
+{ "name": "videotube", "type": "module" }
+
+// src/db/index.js
+const connectDB = async () =&gt; { /* ... */ };
+export default connectDB;
+
+// src/index.js
+import connectDB from "./db/index.js";</code></pre><div class="out wh">default export imported by any name; named exports use { braces }</div></div>
+<div class="added"><span class="tag">+ added</span>
+<div class="tw"><table><tr><th></th><th>CommonJS</th><th>ES Modules</th></tr>
+<tr><td>Syntax</td><td><code>require()</code> / <code>module.exports</code></td><td><code>import</code> / <code>export</code></td></tr>
+<tr><td>Loading</td><td>synchronous, at run time</td><td>static analysis, async-capable</td></tr>
+<tr><td>Top-level <code>await</code></td><td>no</td><td>yes</td></tr>
+<tr><td><code>__dirname</code></td><td>available</td><td>use <code>import.meta.dirname</code> (newer Node) or <code>fileURLToPath</code></td></tr>
+<tr><td>Extension in path</td><td>optional</td><td>required for relative files</td></tr>
+<tr><td>Select with</td><td>default, or <code>.cjs</code></td><td><code>"type":"module"</code> or <code>.mjs</code></td></tr></table></div>
+<ul class="ar"><li>ESM can import CommonJS packages; going the other way, <code class="i">require()</code> of an ES module works in recent Node lines (I believe unflagged from v22.12 / v20.19; I could not re-verify the exact versions)</li>
+<li>Node 26 removed the extensionless-file exception inside <code class="i">"type": "module"</code> packages: such files now need <code class="i">.cjs</code> or <code class="i">.mjs</code></li>
+<li>Node 26 also made built-in TypeScript type stripping stable, so <code class="i">node app.ts</code> can run simple TS without a build step (v26)</li></ul>
+<p class="warn" style="color:var(--red)">Forgetting <code class="i">.js</code> in an ESM import gives <code class="i">ERR_MODULE_NOT_FOUND</code>; mixing <code class="i">require</code> into an ESM file gives “require is not defined”.</p>
+</div>
+
+<h2>package.json &amp; npm<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><span class="y">dependencies</span> = needed in production; <span class="y">devDependencies</span> = tests, linters, dev tools</li>
+<li><span class="y">Lockfile</span> (<code class="i">package-lock.json</code>) pins exact versions: commit it. Use <code class="i">npm ci</code> in CI and Docker for repeatable installs</li>
+<li><span class="y">scripts</span> are shortcuts: <code class="i">npm run dev</code>, <code class="i">npm test</code></li></ul>
+<div class="tw"><table><tr><th>Range</th><th>Means</th><th>Allows 1.4.2 → …</th></tr>
+<tr><td><code>^1.4.2</code></td><td>same major version</td><td>1.9.0 yes, 2.0.0 no</td></tr>
+<tr><td><code>~1.4.2</code></td><td>same minor version</td><td>1.4.9 yes, 1.5.0 no</td></tr>
+<tr><td><code>1.4.2</code></td><td>exact</td><td>only 1.4.2</td></tr></table></div>
+<div class="code"><pre><code>{
+  "scripts": { "start": "node src/index.js", "test": "node --test" },
+  "dependencies": { "express": "^5.0.0" },
+  "devDependencies": {},
+  "engines": { "node": "&gt;=24" }
+}</code></pre><div class="out wh">semver is MAJOR.MINOR.PATCH: breaking.feature.fix</div></div>
+</div>
+<div class="old"><b>⚠ older pattern</b> (from the reference, §4): the dev script uses nodemon plus a dotenv preload plus a flag that is no longer needed.<br><code class="i">"dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"</code></div>
+<div class="new"><span class="tag">+ added</span>
+<p>Modern equivalent: Node has its own watcher (<code class="i">--watch</code>, stable) and env-file loader (<code class="i">--env-file</code>, added v20.6):</p>
+<div class="code" style="margin-top:14px"><pre><code>"dev": "node --watch --env-file=.env src/index.js"</code></pre><div class="out wh">restarts on file change and loads .env before your code runs</div></div>
+<p>JSON imports now use import attributes (<code class="i">import data from './x.json' with { type: 'json' }</code>), so the experimental flag can go.</p></div><div class="sticky"><h3>Remember!</h3><ul><li>require = resolve, load, wrap (IIFE), evaluate, cache</li><li>CJS = sync + non-strict; ESM = async + strict, and needs file extensions</li><li>Commit the lockfile; <code>node --watch --env-file</code> replaces nodemon + dotenv preload</li></ul></div>
+
+</section>
+<!-- ======================= PAGE: CORE MODULES ======================= -->
+<section class="sheet" id="pg-core" data-part="A · Foundations" data-label="Core modules: fs, path, os">
+
+<h2>fs, path and os<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Core modules are the tools that ship in Node’s toolbox, so no <code class="i">npm install</code> is needed. <code class="i">fs</code> is the filing clerk, <code class="i">path</code> is the map reader who builds addresses safely, and <code class="i">os</code> is the building’s facilities report.</div></div>
+<ul class="ar">
+<li><span class="y">fs</span>: read, write, delete files. Prefer <code class="i">fs/promises</code> (async) over <code class="i">*Sync</code> in servers</li>
+<li><span class="y">path</span>: <code class="i">join</code>, <code class="i">resolve</code>, <code class="i">basename</code>, <code class="i">extname</code>; handles <code class="i">/</code> vs <code class="i">\</code> for you</li>
+<li><span class="y">os</span>: CPU count, memory, platform. Import core modules with the <code class="i">node:</code> prefix</li>
+<li>Others you will meet: <code class="i">http</code>, <code class="i">events</code>, <code class="i">stream</code>, <code class="i">buffer</code>, <code class="i">crypto</code>, <code class="i">url</code></li></ul>
+<div class="code"><pre><code>import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+
+const file = path.join(process.cwd(), 'notes.txt');
+await writeFile(file, 'hello node\n');
+console.log(await readFile(file, 'utf8'));
+console.log(path.extname(file), os.platform(), os.availableParallelism());</code></pre>
+<div class="out">hello node · .txt linux 8 (your values differ)</div></div>
+<div class="tw"><table><tr><th>Module</th><th>Typical call</th><th>Real use in a backend</th></tr>
+<tr><td><code>fs</code></td><td><code>readFile</code>, <code>unlink</code>, <code>mkdir</code></td><td>temp upload files, config files</td></tr>
+<tr><td><code>path</code></td><td><code>path.join('public','temp')</code></td><td>building file paths safely</td></tr>
+<tr><td><code>os</code></td><td><code>os.availableParallelism()</code></td><td>deciding how many cluster workers to fork</td></tr>
+<tr><td><code>crypto</code></td><td><code>randomUUID()</code>, <code>randomBytes()</code></td><td>unique file names, secure tokens</td></tr>
+<tr><td><code>url</code></td><td><code>new URL(req.url, base)</code></td><td>parsing query strings in raw http</td></tr></table></div>
+<p class="warn" style="color:var(--red)">Unsafe: <code class="i">path.join('public', req.params.file)</code>. A request for <code class="i">../.env</code> walks out of the folder (path traversal).</p>
+<div class="code"><p class="cap">safe version: resolve, then check the result stays inside the base folder</p><pre><code>import path from 'node:path';
+const base = path.resolve('public');
+
+export function safeJoin(userPath) {
+  const full = path.resolve(base, userPath);
+  if (!full.startsWith(base + path.sep)) throw new Error('Path traversal blocked');
+  return full;
+}
+console.log(safeJoin('img/a.png'));
+safeJoin('../.env');</code></pre>
+<div class="out">/app/public/img/a.png · then Error: Path traversal blocked</div></div>
+<ul class="ar"><li>In your reference: <code class="i">express.static("public")</code> serves that folder and <code class="i">./public/temp</code> is the upload landing zone (page 17). Express’s static handler already blocks traversal; your own file routes must do it themselves</li></ul>
+</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Import core modules as <code>node:fs</code>, <code>node:path</code>…</li><li>Async <code>fs/promises</code> in servers, <code>*Sync</code> only at start-up</li><li>Never join user input into a path without the safeJoin check</li></ul></div>
+</section>
+<!-- ======================= PAGE: ASYNC & EVENTEMITTER ======================= -->
+<section class="sheet" id="pg-async" data-part="A · Foundations" data-label="Async patterns and EventEmitter">
+
+<h2>Callbacks → promises → async/await<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A callback is “call me when the pizza is ready”. A promise is the order ticket you hold. <code class="i">await</code> is “wait at the counter, but let the shop keep serving others meanwhile.”</div></div>
+<div class="code"><p class="cap">same job, three styles</p><pre><code>import fs from 'node:fs';
+import { readFile } from 'node:fs/promises';
+
+// 1. callback (error-first)
+fs.readFile('a.txt', 'utf8', (err, data) =&gt; {
+  if (err) return console.error(err);
+  console.log('callback', data.length);
+});
+
+// 2. promise
+readFile('a.txt', 'utf8').then((d) =&gt; console.log('promise', d.length));
+
+// 3. async/await
+try { console.log('await', (await readFile('a.txt', 'utf8')).length); }
+catch (e) { console.error('failed:', e.code); }</code></pre><div class="out wh">all three read the same file; only the error-handling shape differs</div></div>
+<ul class="ar"><li><span class="y">Promise.all</span>: run in parallel, fail on the first error. <span class="y">Promise.allSettled</span>: wait for all, never throws</li>
+<li><code class="i">util.promisify</code> turns an old callback API into a promise API</li>
+<li>Since Node 15 an <span class="p">unhandled promise rejection</span> crashes the process by default</li></ul>
+<p class="warn" style="color:var(--red)">Missing <code class="i">await</code>: <code class="i">const user = User.findById(id)</code> gives you a pending promise, not a user.</p>
+<p class="warn" style="color:var(--red)">Awaiting in a <code class="i">for</code> loop runs requests one by one; use <code class="i">Promise.all</code> when they are independent.</p>
+<div class="code"><p class="cap">a promise-based retry helper</p><pre><code>export async function retry(fn, { retries = 3, delayMs = 200 } = {}) {
+  let lastErr;
+  for (let i = 0; i &lt;= retries; i++) {
+    try { return await fn(i); }
+    catch (err) {
+      lastErr = err;
+      await new Promise((r) =&gt; setTimeout(r, delayMs * 2 ** i)); // backoff
+    }
+  }
+  throw lastErr;
+}
+// await retry(() =&gt; fetch('https://example.com/api'))</code></pre><div class="out wh">tries up to 4 times, waiting 200, 400, 800, 1600 ms between attempts</div></div>
+</div>
+<div class="old"><b>⚠ older pattern</b> (reference, §13): <code class="i">asyncHandler</code> exists because “Express 4 doesn’t natively forward async rejections.” Callback pyramids (“callback hell”) are the same era.</div>
+<div class="new"><span class="tag">+ added</span>Express 5 forwards rejected promises from async handlers to the error middleware by itself, so the wrapper becomes optional there (from my knowledge of Express 5; I did not re-verify it this session). Keep the wrapper if you stay on Express 4.</div>
+
+<h2>EventEmitter<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> An EventEmitter is a radio station. It broadcasts named events (“order-placed”) and anyone who tuned in with <code class="i">on</code> hears them. The station does not know or care who is listening.</div></div>
+<div class="code"><pre><code>import { EventEmitter } from 'node:events';
+
+class OrderBus extends EventEmitter {}
+const bus = new OrderBus();
+
+bus.on('placed', (id) =&gt; console.log('email for order', id));
+bus.once('placed', (id) =&gt; console.log('first order ever:', id));
+bus.on('error', (err) =&gt; console.error('bus error:', err.message));
+
+bus.emit('placed', 101);
+bus.emit('placed', 102);
+bus.emit('error', new Error('smtp down'));</code></pre>
+<div class="out">email for order 101 · first order ever: 101 · email for order 102 · bus error: smtp down</div></div>
+<ul class="ar"><li>Servers, streams and <code class="i">process</code> are all EventEmitters underneath</li>
+<li><code class="i">on</code> repeats, <code class="i">once</code> fires one time, <code class="i">off</code> removes a listener</li></ul>
+<p class="warn" style="color:var(--red)">An <code class="i">'error'</code> event with no listener throws and can crash the process.</p>
+<p class="warn" style="color:var(--red)">Adding listeners in a loop or per request leaks memory; Node warns after 10 on one event.</p>
+</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>await every promise; parallelise with Promise.all</li><li>Unhandled rejections crash modern Node</li><li>Always attach an <code>'error'</code> listener to emitters</li></ul></div>
+</section>
+<!-- ======================= PAGE: STREAMS & BUFFERS ======================= -->
+<section class="sheet" id="pg-streams" data-part="A · Foundations" data-label="Streams and buffers">
+
+<h2>Buffers and streams<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Loading a whole file with <code class="i">readFile</code> is carrying water in a bucket: you need a bucket big enough for the lot. A stream is a pipe: water flows through in small amounts, so you can move a lake with a garden hose. A Buffer is one cupful of raw bytes.</div></div>
+<ul class="ar">
+<li><span class="y">Buffer</span>: fixed-size chunk of raw bytes (files, network packets, images)</li>
+<li><span class="y">Stream</span> types: Readable, Writable, Duplex, Transform (e.g. gzip)</li>
+<li><span class="y">Backpressure</span>: when the destination is slower than the source, the pipe signals “pause” so memory does not balloon</li>
+<li><code class="i">pipeline()</code> wires streams together, handles backpressure, and cleans up on error</li></ul>
+<svg class="dia" viewBox="0 0 720 210" role="img" aria-label="A stream pipeline with backpressure">
+  <g transform="rotate(-.8 80 100)"><rect class="bx" x="10" y="70" width="140" height="70" rx="10"/><text x="80" y="102" text-anchor="middle">Readable</text><text x="80" y="126" text-anchor="middle">big.log</text></g>
+  <g transform="rotate(.7 360 100)"><rect class="bx hot" x="290" y="70" width="140" height="70" rx="10"/><text x="360" y="102" text-anchor="middle">Transform</text><text x="360" y="126" text-anchor="middle">gzip</text></g>
+  <g transform="rotate(-.6 640 100)"><rect class="bx" x="570" y="70" width="140" height="70" rx="10"/><text x="640" y="102" text-anchor="middle">Writable</text><text x="640" y="126" text-anchor="middle">big.log.gz</text></g>
+  <path class="ar" d="M152 104 Q 220 92 288 104"/><path class="ar" d="M432 104 Q 500 92 568 104"/>
+  <text x="220" y="84" text-anchor="middle" style="font-size:17px">chunks →</text><text x="500" y="84" text-anchor="middle" style="font-size:17px">chunks →</text>
+  <path class="ar" d="M640 66 Q 400 4 90 62"/>
+  <text x="365" y="26" text-anchor="middle" class="note">“slow down!” backpressure when the buffer is full</text>
+  <text x="360" y="186" text-anchor="middle" class="grn" style="font-size:18px">memory use stays flat, even for a 5 GB file</text>
+</svg>
+<div class="code"><pre><code>import { createReadStream, createWriteStream } from 'node:fs';
+import { createGzip } from 'node:zlib';
+import { pipeline } from 'node:stream/promises';
+
+await pipeline(
+  createReadStream('big.log'),
+  createGzip(),
+  createWriteStream('big.log.gz'),
+);
+console.log('done');</code></pre><div class="out">done (and big.log.gz exists, using only a few KB of memory at a time)</div></div>
+<div class="code"><p class="cap">Buffers in a nutshell</p><pre><code>const b = Buffer.from('héllo', 'utf8');
+console.log(b.length, b.toString('hex'), b.toString('base64'));</code></pre><div class="out">6 68c3a96c6c6f aMOpbGxv   (é takes 2 bytes, so 6 bytes for 5 characters)</div></div>
+<div class="tw"><table><tr><th></th><th><code>readFile</code></th><th><code>createReadStream</code></th></tr>
+<tr><td>Memory</td><td>whole file at once</td><td>one small chunk at a time</td></tr>
+<tr><td>Starts output</td><td>after full read</td><td>immediately</td></tr>
+<tr><td>Best for</td><td>small config or JSON files</td><td>large files, uploads, downloads, logs</td></tr>
+<tr><td>Code</td><td>simplest</td><td>a little more setup</td></tr></table></div>
+<p class="warn" style="color:var(--red)"><code class="i">a.pipe(b)</code> does not forward errors, so a failure can leave streams open. Prefer <code class="i">pipeline</code>.</p>
+<p class="warn" style="color:var(--red)">Reading an entire upload into memory (<code class="i">multer.memoryStorage</code>) with no size limit lets one big request eat your RAM.</p>
+<ul class="ar"><li>Your reference lands uploads on disk first “to stream uploads to Cloudinary without holding huge buffers in memory”: the same idea</li></ul>
+</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Big data → streams, small data → readFile</li><li>pipeline() beats .pipe(): errors and backpressure handled</li><li>A Buffer is raw bytes; length counts bytes, not characters</li></ul></div>
+</section>
+<!-- ======================= PAGE: HTTP & EXPRESS ======================= -->
+<section class="sheet" id="pg-http" data-part="B · Building the server" data-label="Servers, the http module and Express">
+
+<h2>Express: the web framework<span class="src">Ref §5</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Node’s <code class="i">http</code> module gives you a front door and nothing else. Express is the reception desk: it checks who is at the door, points them to the right department, and hands back the answer in a consistent format.</div></div>
+<ul class="ar"><li><span class="y">Express</span> = minimal, unopinionated framework on top of Node’s <code class="i">http</code> module</li>
+<li>Gives you <span class="p">routing</span>, <span class="p">middleware composition</span>, request/response helpers</li>
+<li><code class="i">app</code> is the application instance: middlewares, routes and error handlers all attach to it</li>
+<li><span class="y">Mental model:</span> a pipeline. A request enters one end, flows through middlewares in order, hits a route handler, and a response flows back out</li></ul>
+<div class="code"><pre><code>import express from "express";
+const app = express();</code></pre><div class="out wh">app is now a function you can mount middleware and routes on, and later pass to listen()</div></div>
+
+<h2>Underneath: the http module<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><code class="i">http.createServer(handler)</code> calls <code class="i">handler(req, res)</code> for each request</li>
+<li><code class="i">req</code> is a Readable stream, <code class="i">res</code> a Writable one</li>
+<li>Express’s <code class="i">res.json()</code> and <code class="i">res.status()</code> are conveniences over <code class="i">res.writeHead</code> and <code class="i">res.end</code></li></ul>
+<div class="code"><pre><code>import http from 'node:http';
+
+const server = http.createServer((req, res) =&gt; {
+  if (req.method === 'GET' &amp;&amp; req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true }));
+  }
+  res.writeHead(404).end();
+});
+server.listen(3000, () =&gt; console.log('listening on 3000'));</code></pre>
+<div class="out">listening on 3000 · curl localhost:3000/health → {"ok":true}</div></div>
+<div class="tw"><table><tr><th>Task</th><th>Raw <code>http</code></th><th>Express</th></tr>
+<tr><td>Routing</td><td>if/else on <code>req.url</code></td><td><code>app.get('/health', fn)</code></td></tr>
+<tr><td>JSON body</td><td>collect chunks, parse yourself</td><td><code>express.json()</code></td></tr>
+<tr><td>Send JSON</td><td>set header + <code>JSON.stringify</code></td><td><code>res.json(obj)</code></td></tr>
+<tr><td>Errors</td><td>your own try/catch everywhere</td><td>error middleware</td></tr></table></div>
+<p class="warn" style="color:var(--red)">Forget <code class="i">res.end()</code> and the client hangs forever.</p>
+<p class="warn" style="color:var(--red)">Send a response twice and you get <code class="i">ERR_HTTP_HEADERS_SENT</code>. Always <code class="i">return</code> after responding.</p>
+</div><h2>Creating a server<span class="src">Notes ep-11</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A server is a shop that’s always open. The IP address is its street address, the port is the door number, and DNS is the phone book that turns “twitter.com” into the address.</div></div>
+<ul class="ar">
+<li>A server has <span class="y">hardware</span> (the machine) and <span class="y">software</span> (your app, DB, files)</li>
+<li>You can use your own computer as a server, but: limited RAM, it must always be up, and your local ISP doesn’t guarantee your IP. AWS does, and has big data centers in many regions</li>
+<li>With Node you create an <span class="y">HTTP server</span>: an application that handles user requests</li>
+<li><span class="y">Client–server:</span> client (own IP) ⇄ <span class="p">socket / packets</span> ⇄ web server (own IP), over <span class="y">TCP/IP</span>. Data is sent in small chunks called <span class="p">packets</span></li>
+<li>Types of servers: <span class="y">HTTP</span> (HyperText Transfer Protocol), <span class="y">SMTP</span> (Simple Mail Transfer Protocol), <span class="y">FTP</span> (File Transfer Protocol). With Node we mean the HTTP web server, which listens to requests</li>
+<li>Many HTTP servers can live on one machine, each on a <span class="y">different port number</span> (e.g. <code class="i">localhost:3000</code>), so people can connect to the right app</li>
+<li><span class="y">DNS</span> servers manage the mapping between a domain name and an IP. A server can also talk to another server</li></ul>
+<div class="tw"><table><tr><th>Socket</th><th>WebSockets</th></tr>
+<tr><td>make a connection, finish the task, close it</td><td>the connection stays open for a long time</td></tr>
+<tr><td>takes fewer resources</td><td>takes more resources</td></tr></table></div>
+<div class="code"><p class="cap">server.js</p><pre><code>const http = require('node:http');
+
+const server = http.createServer(function (req, res) {
+  res.end("Hello world!");
+});
+
+server.listen(7777);</code></pre><div class="out">curl localhost:7777 → Hello world!</div></div>
+<ul class="ar"><li><span class="y">Express</span> = a Node.js web application framework (see the Express heading above and the whole “Building the server” part)</li></ul>
+<div class="err"><b>⚠ small slips in the notes.</b> “SMT server” should be <b>SMTP</b>. The notes also show <code class="i">createServer()</code> with no function first, then with one; only the second version replies to requests.</div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>This server answers <i>every</i> URL and method with the same text and a default 200 status; real routing is what Express adds (pages 9–11)</li>
+<li>Starting it twice on one port fails with <code class="i">EADDRINUSE</code>: that’s the “different port per server” rule in action</li>
+<li>Add a callback, <code class="i">server.listen(7777, () =&gt; console.log('up'))</code>, so you know it started</li></ul></div>
+
+<div class="sticky"><h3>Remember!</h3><ul><li>Express is a thin layer over http</li><li>One response per request; <code>return</code> after sending</li><li>Each server needs its own port; IP + DNS lead clients to it</li></ul></div>
+
+</section>
+<!-- ======================= PAGE: MIDDLEWARE ======================= -->
+<section class="sheet" id="pg-mw" data-part="B · Building the server" data-label="Middleware">
+
+<h2>Middleware deep dive<span class="src">Ref §6</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Middleware is the chain of airport checkpoints between the entrance and the gate: ID check, bag scan, boarding pass. Each one can wave you on (<code class="i">next()</code>) or stop you right there with an answer.</div></div>
+<ul class="ar"><li>A middleware is just <code class="i">(req, res, next) =&gt; { ... }</code></li>
+<li>It can <span class="y">mutate req/res</span>, <span class="y">end the response</span>, or <span class="y">pass control</span> with <code class="i">next()</code></li></ul>
+<div class="code"><p class="cap">src/app.js</p><pre><code>app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public"));
+app.use(cookieParser());</code></pre><div class="out wh">every request passes these five, in this order, before reaching any route</div></div>
+<div class="tw"><table><tr><th>Middleware</th><th>Purpose</th></tr>
+<tr><td><code>cors</code></td><td>Allows requests from a different origin (e.g. your React frontend). <code>credentials: true</code> lets cookies cross origins.</td></tr>
+<tr><td><code>express.json</code></td><td>Parses JSON request bodies. The <code>limit</code> guards against payload-flood attacks.</td></tr>
+<tr><td><code>express.urlencoded</code></td><td>Parses form data. <code>extended: true</code> allows nested objects.</td></tr>
+<tr><td><code>express.static</code></td><td>Serves files from <code>public/</code> directly (images, CSS, etc.).</td></tr>
+<tr><td><code>cookie-parser</code></td><td>Parses the <code>Cookie</code> header into <code>req.cookies</code>.</td></tr></table></div>
+<p class="warn"><b>Order matters.</b> A <code class="i">cors</code> middleware placed after a route never runs for that route.</p>
+<svg class="dia" viewBox="0 0 720 210" role="img" aria-label="Request flows through middleware to the route handler and back as a response">
+  <g transform="rotate(-.8 40 60)"><rect class="bx" x="2" y="30" width="78" height="60" rx="9"/><text x="41" y="66" text-anchor="middle" style="font-size:18px">Request</text></g>
+  <g transform="rotate(.6 134 60)"><rect class="bx" x="100" y="30" width="68" height="60" rx="9"/><text x="134" y="66" text-anchor="middle" style="font-size:18px">cors</text></g>
+  <g transform="rotate(-.5 218 60)"><rect class="bx" x="184" y="30" width="68" height="60" rx="9"/><text x="218" y="58" text-anchor="middle" style="font-size:17px">express</text><text x="218" y="78" text-anchor="middle" style="font-size:17px">.json</text></g>
+  <g transform="rotate(.7 302 60)"><rect class="bx" x="268" y="30" width="68" height="60" rx="9"/><text x="302" y="58" text-anchor="middle" style="font-size:17px">cookie</text><text x="302" y="78" text-anchor="middle" style="font-size:17px">Parser</text></g>
+  <g transform="rotate(-.6 396 60)"><rect class="bx hot" x="352" y="30" width="88" height="60" rx="9"/><text x="396" y="58" text-anchor="middle" style="font-size:17px">verify</text><text x="396" y="78" text-anchor="middle" style="font-size:17px">JWT</text></g>
+  <g transform="rotate(.6 506 60)"><rect class="bx" x="456" y="30" width="100" height="60" rx="9"/><text x="506" y="58" text-anchor="middle" style="font-size:17px">route</text><text x="506" y="78" text-anchor="middle" style="font-size:17px">handler</text></g>
+  <g transform="rotate(-.6 640 60)"><rect class="bx" x="574" y="30" width="86" height="60" rx="9"/><text x="617" y="66" text-anchor="middle" style="font-size:18px">Response</text></g>
+  <path class="ar" d="M82 60 Q91 54 98 60"/><path class="ar" d="M170 60 Q177 54 182 60"/><path class="ar" d="M254 60 Q261 54 266 60"/><path class="ar" d="M338 60 Q345 54 350 60"/><path class="ar" d="M442 60 Q449 54 454 60"/><path class="ar" d="M558 60 Q566 54 572 60"/>
+  <text x="130" y="20" class="note" style="font-size:17px">each calls next() →</text>
+  <path class="ar" d="M396 94 Q 396 150 330 168"/>
+  <g transform="rotate(-.6 250 180)"><rect class="bx" x="150" y="150" width="180" height="46" rx="9" style="fill:#fff1ee"/><text x="240" y="180" text-anchor="middle" style="font-size:18px">error middleware (401)</text></g>
+  <text x="430" y="160" class="note" style="font-size:17px">no token → throw / next(err)</text>
+</svg>
+
+<h2>Write your own middleware<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="code"><pre><code>import express from 'express';
+const app = express();
+
+function logger(req, res, next) {
+  const start = Date.now();
+  res.on('finish', () =&gt;
+    console.log(req.method, req.originalUrl, res.statusCode, Date.now() - start + 'ms'));
+  next();                       // forget this and the request hangs
+}
+
+app.use(logger);
+app.get('/ping', (req, res) =&gt; res.send('pong'));
+app.listen(3000);</code></pre><div class="out">GET /ping 200 3ms (printed after each request finishes)</div></div>
+<ul class="ar"><li><span class="y">Error-handling middleware</span> has four arguments: <code class="i">(err, req, res, next)</code> and goes <i>after</i> the routes (page 18)</li>
+<li>Router-level: <code class="i">router.use(...)</code>; route-level: <code class="i">router.route("/logout").post(verifyJWT, logoutUser)</code>, as your reference does</li>
+<li>No need for the old <code class="i">body-parser</code> package: <code class="i">express.json()</code> is built in</li></ul>
+<p class="warn" style="color:var(--red)">Forgetting <code class="i">next()</code> hangs the request; calling <code class="i">next()</code> <i>and</i> sending a response causes a double send.</p>
+</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Middleware = (req, res, next); order is the program</li><li>Either respond or call next(), never both</li><li>cors and parsers go before the routes</li></ul></div>
+</section>
+<!-- ======================= PAGE: CONTROLLERS, ROUTES & INPUT ======================= -->
+<section class="sheet" id="pg-routes" data-part="B · Building the server" data-label="Controllers, routes and input">
+
+<h2>Controllers &amp; the request/response cycle<span class="src">Ref §9</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A controller is the clerk at the counter: reads the form you handed in, checks it’s filled out, looks up the records, does the job, and slides back a receipt.</div></div>
+<ul class="ar"><li>A <span class="y">controller</span> reads from <code class="i">req</code>, talks to models, writes to <code class="i">res</code></li>
+<li>Six-step shape, used by every controller: <span class="p">read → validate → check rules → side effects → persist → respond</span></li></ul>
+<div class="code"><p class="cap">src/controllers/user.controller.js</p><pre><code>const registerUser = asyncHandler(async (req, res) =&gt; {
+  // 1. Read input
+  const { fullName, email, username, password } = req.body;
+
+  // 2. Validate
+  if ([fullName, email, username, password].some((f) =&gt; f?.trim() === "")) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  // 3. Business rules: uniqueness
+  const existedUser = await User.findOne({ $or: [{ username }, { email }] });
+  if (existedUser) throw new ApiError(409, "User with email or username already exists");
+
+  // 4. Side effects: file uploads
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  // 5. Persist
+  const user = await User.create({ fullName, email, password, username, avatar: avatar.url, ... });
+
+  // 6. Respond (without sensitive fields)
+  const createdUser = await User.findById(user._id).select("-password -refreshToken");
+  return res.status(201).json(new ApiResponse(201, createdUser, "User registered Successfully"));
+});</code></pre></div>
+<div class="err"><b>⚠ possible error in the reference (step 2).</b> A missing field is <code class="i">undefined</code>, and <code class="i">undefined?.trim()</code> is <code class="i">undefined</code>, not <code class="i">""</code>. So a request with no <code class="i">email</code> at all passes validation. Safer: <code class="i">.some((f) =&gt; !f?.trim())</code>. Also check <code class="i">typeof f === 'string'</code> to block objects (page 13).</div>
+<div class="err"><b>⚠ possible error (step 4).</b> <code class="i">req.files?.avatar[0]</code> throws a TypeError when no avatar was sent, because <code class="i">avatar</code> is undefined. Use <code class="i">req.files?.avatar?.[0]?.path</code>, then reject with a 400 if it is missing.</div>
+
+<h2>Routing in Express<span class="src">Ref §10</span></h2>
+<ul class="ar"><li>Routes map <span class="y">URL pattern + HTTP verb</span> to a controller; group them per resource</li>
+<li>Mount the router in app.js under a <span class="p">versioned prefix</span></li></ul>
+<div class="code"><p class="cap">src/routes/user.routes.js</p><pre><code>const router = Router();
+
+router.route("/register").post(
+  upload.fields([
+    { name: "avatar", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  registerUser
+);
+
+router.route("/login").post(loginUser);
+
+// secured routes
+router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/refresh-token").post(refreshAccessToken);
+
+export default router;
+
+// src/app.js
+import userRouter from "./routes/user.routes.js";
+app.use("/api/v1/users", userRouter);
+// → POST http://localhost:8000/api/v1/users/register</code></pre></div>
+<ul class="ar"><li><span class="y">/api/v1</span>: version from day one. When v2 breaks things, v1 keeps working for older clients</li></ul>
+
+<h2>Reading input: body, params, query<span class="src">Ref §11</span></h2>
+<div class="tw"><table><tr><th>Source</th><th>Lives in</th><th>When to use</th><th>Example URL</th></tr>
+<tr><td><b>Body</b></td><td><code>req.body</code></td><td>Sending data: create/update payloads</td><td><code>POST /users</code> + JSON body</td></tr>
+<tr><td><b>Route params</b></td><td><code>req.params</code></td><td>Identifying a specific resource</td><td><code>GET /users/:id</code> → <code>/users/42</code></td></tr>
+<tr><td><b>Query string</b></td><td><code>req.query</code></td><td>Filtering, sorting, paginating, searching</td><td><code>GET /videos?page=2&amp;limit=10</code></td></tr></table></div>
+<ul class="ar"><li><span class="y">req.body</span>: needs <code class="i">express.json()</code> first. File uploads are <code class="i">multipart/form-data</code>, which <code class="i">express.json()</code> won’t parse; Multer fills <code class="i">req.body</code> (text) and <code class="i">req.files</code> (files)</li>
+<li><span class="y">req.params</span>: IDs belong in the URL: they’re part of the resource address, <code class="i">GET</code> can’t have a body, and URLs are cacheable and bookmarkable</li>
+<li><span class="y">req.query</span>: values are <span class="p">always strings</span>; coerce with <code class="i">Number()</code> before math</li></ul>
+<div class="code"><pre><code>// params + ObjectId validation
+router.route("/videos/:videoId").get(getVideoById);
+
+const { videoId } = req.params;
+if (!mongoose.isValidObjectId(videoId)) {
+  throw new ApiError(400, "Invalid videoId");
+}
+const video = await Video.findById(videoId);
+if (!video) throw new ApiError(404, "Video not found");
+
+// query: GET /api/v1/videos?page=2&amp;limit=10&amp;sortBy=views&amp;order=desc&amp;q=react
+const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", q } = req.query;
+const skip = (Number(page) - 1) * Number(limit);
+const filter = q ? { title: { $regex: q, $options: "i" } } : {};
+const videos = await Video.find(filter)
+  .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+  .skip(skip)
+  .limit(Number(limit));</code></pre></div>
+<p class="warn">Skip the ObjectId check and <code class="i">/videos/xyz</code> throws a noisy <code class="i">CastError</code> deep in Mongoose. And <code class="i">req.query.page</code> is the string <code class="i">"2"</code>, not the number 2.</p>
+<div class="tw"><table><tr><th>You want to…</th><th>Use</th></tr>
+<tr><td>Send the new user’s data on signup</td><td><code>req.body</code></td></tr><tr><td>Look up a specific user by id</td><td><code>req.params.userId</code></td></tr>
+<tr><td>Search / filter / paginate a list</td><td><code>req.query</code></td></tr><tr><td>Upload an avatar file</td><td><code>req.files</code> (with Multer)</td></tr>
+<tr><td>Read an auth token</td><td><code>req.cookies</code> or <code>req.headers.authorization</code></td></tr></table></div>
+<div class="err"><b>⚠ in the reference text:</b> §11.1 repeats a phrase (“…files on <code class="i">req.files</code>., which exposes text fields on…”). It is a copy-paste glitch; the meaning is unaffected.</div>
+<div class="new"><span class="tag">+ added</span><p>The query code above trusts the client: <code class="i">limit=1000000</code> returns everything, <code class="i">sortBy</code> can be any field, and <code class="i">q</code> goes straight into a regex (slow patterns can stall the DB). Safe version:</p>
+<div class="code" style="margin-top:14px"><pre><code>const page  = Math.max(1, parseInt(req.query.page, 10) || 1);
+const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+const SORTABLE = new Set(['createdAt', 'views', 'title']);
+const sortBy = SORTABLE.has(req.query.sortBy) ? req.query.sortBy : 'createdAt';
+const q = typeof req.query.q === 'string'
+  ? req.query.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;')   // escape regex characters
+  : null;</code></pre><div class="out wh">page and limit are clamped, sortBy is allow-listed, q is escaped</div></div></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Body = data, params = which one, query = how to list</li><li>Query values are strings: coerce, clamp, allow-list</li><li>Validate ObjectIds before touching the DB</li></ul></div>
+</section>
+<!-- ======================= PAGE: REST, STATUS CODES, UTILITIES ======================= -->
+<section class="sheet" id="pg-rest" data-part="B · Building the server" data-label="REST design, status codes, utilities">
+
+<h2>HTTP status codes<span class="src">Ref §12</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A status code is the traffic light on a response: green (2xx) go ahead, amber (3xx) look elsewhere, red (4xx) you made a mistake, flashing red (5xx) we broke something.</div></div>
+<div class="tw"><table><tr><th>Class</th><th>Meaning</th></tr>
+<tr><td><b>1xx</b></td><td>Informational (rarely used directly)</td></tr><tr><td><b>2xx</b></td><td>Success: the request worked</td></tr>
+<tr><td><b>3xx</b></td><td>Redirection: go look somewhere else</td></tr><tr><td><b>4xx</b></td><td>Client error: <i>you</i> did something wrong</td></tr>
+<tr><td><b>5xx</b></td><td>Server error: <i>we</i> messed up</td></tr></table></div>
+<div class="tw"><table><tr><th>Code</th><th>Name</th><th>When to send it</th></tr>
+<tr><td><b>200</b></td><td>OK</td><td>Successful GET / PUT / PATCH / DELETE that doesn’t create a resource</td></tr>
+<tr><td><b>201</b></td><td>Created</td><td>Successful POST that created a resource (used in <code>registerUser</code>)</td></tr>
+<tr><td><b>204</b></td><td>No Content</td><td>Success with no body (e.g. a DELETE)</td></tr>
+<tr><td><b>301</b></td><td>Moved Permanently</td><td>Resource has a new permanent URL</td></tr>
+<tr><td><b>302</b></td><td>Found</td><td>Temporary redirect</td></tr>
+<tr><td><b>304</b></td><td>Not Modified</td><td>Caching: client’s copy is still fresh</td></tr>
+<tr><td><b>400</b></td><td>Bad Request</td><td>Validation failure, malformed JSON, missing fields</td></tr>
+<tr><td><b>401</b></td><td>Unauthorized</td><td>No / invalid credentials (it’s about <i>authentication</i>)</td></tr>
+<tr><td><b>403</b></td><td>Forbidden</td><td>Authenticated but not allowed (authorization failure)</td></tr>
+<tr><td><b>404</b></td><td>Not Found</td><td>Resource doesn’t exist</td></tr>
+<tr><td><b>409</b></td><td>Conflict</td><td>Duplicate key, e.g. an email that already exists</td></tr>
+<tr><td><b>422</b></td><td>Unprocessable Entity</td><td>Semantically wrong input that passed shape validation</td></tr>
+<tr><td><b>429</b></td><td>Too Many Requests</td><td>Rate-limited</td></tr>
+<tr><td><b>500</b></td><td>Internal Server Error</td><td>Unhandled exception, DB crash, etc.</td></tr>
+<tr><td><b>502</b></td><td>Bad Gateway</td><td>Upstream service returned an invalid response</td></tr>
+<tr><td><b>503</b></td><td>Service Unavailable</td><td>Overloaded or down for maintenance</td></tr></table></div>
+<ul class="ar"><li><span class="y">401</span> = “I don’t know who you are” (missing/invalid token; used in <code class="i">auth.middleware.js</code>)</li>
+<li><span class="y">403</span> = “I know who you are, but you can’t do this”</li></ul>
+<div class="code"><pre><code>res.status(201).json({ ... });    // most common
+res.json({ ... });                // defaults to 200
+res.sendStatus(204);              // sets status AND ends the response (no body)
+
+// this repo, in practice
+throw new ApiError(400, "All fields are required");
+throw new ApiError(401, "Unauthorized request");
+throw new ApiError(404, "User does not exist");
+throw new ApiError(409, "User with email or username already exists");</code></pre></div>
+<p class="warn">Rules of thumb: (1) never return 200 with <code class="i">{ error }</code>; (2) 201 only for POSTs that create; login/refresh/logout are 200; (3) validation errors are 400, not 500; (4) 5xx means “alert me”.</p>
+
+<h2>ApiError, ApiResponse, asyncHandler<span class="src">Ref §13</span></h2>
+<ul class="ar"><li>Standardising errors and response shape makes a backend <span class="y">predictable</span>; the frontend can branch on <code class="i">success</code></li></ul>
+<div class="code"><pre><code>// asyncHandler: Express 4 doesn't forward async rejections; this wrapper does
+const asyncHandler = (requestHandler) =&gt; {
+  return (req, res, next) =&gt; {
+    Promise.resolve(requestHandler(req, res, next)).catch((err) =&gt; next(err));
+  };
+};
+
+class ApiError extends Error {
+  constructor(statusCode, message = "Something went wrong", errors = [], stack = "") {
+    super(message);
+    this.statusCode = statusCode;
+    this.data = null;
+    this.success = false;
+    this.errors = errors;
+    // ...
+  }
+}
+
+class ApiResponse {
+  constructor(statusCode, data, message = "Success") {
+    this.statusCode = statusCode;
+    this.data = data;
+    this.message = message;
+    this.success = statusCode &lt; 400;
+  }
+}</code></pre><div class="out wh">success, message, data and statusCode appear on every response</div></div>
+<div class="old"><b>⚠ older pattern:</b> the <code class="i">asyncHandler</code> wrapper (Express 4 behaviour). See the Express 5 note on page 7 for the modern equivalent; I could not re-verify the Express version this session.</div>
+
+<h2>REST API design<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><span class="y">Nouns in URLs</span>, verbs in HTTP methods: <code class="i">GET /videos</code>, not <code class="i">/getVideos</code></li>
+<li><span class="y">Idempotent</span> = repeating gives the same result (GET, PUT, DELETE); POST is not</li>
+<li><span class="y">Pagination</span>: offset (<code class="i">page</code>/<code class="i">limit</code>) is simple; cursor-based stays fast and stable on huge feeds</li>
+<li>Validate every input; return the same envelope for errors as for success</li></ul>
+<div class="tw"><table><tr><th>Method</th><th>Meaning</th><th>Idempotent?</th><th>Typical status</th></tr>
+<tr><td>GET</td><td>read</td><td>yes</td><td>200</td></tr><tr><td>POST</td><td>create / action</td><td>no</td><td>201</td></tr>
+<tr><td>PUT</td><td>replace</td><td>yes</td><td>200</td></tr><tr><td>PATCH</td><td>partial update</td><td>usually no guarantee</td><td>200</td></tr>
+<tr><td>DELETE</td><td>remove</td><td>yes</td><td>204 or 200</td></tr></table></div>
+</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>401 = who are you? 403 = you can’t</li><li>Never 200 with an error body</li><li>One envelope shape for every response</li></ul></div>
+</section>
+<!-- ======================= PAGE: ENV & SECURITY ======================= -->
+<section class="sheet" id="pg-env" data-part="C · Config, security and auth" data-label="Environment config and security">
+
+<h2>Environment variables with dotenv<span class="src">Ref §4</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Secrets are like your house keys: you don’t paste them on the front door (the repo). <code class="i">.env</code> is the key hook inside the house, and <code class="i">process.env</code> is you reaching for it when needed.</div></div>
+<ul class="ar"><li><span class="y">Never commit secrets</span>. <code class="i">dotenv</code> loads key-value pairs from <code class="i">.env</code> into <code class="i">process.env</code></li>
+<li>The <code class="i">-r dotenv/config</code> flag loads env vars <span class="p">before any import runs</span>, which matters when modules read <code class="i">process.env</code> at top level</li></ul>
+<div class="code"><p class="cap">.env (already gitignored); placeholders only</p><pre><code>PORT=8000
+MONGODB_URI=mongodb://localhost:27017
+CORS_ORIGIN=http://localhost:3000
+
+ACCESS_TOKEN_SECRET=your-long-random-string
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=another-long-random-string
+REFRESH_TOKEN_EXPIRY=10d
+
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+CLOUDINARY_FOLDER_NAME=videotube</code></pre></div>
+<div class="old"><b>⚠ older pattern:</b> the <code class="i">dotenv</code> package plus <code class="i">-r dotenv/config</code> preload.</div>
+<div class="new"><span class="tag">+ added</span>Node loads env files natively: <code class="i">node --env-file=.env src/index.js</code> (added v20.6); a <code class="i">process.loadEnvFile()</code> function also exists in newer lines (I believe v21.7 / v20.12, not re-verified). Keep <code class="i">dotenv</code> if you support very old Node versions.</div>
+<div class="added"><span class="tag">+ added</span>
+<div class="code"><p class="cap">fail fast if config is missing</p><pre><code>const required = ['MONGODB_URI', 'ACCESS_TOKEN_SECRET', 'REFRESH_TOKEN_SECRET'];
+const missing = required.filter((k) =&gt; !process.env[k]);
+if (missing.length) {
+  console.error('Missing env vars:', missing.join(', '));
+  process.exit(1);
+}</code></pre><div class="out wh">the app refuses to start with a half-configured environment</div></div>
+<p class="warn" style="color:var(--red)">Leaking secrets: committing <code class="i">.env</code>, logging <code class="i">process.env</code>, or putting a secret in client-side code. Never paste real keys into examples or chats.</p></div>
+
+<h2>Security checklist<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Security is layers on an onion: a locked gate (CORS, rate limit), a guard checking every parcel (validation), a safe for valuables (hashing, secrets). One layer failing shouldn’t sink you.</div></div>
+<div class="tw"><table><tr><th>Threat</th><th>Defense</th><th>In practice</th></tr>
+<tr><td>Missing browser protections</td><td><code>helmet</code></td><td><code>app.use(helmet())</code> sets safe HTTP headers</td></tr>
+<tr><td>Wrong origins calling you</td><td>CORS allow-list</td><td>the reference sets <code>origin: process.env.CORS_ORIGIN</code>, not <code>*</code> ✓</td></tr>
+<tr><td>Brute force / floods</td><td>rate limiting</td><td><code>express-rate-limit</code> or the sketch below; plus <code>express.json({limit})</code> ✓</td></tr>
+<tr><td>Bad input</td><td>validation</td><td>check type, length, format on every field</td></tr>
+<tr><td>NoSQL injection</td><td>force types</td><td>reject objects where strings are expected</td></tr>
+<tr><td>Stolen secrets</td><td>env vars, rotation</td><td>never in git or logs</td></tr></table></div>
+<p class="warn" style="color:var(--red)">Unsafe: <code class="i">User.findOne({ email: req.body.email })</code>. A body of <code class="i">{"email": {"$ne": null}}</code> matches the first user in the database.</p>
+<div class="code"><p class="cap">safe version + a tiny rate limiter</p><pre><code>const email = req.body.email;
+if (typeof email !== 'string') throw new ApiError(400, 'email must be a string');
+const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+const hits = new Map(); // ip -&gt; { count, resetAt }
+export function rateLimit({ windowMs = 60_000, max = 5 } = {}) {
+  return (req, res, next) =&gt; {
+    const now = Date.now();
+    const rec = hits.get(req.ip);
+    if (!rec || now &gt; rec.resetAt) {
+      hits.set(req.ip, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+    if (++rec.count &gt; max) {
+      res.set('Retry-After', String(Math.ceil((rec.resetAt - now) / 1000)));
+      return res.status(429).json({ message: 'Too many requests' });
+    }
+    next();
+  };
+}
+// app.use('/api/v1/users/login', rateLimit({ max: 5 }));</code></pre>
+<div class="out wh">the 6th login attempt within a minute gets 429 + Retry-After</div></div>
+<p class="warn" style="color:var(--red)">This in-memory limiter is for learning: it resets on restart and isn’t shared between cluster workers (page 20). Use a shared store such as Redis in production.</p>
+<ul class="ar"><li>Node’s own <span class="y">permission model</span> (<code class="i">node --permission --allow-fs-read=...</code>) restricts what a process can touch; per the CLI docs the permission model and <code class="i">--allow-fs-*</code> flags are stable, while sub-flags like <code class="i">--allow-env</code> and <code class="i">--allow-ffi</code> are still “active development” in the v27 nightly docs</li></ul>
+</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Secrets live in env vars, never in git</li><li>Force input types; never trust objects from the client</li><li>helmet + CORS allow-list + rate limit = baseline</li></ul></div>
+</section>
+<!-- ======================= PAGE: AUTH 1 ======================= -->
+<section class="sheet" id="pg-auth" data-part="C · Config, security and auth" data-label="Authentication: JWT, cookies, tokens">
+
+<h2>Authentication with JWT<span class="src">Ref §14</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A JWT is a wristband at a festival. Staff checked your ticket once; now anyone can glance at the wristband (signature) and let you in without calling the box office.</div></div>
+<ul class="ar"><li><span class="y">JWT</span> = signed, self-contained token: <code class="i">header.payload.signature</code>. The server verifies it without a session store</li>
+<li>Two flavours are issued in <code class="i">user.model.js</code>: <span class="p">access token</span> and <span class="p">refresh token</span></li>
+<li><span class="y">Why two secrets?</span> Compromise of one doesn’t compromise the other</li>
+<li><span class="y">Why is the refresh payload minimal?</span> It only needs to identify the user: nothing leaks if it’s intercepted</li></ul>
+<div class="code"><pre><code>userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    { _id: this._id, email: this.email, username: this.username, fullName: this.fullName },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+  );
+};
+
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    { _id: this._id },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+  );
+};</code></pre></div>
+<p class="warn">A JWT payload is only <i>encoded</i>, not encrypted: anyone can read it. Never put passwords or secrets inside.</p>
+<div class="added"><span class="tag">+ added</span>
+<div class="tw"><table><tr><th></th><th>Sessions (cookie + server store)</th><th>JWT (stateless)</th></tr>
+<tr><td>State lives</td><td>on the server (DB / Redis)</td><td>in the token itself</td></tr>
+<tr><td>Revoke instantly</td><td>yes: delete the session</td><td>hard until expiry (hence the refresh-token DB check)</td></tr>
+<tr><td>Scaling</td><td>needs a shared store</td><td>any server can verify</td></tr>
+<tr><td>Best for</td><td>classic server-rendered sites</td><td>APIs, mobile apps, microservices</td></tr></table></div></div>
+
+<h2>Cookies &amp; secure sessions<span class="src">Ref §15</span></h2>
+<ul class="ar"><li>Storing JWTs in <code class="i">localStorage</code> exposes them to <span class="y">XSS</span>; <span class="y">httpOnly cookies</span> can’t be read by page JavaScript</li>
+<li><code class="i">httpOnly: true</code>: JS can’t read it; <code class="i">secure: true</code>: sent only over HTTPS</li>
+<li>Production tip from the reference: add <code class="i">sameSite: "strict"</code> or <code class="i">"lax"</code> against CSRF</li></ul>
+<div class="code"><p class="cap">from loginUser</p><pre><code>const options = { httpOnly: true, secure: true };
+
+return res
+  .status(200)
+  .cookie("accessToken", accessToken, options)
+  .cookie("refreshToken", refreshToken, options)
+  .json(new ApiResponse(200, { user, accessToken, refreshToken }, "User logged In Successfully"));</code></pre></div>
+<div class="err"><b>⚠ points to check in the reference.</b> (1) <code class="i">secure: true</code> means the cookie is dropped over plain <code class="i">http://localhost</code> in some browsers, so local testing may “lose” the login. (2) The tokens are also returned in the JSON body, which weakens the httpOnly benefit if the frontend stores them. (3) No <code class="i">maxAge</code>/<code class="i">sameSite</code> is set.</div>
+<div class="added"><span class="tag">+ added</span>
+<div class="code"><pre><code>const isProd = process.env.NODE_ENV === 'production';
+const options = { httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 };</code></pre><div class="out wh">cookie works on localhost in dev, is HTTPS-only in production, and expires after a day</div></div></div>
+
+<h2>Access token vs refresh token<span class="src">Ref §16</span></h2>
+<div class="tw"><table><tr><th></th><th>Access Token</th><th>Refresh Token</th></tr>
+<tr><td><b>Purpose</b></td><td>Authorize each API request</td><td>Get a new access token when it expires</td></tr>
+<tr><td><b>Lifetime</b></td><td>Short (minutes – hours)</td><td>Long (days – weeks)</td></tr>
+<tr><td><b>Sent on</b></td><td>Every protected request</td><td>Only to the <code>/refresh-token</code> endpoint</td></tr>
+<tr><td><b>Stored</b></td><td>Memory or httpOnly cookie</td><td>httpOnly cookie + DB (<code>user.refreshToken</code>)</td></tr>
+<tr><td><b>Revocable</b></td><td>No (until it expires)</td><td>Yes: null the DB field</td></tr></table></div>
+<div class="code"><pre><code>const refreshAccessToken = asyncHandler(async (req, res) =&gt; {
+  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  if (!incomingRefreshToken) throw new ApiError(401, "unauthorized request");
+
+  const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+  const user = await User.findById(decodedToken?._id);
+
+  if (incomingRefreshToken !== user?.refreshToken) {
+    throw new ApiError(401, "Refresh token is expired or used");
+  }
+
+  const { accessToken, newRefreshToken } = await generateAccessAndRefereshTokens(user._id);
+  // ... set cookies + respond
+});</code></pre></div>
+<ul class="ar"><li>The DB comparison lets you <span class="y">revoke</span> a refresh token on logout or password change: true session control</li></ul>
+<div class="err"><b>⚠ possible errors.</b> <code class="i">jwt.verify</code> throws on a bad or expired token, so an expired refresh token would surface as a 500 unless caught. If <code class="i">user</code> is null, the comparison is only saved by the <code class="i">?.</code>. Also check that <code class="i">generateAccessAndRefereshTokens</code> really returns a field named <code class="i">newRefreshToken</code>; the code shown destructures that name.</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Short access token + long, revocable refresh token</li><li>httpOnly + secure + sameSite on auth cookies</li><li>JWT payloads are readable: no secrets inside</li></ul></div>
+</section>
+<!-- ======================= PAGE: AUTH 2 ======================= -->
+<section class="sheet" id="pg-auth2" data-part="C · Config, security and auth" data-label="Authentication: passwords and protected routes">
+
+<h2>Password hashing with bcrypt<span class="src">Ref §17</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Hashing is a meat grinder: easy to turn a steak into mince, impossible to turn the mince back. You can’t recover the password, you can only grind a guess the same way and compare the mince.</div></div>
+<ul class="ar"><li><span class="y">Never store plaintext passwords</span>. bcrypt is a slow, salted hash designed to resist brute force</li>
+<li>Cost factor <code class="i">10</code> = 2^10 rounds: slows attackers, keeps login under a few hundred ms. Tune upward as hardware improves</li>
+<li>The <code class="i">!this.isModified("password")</code> guard stops re-hashing an already-hashed password on every update</li></ul>
+<div class="code"><pre><code>userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();   // important guard
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};</code></pre><div class="out wh">save() hashes on the way in; isPasswordCorrect() compares a login attempt to the hash</div></div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>bcrypt only reads the first <span class="p">72 bytes</span> of a password; very long passphrases are silently truncated</li>
+<li>Many guides now prefer <code class="i">argon2id</code>; Node also ships <code class="i">crypto.scrypt</code>. I did not re-check the current OWASP cost recommendations</li>
+<li>Use the same error for “no such user” and “wrong password”, so attackers can’t discover which emails exist</li></ul>
+<p class="warn" style="color:var(--red)">Unsafe: storing <code class="i">password</code> as sent, or comparing with <code class="i">===</code>. Also never log request bodies from the login route.</p></div>
+
+<h2>Protected routes &amp; auth middleware<span class="src">Ref §20</span></h2>
+<ul class="ar"><li>A route is <span class="y">protected</span> when it needs a valid access token; middleware verifies it and attaches the user to the request</li>
+<li>Supports <span class="p">both</span> cookies (browser flow) and <code class="i">Authorization: Bearer ...</code> headers (mobile / server-to-server)</li></ul>
+<div class="code"><p class="cap">src/middlewares/auth.middleware.js</p><pre><code>export const verifyJWT = asyncHandler(async (req, _, next) =&gt; {
+  try {
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) throw new ApiError(401, "Unauthorized request");
+
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
+
+    if (!user) throw new ApiError(401, "Invalid Access Token");
+
+    req.user = user;  // downstream handlers can read req.user
+    next();
+  } catch (error) {
+    throw new ApiError(401, error?.message || "Invalid access token");
+  }
+});
+
+const logoutUser = asyncHandler(async (req, res) =&gt; {
+  await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } });
+  // ... clear cookies and respond
+});</code></pre><div class="out wh">a valid token puts the user on req.user; anything else becomes a 401</div></div>
+<p class="warn">A JWT-expiry error and a “database is down” error are both turned into 401 here, which can hide real 5xx problems. Only map JWT errors to 401 and let the rest bubble up.</p>
+<div class="added"><span class="tag">+ added</span>
+<p><b>401 vs 403 in code:</b> the middleware above answers “who are you?”. A second middleware answers “are you allowed?”. It needs a <code class="i">role</code> field, which the reference’s user model doesn’t have.</p>
+<div class="code"><pre><code>export const requireRole = (...roles) =&gt; (req, res, next) =&gt; {
+  if (!roles.includes(req.user?.role)) throw new ApiError(403, 'Forbidden');
+  next();
+};
+// router.delete('/videos/:id', verifyJWT, requireRole('admin'), removeVideo);</code></pre><div class="out wh">no token → 401 from verifyJWT; wrong role → 403 from requireRole</div></div></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Hash with a slow salted algorithm, never store plaintext</li><li>verifyJWT = authentication (401); roles = authorization (403)</li><li>Same error for bad user and bad password</li></ul></div>
+</section>
+<!-- ======================= PAGE: DATABASES ======================= -->
+<section class="sheet" id="pg-db" data-part="D · Data and files" data-label="Databases, Mongoose and the Mongo driver">
+
+<h2>Databases: SQL and NoSQL<span class="src">Notes ep-12</span></h2>
+<ul class="ar"><li><span class="y">Database</span> = organised collection of data; <span class="y">DBMS</span> = software that interacts with users, applications and the database to capture and analyse data. Every database has its own server</li>
+<li>Types (notes): <b>Relational</b> (MySQL, PostgreSQL) · <b>NoSQL</b> (MongoDB) · <b>In-memory</b> (Redis) · <b>Distributed SQL</b> (CockroachDB) · <b>Time series</b> (InfluxDB) · <b>Object-oriented</b> (db4o) · <b>Graph</b> (Neo4j) · <b>Hierarchical</b> (IBM IMS) · <b>Network</b> (IDMS) · <b>Cloud</b> (Amazon RDS)</li>
+<li>RDBMS: MySQL, PostgreSQL (Oracle manages MySQL). NoSQL = “Not only SQL”. MongoDB arrived in 2009, around the time Node.js came</li></ul>
+<div class="tw"><table><tr><th>RDBMS (MySQL)</th><th>NoSQL (MongoDB)</th></tr>
+<tr><td>Table, rows, columns</td><td>Collection, document, field</td></tr>
+<tr><td>Structured data, fixed schema</td><td>Unstructured data, flexible schema</td></tr>
+<tr><td>SQL</td><td>Mongo query language (MQL); Neo4j uses Cypher</td></tr>
+<tr><td>Tough horizontal scaling</td><td>Easy to scale horizontally and vertically</td></tr>
+<tr><td>Relationships: foreign keys + joins</td><td>Nested (relationships)</td></tr>
+<tr><td>Read-heavy apps, transaction workloads, e.g. banking</td><td>Real-time, big data, distributed computing, e.g. real-time analytics and social media</td></tr></table></div>
+<div class="tw"><table><tr><th>Relational</th><th>MongoDB</th></tr><tr><td>Database</td><td>Database</td></tr><tr><td>Table</td><td>Collection</td></tr><tr><td>Row</td><td>Document</td></tr><tr><td>Column</td><td>Field</td></tr></table></div>
+<div class="err"><b>⚠ overstated in the notes.</b> “In NoSQL there is no need for joins or data normalization.” MongoDB has a join-like <code class="i">$lookup</code>, and your GitHub reference still models relationships with <code class="i">ref</code>/<code class="i">populate</code> and a join-style subscription document (see “Designing schemas &amp; models” below). Document design still needs thought. “Tough horizontal scaling” for SQL is also a generalisation (replication and sharding exist).</div>
+
+<h2>MongoDB &amp; Mongoose<span class="src">Ref §7</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> MongoDB is a filing cabinet of flexible folders (documents), where each folder can hold different things. Mongoose is the labelled index card system on top: it insists each folder has the right fields before it is filed.</div></div>
+<ul class="ar"><li><span class="y">MongoDB</span>: document database, JSON-like documents in collections; schemaless at the engine level</li>
+<li><span class="y">Mongoose</span>: the popular ODM adding schemas, validation, hooks and query helpers</li></ul>
+<div class="code"><p class="cap">src/db/index.js</p><pre><code>import mongoose from "mongoose";
+import { DB_NAME } from "../constants.js";
+
+const connectDB = async () =&gt; {
+  try {
+    const connectionInstance = await mongoose.connect(
+      `${process.env.MONGODB_URI}/${DB_NAME}`
+    );
+    console.log(`MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`);
+  } catch (error) {
+    console.log("MONGODB connection FAILED ", error);
+    process.exit(1);
+  }
+};</code></pre></div>
+<ul class="ar"><li><span class="y">Why <code class="i">process.exit(1)</code> on failure?</span> No recovery path inside this process; exiting lets PM2, Docker or systemd restart it cleanly</li></ul>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><span class="y">Connection pooling</span>: the driver keeps a pool of open connections and reuses them. Connect once at start-up (as above), never per request</li>
+<li>Tune pool size with the driver option <code class="i">maxPoolSize</code>; I did not re-verify the current default</li></ul></div>
+
+<h2>Designing schemas &amp; models<span class="src">Ref §8</span></h2>
+<ul class="ar"><li><span class="y">Schema</span> = shape of documents; <span class="y">model</span> = compiled, queryable interface over a collection</li></ul>
+<div class="code"><p class="cap">src/models/user.model.js</p><pre><code>const userSchema = new Schema(
+  {
+    username: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
+    fullName: { type: String, required: true, trim: true, index: true },
+    avatar:   { type: String, required: true },        // cloudinary url
+    coverImage: { type: String },
+    watchHistory: [{ type: Schema.Types.ObjectId, ref: "Video" }],
+    password: { type: String, required: [true, "Password is required"] },
+    refreshToken: { type: String },
+  },
+  { timestamps: true }
+);</code></pre></div>
+<ul class="ar"><li><code class="i">required</code>, <code class="i">trim</code>, <code class="i">lowercase</code>: applied before save</li>
+<li><span class="y">index: true</span> creates a DB index; <code class="i">findOne({ username })</code> becomes O(log n)</li>
+<li><span class="y">timestamps: true</span> auto-adds <code class="i">createdAt</code> and <code class="i">updatedAt</code></li>
+<li><span class="y">ref: "Video"</span> sets up a relationship; <code class="i">watchHistory</code> stores IDs and can be <code class="i">.populate()</code>d</li></ul>
+<div class="err"><b>⚠ imprecise in the reference.</b> It lists <code class="i">unique</code> among the “validators”. <code class="i">unique</code> is not a validator: it builds a unique <i>index</i>, and the duplicate error (code 11000) comes from MongoDB when you save, not from Mongoose validation before it.</div>
+<div class="code"><p class="cap">relationships, hooks, methods, plugins</p><pre><code>// many-to-many via a join document (subscription.model.js)
+const subscriptionSchema = new Schema({
+  subscriber: { type: Schema.Types.ObjectId, ref: "User" }, // one who is subscribing
+  channel:    { type: Schema.Types.ObjectId, ref: "User" }, // one being subscribed to
+}, { timestamps: true });
+
+// hook + instance method (shown on page 15)
+userSchema.pre("save", async function (next) { /* hash */ });
+userSchema.methods.isPasswordCorrect = async function (password) { /* compare */ };
+
+// plugin (video.model.js): paginate aggregation pipelines
+videoSchema.plugin(mongooseAggregatePaginate);</code></pre><div class="out wh">becomes critical for feed/search endpoints over millions of videos</div></div>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>Always use <code class="i">.select("-password -refreshToken")</code> on reads you send to clients, as the reference does</li>
+<li>In recent Mongoose versions async hooks don’t need a <code class="i">next</code> callback; check your installed version’s docs before copying the <code class="i">next()</code> style</li>
+<li>Duplicates: catch error code <code class="i">11000</code> and return 409</li></ul></div><h2>Connecting MongoDB (native driver)<span class="src">Notes ep-13</span></h2>
+<div class="code"><p class="cap">npm i mongodb · database.js (connection string from the environment; sample record changed)</p><pre><code>const { MongoClient } = require('mongodb');
+
+const url = process.env.MONGODB_URI;      // never hard-code your connect string
+const client = new MongoClient(url);
+const dbName = 'HelloWorld';
+
+async function main() {
+  await client.connect();
+  console.log('Connected successfully to server');
+  const db = client.db(dbName);
+  const collection = db.collection('user');
+
+  // Read
+  const findResult = await collection.find({}).toArray();
+  console.log('found documents =&gt;', findResult);
+
+  // Insert documents
+  const data = { firstName: 'Ada', lastName: 'Lovelace', city: 'London' };
+  const insertResult = await collection.insertMany([data]);
+  console.log('Inserted documents =&gt;', insertResult);
+
+  // Count documents
+  const countResult = await collection.countDocuments({});
+  console.log('Count of documents in the user collection =&gt;', countResult);
+
+  return 'done';
+}
+
+main()
+  .then(console.log)
+  .catch(console.error)
+  .finally(() =&gt; client.close());</code></pre><div class="out">Connected successfully to server · found documents => [] · Inserted documents => { acknowledged: true, … } · Count … => 1 · done</div></div>
+<div class="err"><b>⚠ in the notes’ code.</b> A few hand-copy slips: <code class="i">const data {</code> is missing the <code class="i">=</code>, and “bdb” appears where <code class="i">db</code> is meant. The notes’ sample record also holds a phone number; I swapped in fictional data.</div>
+<div class="added"><span class="tag">+ added</span>
+<div class="tw"><table><tr><th></th><th>Native <code>mongodb</code> driver (these notes)</th><th>Mongoose (GitHub reference, above)</th></tr>
+<tr><td>Schema</td><td>none: any shape goes in</td><td>defined schema + validation</td></tr>
+<tr><td>Style</td><td><code>db.collection('user').find()</code></td><td><code>User.find()</code>, hooks, <code>populate</code></td></tr>
+<tr><td>Good for</td><td>learning, scripts, full control</td><td>structured apps with many models</td></tr></table></div>
+<p class="warn" style="color:var(--red)">A connection string normally contains a username and password: keep it in an environment variable, never in code or git. Run this only against a database you own.</p></div><div class="sticky"><h3>Remember!</h3><ul><li>RDBMS = tables + fixed schema; MongoDB = collections + flexible documents</li><li>Connect once at start-up; the driver pools connections; connect string lives in an env var</li><li><code>unique</code> is an index, not a validator; never return password or refreshToken</li></ul></div>
+
+</section>
+<!-- ======================= PAGE: UPLOADS ======================= -->
+<section class="sheet" id="pg-upload" data-part="D · Data and files" data-label="File uploads and cloud storage">
+
+<h2>File uploads with Multer<span class="src">Ref §18</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> A normal form is a postcard; a file upload is a parcel. Multer is the post-room clerk who unpacks the parcel, puts the files on a shelf (<code class="i">public/temp</code>), and sends the paperwork on to your controller.</div></div>
+<ul class="ar"><li><span class="y">Multer</span> parses <code class="i">multipart/form-data</code> (the only body type that supports files)</li>
+<li>Text fields land on <code class="i">req.body</code>, files on <code class="i">req.files</code></li>
+<li>Why land files on disk first? So you can stream them to Cloudinary without holding huge buffers in memory</li></ul>
+<div class="code"><p class="cap">src/middlewares/multer.middleware.js</p><pre><code>const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/temp");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+export const upload = multer({ storage });
+
+// in the route:  upload.fields([{ name: "avatar", maxCount: 1 }, { name: "coverImage", maxCount: 1 }])
+// in the controller:
+const avatarLocalPath = req.files?.avatar[0]?.path;</code></pre></div>
+<div class="err"><b>⚠ risks in this setup.</b> Saving as <code class="i">file.originalname</code> means two users uploading <code class="i">me.png</code> overwrite each other; there is no size limit and no file-type check. Fix all three:</div>
+<div class="new"><span class="tag">+ added</span>
+<div class="code" style="margin-top:14px"><pre><code>import multer from 'multer';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =&gt; cb(null, './public/temp'),
+  filename: (req, file, cb) =&gt;
+    cb(null, crypto.randomUUID() + path.extname(file.originalname).toLowerCase()),
+});
+const ALLOWED = new Set(['image/png', 'image/jpeg', 'image/webp']);
+
+export const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 2 },
+  fileFilter: (req, file, cb) =&gt; cb(null, ALLOWED.has(file.mimetype)),
+});</code></pre><div class="out wh">unique names, 5 MB cap, image types only. The mimetype is claimed by the client, so verify real content before trusting it</div></div></div>
+
+<h2>Cloud storage with Cloudinary<span class="src">Ref §19</span></h2>
+<ul class="ar"><li>A production server shouldn’t store user files on its own disk: it doesn’t scale across instances and dies with the container</li>
+<li>Push them to a CDN: <span class="y">Cloudinary</span>, AWS S3, or Cloudflare R2; store only the returned <code class="i">url</code> in MongoDB</li>
+<li><code class="i">resource_type: "auto"</code> auto-detects images vs videos; clean up the temp file on success <i>and</i> failure</li></ul>
+<div class="code"><p class="cap">src/utils/cloudinary.js</p><pre><code>const uploadOnCloudinary = async (localFilePath) =&gt; {
+  try {
+    if (!localFilePath) return null;
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto",
+      folder: process.env.CLOUDINARY_FOLDER_NAME,
+    });
+    fs.unlinkSync(localFilePath);   // delete temp file after upload
+    return response;
+  } catch (error) {
+    if (localFilePath) fs.unlink(localFilePath, () =&gt; {}); // cleanup on failure too
+    return null;
+  }
+};</code></pre></div>
+<p class="warn"><code class="i">fs.unlinkSync</code> blocks the event loop while it runs. Fine for a tiny file, but the habit is wrong inside server code (page 4).</p>
+<div class="err"><b>⚠ check in the controller.</b> This helper returns <code class="i">null</code> on failure, but <code class="i">registerUser</code> goes on to read <code class="i">avatar.url</code>. A failed upload would throw a TypeError. Check <code class="i">if (!avatar) throw new ApiError(400, "Avatar upload failed")</code> first.</div>
+<div class="new"><span class="tag">+ added</span>
+<div class="code" style="margin-top:14px"><pre><code>import { unlink } from 'node:fs/promises';
+// replace both unlink calls with the async version
+await unlink(localFilePath).catch(() =&gt; {});</code></pre><div class="out wh">temp file removed without freezing other requests</div></div></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Unique names, size limits, type filters on every upload</li><li>Store the cloud URL, not the file</li><li>Clean up temp files without blocking the loop</li></ul></div>
+</section>
+<!-- ======================= PAGE: ERRORS & LOGGING ======================= -->
+<section class="sheet" id="pg-errors" data-part="E · Reliability" data-label="Error handling and logging">
+
+<h2>Error handling patterns<span class="src">Ref §21</span></h2>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> When something goes wrong in a kitchen, a good cook doesn’t drop the plate and run. He calls “error!”, a manager catches it in one place, and the customer gets a polite, consistent apology.</div></div>
+<ul class="ar"><li><span class="y">1. Throw</span> an <code class="i">ApiError</code> from anywhere: <code class="i">throw new ApiError(400, "...")</code></li>
+<li><span class="y">2.</span> The <code class="i">asyncHandler</code> wrapper catches the rejection and calls <code class="i">next(err)</code></li>
+<li><span class="y">3.</span> Express forwards it to an error-handling middleware (you can add a global one in <code class="i">app.js</code>)</li>
+<li><span class="y">4.</span> The client always gets the same shape: no more guessing</li>
+<li>Anti-patterns avoided: leaking stack traces, half-written responses, silently swallowed errors in <code class="i">try/catch</code></li></ul>
+<div class="added"><span class="tag">+ added</span>
+<p>The reference says a global handler “can” be added. Without one, Express’s default handler replies with an HTML page (and a stack trace unless <code class="i">NODE_ENV=production</code>), not your JSON shape.</p>
+<div class="code"><p class="cap">put this after all routes in app.js</p><pre><code>app.use((err, req, res, next) =&gt; {
+  const status = err.statusCode || 500;
+  if (status &gt;= 500) console.error(err);          // log real bugs
+  res.status(status).json({
+    success: false,
+    message: status &gt;= 500 ? 'Internal Server Error' : err.message,
+    errors: err.errors || [],
+  });
+});</code></pre><div class="out wh">ApiError(409, ...) → 409 JSON; a surprise TypeError → 500 JSON without leaking internals</div></div>
+<div class="tw"><table><tr><th>Operational errors</th><th>Programmer errors</th></tr>
+<tr><td>expected at run time: bad input, DB down, timeout, 404</td><td>bugs: undefined is not a function, wrong argument type</td></tr>
+<tr><td>handle and respond (4xx / 5xx), maybe retry</td><td>log, then restart the process; don’t limp on</td></tr></table></div>
+<div class="code"><pre><code>process.on('unhandledRejection', (reason) =&gt; { console.error('unhandled', reason); process.exit(1); });
+process.on('uncaughtException', (err) =&gt; { console.error('uncaught', err); process.exit(1); });</code></pre><div class="out wh">log, then exit; your process manager restarts a clean process</div></div>
+<p class="warn" style="color:var(--red)">Sending a response and then throwing, an empty <code class="i">catch {}</code>, and returning 200 with an error message all hide failures.</p></div>
+
+<h2>Logging<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>Use a <span class="y">structured logger</span> (pino, winston) that writes JSON with levels: <code class="i">debug</code>, <code class="i">info</code>, <code class="i">warn</code>, <code class="i">error</code></li>
+<li>Add a <span class="p">request id</span> to every line so you can follow one request across services</li>
+<li>Log the event and the ids, not secrets or personal data (no passwords, tokens, full card or email lists)</li></ul>
+<div class="code"><pre><code>import pino from 'pino';
+const log = pino({ level: process.env.LOG_LEVEL || 'info' });
+
+log.info({ userId: 'u_123', route: '/login' }, 'login ok');
+log.error({ err: new Error('db timeout') }, 'query failed');</code></pre><div class="out wh">one JSON object per line, easy to search and ship to a log service (pino API shown from memory)</div></div></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Throw ApiError, catch in one global handler</li><li>Operational errors: respond. Programmer errors: log and restart</li><li>Log events, never secrets</li></ul></div>
+</section>
+<!-- ======================= PAGE: TESTING & DEBUGGING ======================= -->
+<section class="sheet" id="pg-test" data-part="E · Reliability" data-label="Testing, debugging and performance">
+
+<h2>Testing<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Tests are smoke alarms. They’re boring until the night something burns, and then they’re the only reason you find out in time.</div></div>
+<ul class="ar"><li>Node has a built-in runner: <code class="i">node:test</code> plus <code class="i">node:assert</code>; run with <code class="i">node --test</code> (I believe stable since v20; not re-verified)</li>
+<li><span class="y">Unit tests</span>: one function, no network or DB. <span class="y">Integration tests</span>: a route end to end, often with a test database</li>
+<li>For Express routes, libraries like <code class="i">supertest</code> call the app without opening a real port</li></ul>
+<div class="code"><pre><code>// math.test.js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+function add(a, b) { return a + b; }
+
+test('add works', () =&gt; { assert.equal(add(2, 3), 5); });
+test('async works', async () =&gt; {
+  const v = await Promise.resolve(7);
+  assert.equal(v, 7);
+});</code></pre><div class="out">✔ add works · ✔ async works · (run: node --test)</div></div>
+<p class="warn" style="color:var(--red)">Tests that touch the real production DB, or share state so their order matters, break at the worst time.</p></div>
+
+<h2>Debugging<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><code class="i">node --inspect src/index.js</code> then attach Chrome DevTools or the VS Code debugger: breakpoints beat <code class="i">console.log</code></li>
+<li><code class="i">console.table(rows)</code> and <code class="i">console.time('x')</code>/<code class="i">console.timeEnd('x')</code> for quick checks</li>
+<li><code class="i">node --watch</code> restarts on edits (stable)</li>
+<li>Read stack traces from the top: the first line that is <i>your</i> file is usually the clue</li></ul></div>
+
+<h2>Performance &amp; memory leaks<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>Profile before you tune: <code class="i">node --cpu-prof</code> and <code class="i">--heap-prof</code> write profiles you can open in DevTools (the CLI docs list both as stable)</li>
+<li><span class="y">Common leak causes</span>: a global array or <code class="i">Map</code> that only grows (like the rate limiter on page 13), unbounded caches, listeners added per request, forgotten timers</li>
+<li>Symptom: memory climbs steadily and never drops after traffic eases; take two heap snapshots and compare</li>
+<li>Cheap wins: <span class="y">cache</span> hot reads, add <span class="y">indexes</span> (page 16), <span class="y">paginate</span>, <span class="y">stream</span> big payloads, avoid sync work</li></ul>
+<div class="tw"><table><tr><th>Symptom</th><th>Likely cause</th><th>First move</th></tr>
+<tr><td>All endpoints freeze together</td><td>blocked event loop</td><td>CPU profile; look for sync or heavy loops</td></tr>
+<tr><td>Memory only goes up</td><td>leak</td><td>heap snapshots</td></tr>
+<tr><td>One endpoint slow</td><td>missing DB index or N+1 queries</td><td>log query times, check indexes</td></tr></table></div></div>
+<div class="sticky"><h3>Remember!</h3><ul><li><code>node --test</code> needs no extra framework</li><li>Use the debugger and profiler, not guesses</li><li>Unbounded collections are the classic memory leak</li></ul></div>
+</section>
+<!-- ======================= PAGE: SCALING ======================= -->
+<section class="sheet" id="pg-scale" data-part="F · Scale and ship" data-label="Scaling: child_process, cluster, worker_threads">
+
+<h2>Three ways to use more than one core<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> One waiter can only go so fast. <b>cluster</b> opens more identical restaurants sharing one street number. <b>worker_threads</b> gives the waiter a helper chef inside the same kitchen. <b>child_process</b> calls an outside caterer: a separate program entirely.</div></div>
+<svg class="dia" viewBox="0 0 720 260" role="img" aria-label="Cluster: one primary process forking workers that share a port">
+  <g transform="rotate(-.6 360 40)"><rect class="bx hot" x="250" y="14" width="220" height="58" rx="10"/><text x="360" y="40" text-anchor="middle">primary (master)</text><text x="360" y="62" text-anchor="middle" style="font-size:17px">forks + restarts workers</text></g>
+  <g transform="rotate(.7 90 160)"><rect class="bx" x="20" y="130" width="140" height="60" rx="10"/><text x="90" y="156" text-anchor="middle">worker 1</text><text x="90" y="178" text-anchor="middle" style="font-size:16px">own V8 + memory</text></g>
+  <g transform="rotate(-.6 270 160)"><rect class="bx" x="200" y="130" width="140" height="60" rx="10"/><text x="270" y="156" text-anchor="middle">worker 2</text><text x="270" y="178" text-anchor="middle" style="font-size:16px">own V8 + memory</text></g>
+  <g transform="rotate(.6 450 160)"><rect class="bx" x="380" y="130" width="140" height="60" rx="10"/><text x="450" y="156" text-anchor="middle">worker 3</text><text x="450" y="178" text-anchor="middle" style="font-size:16px">own V8 + memory</text></g>
+  <g transform="rotate(-.7 630 160)"><rect class="bx" x="560" y="130" width="140" height="60" rx="10"/><text x="630" y="156" text-anchor="middle">worker 4</text><text x="630" y="178" text-anchor="middle" style="font-size:16px">own V8 + memory</text></g>
+  <path class="ar" d="M300 76 Q 190 100 100 126"/><path class="ar" d="M330 76 Q 300 100 272 126"/><path class="ar" d="M390 76 Q 420 100 448 126"/><path class="ar" d="M420 76 Q 540 100 626 126"/>
+  <g transform="rotate(.4 360 232)"><rect class="bx" x="170" y="212" width="380" height="40" rx="10" style="fill:#e6f4e0"/><text x="360" y="238" text-anchor="middle">shared port 3000: requests are spread across workers</text></g>
+</svg>
+<div class="tw"><table><tr><th></th><th><code>child_process</code></th><th><code>cluster</code></th><th><code>worker_threads</code></th></tr>
+<tr><td>What it is</td><td>separate OS process / any program</td><td>copies of your server, one per core</td><td>threads inside one process</td></tr>
+<tr><td>Memory</td><td>separate</td><td>separate per worker</td><td>separate heap, can share buffers</td></tr>
+<tr><td>Use it for</td><td>run a shell tool, ffmpeg, a Python script</td><td>use all cores for a web server</td><td>CPU-heavy JS (image work, parsing, hashing)</td></tr>
+<tr><td>Talk via</td><td>stdio, IPC messages</td><td>IPC messages</td><td><code>postMessage</code></td></tr></table></div>
+<div class="code"><p class="cap">worker_threads: heavy maths off the main thread</p><pre><code>import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
+
+if (isMainThread) {
+  const w = new Worker(new URL(import.meta.url), { workerData: 40 });
+  w.on('message', (v) =&gt; console.log('fib =', v));
+  w.on('error', console.error);
+} else {
+  const fib = (n) =&gt; (n &lt; 2 ? n : fib(n - 1) + fib(n - 2));
+  parentPort.postMessage(fib(workerData));
+}</code></pre><div class="out">fib = 102334155 (while the main thread stays free to serve requests)</div></div>
+<div class="code"><p class="cap">cluster: one server per core, restart on crash</p><pre><code>import cluster from 'node:cluster';
+import http from 'node:http';
+import os from 'node:os';
+
+if (cluster.isPrimary) {
+  for (let i = 0; i &lt; os.availableParallelism(); i++) cluster.fork();
+  cluster.on('exit', (w) =&gt; { console.log('worker', w.process.pid, 'died, restarting'); cluster.fork(); });
+} else {
+  http.createServer((req, res) =&gt; res.end('hello from ' + process.pid)).listen(3000);
+}</code></pre><div class="out">hello from 4121 · hello from 4123 · … (different pid per request)</div></div>
+<div class="code"><p class="cap">child_process: run a tool safely</p><pre><code>import { execFile } from 'node:child_process';
+execFile('ls', ['-l', 'public'], (err, stdout) =&gt; {
+  if (err) throw err;
+  console.log(stdout);
+});</code></pre><div class="out wh">arguments are passed as an array, so the shell never interprets them</div></div>
+<p class="warn" style="color:var(--red)">Unsafe: <code class="i">exec(`ls ${req.query.dir}`)</code>. A value like <code class="i">x; rm -rf /</code> becomes a command (command injection). Use <code class="i">execFile</code> or <code class="i">spawn</code> with an args array, and validate input.</p>
+<p class="warn" style="color:var(--red)">Cluster workers don’t share memory: in-memory sessions, caches and rate limiters become per-worker. Move shared state to Redis or the database.</p>
+<ul class="ar"><li>Often you don’t hand-write cluster code: a process manager (PM2’s cluster mode) or several containers behind a load balancer does the same job</li></ul></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>I/O-bound? Stay async. CPU-bound? worker_threads</li><li>More cores for a web server: cluster / PM2 / containers</li><li>Never build shell commands from user input</li></ul></div>
+</section>
+<!-- ======================= PAGE: RUN & DEPLOY ======================= -->
+<section class="sheet" id="pg-deploy" data-part="F · Scale and ship" data-label="Running and deploying">
+
+<h2>Running the project<span class="src">Ref §22</span></h2>
+<div class="code"><pre><code># install
+npm install
+
+# add your .env (see page 13)
+
+# run in dev mode (nodemon + dotenv preload)
+npm run dev</code></pre></div>
+<p>Then try the four requests in Postman:</p>
+<div class="tw"><table><tr><th>Method</th><th>URL</th><th>Body</th></tr>
+<tr><td><code>POST</code></td><td><code>/api/v1/users/register</code></td><td>form-data: <code>fullName</code>, <code>email</code>, <code>username</code>, <code>password</code>, <code>avatar</code> (file), <code>coverImage</code> (file)</td></tr>
+<tr><td><code>POST</code></td><td><code>/api/v1/users/login</code></td><td>JSON: <code>{ "email": "...", "password": "..." }</code></td></tr>
+<tr><td><code>POST</code></td><td><code>/api/v1/users/logout</code></td><td>Header: <code>Authorization: Bearer &lt;accessToken&gt;</code></td></tr>
+<tr><td><code>POST</code></td><td><code>/api/v1/users/refresh-token</code></td><td>Cookie or JSON: <code>refreshToken</code></td></tr></table></div>
+<div class="old"><b>⚠ older pattern:</b> <code class="i">nodemon</code> as the only dev workflow.</div>
+<div class="new"><span class="tag">+ added</span><code class="i">node --watch --env-file=.env src/index.js</code> does both jobs with no extra packages (page 5).</div>
+
+<h2>Graceful shutdown<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>In plain words.</b> Closing time at a restaurant: stop seating new guests, let people finish their meals, then lock up. Killing the process mid-request is turning off the lights with diners still eating.</div></div>
+<div class="code"><pre><code>const server = app.listen(8000);
+
+async function shutdown(signal) {
+  console.log(signal, 'received: closing server');
+  server.close(async () =&gt; {            // waits for in-flight requests
+    await mongoose.connection.close();   // then closes the DB
+    process.exit(0);
+  });
+  setTimeout(() =&gt; process.exit(1), 10_000).unref();   // hard stop after 10s
+}
+process.on('SIGTERM', () =&gt; shutdown('SIGTERM'));   // Docker / PM2 stop
+process.on('SIGINT',  () =&gt; shutdown('SIGINT'));    // Ctrl+C</code></pre><div class="out wh">in-flight requests finish, the DB closes cleanly, then the process exits</div></div></div>
+
+<h2>Deployment basics &amp; production tips<span class="src">+ gap topic</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><span class="y">Process manager</span> (PM2, systemd, or Docker’s restart policy) restarts crashes: this is why the reference’s <code class="i">process.exit(1)</code> is safe</li>
+<li>Set <code class="i">NODE_ENV=production</code>; install with <code class="i">npm ci --omit=dev</code></li>
+<li>Add a <code class="i">/health</code> route so load balancers and orchestrators can check the app</li>
+<li>Run as a non-root user; keep secrets in the platform’s secret store, not baked into the image</li>
+<li>Pin to an LTS version you tested; per nodejs.org that is v22, v24 or v26 right now (v20 is end-of-life)</li></ul>
+<div class="code"><pre><code># Dockerfile (pin the tag to the LTS line you tested)
+FROM node:24-slim
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . .
+ENV NODE_ENV=production
+USER node
+EXPOSE 8000
+CMD ["node", "src/index.js"]</code></pre><div class="out wh">small, repeatable image; the app runs as the unprivileged node user. Verify the image tag exists before using it</div></div>
+<h3>Common mistakes, one last time</h3>
+<p class="warn" style="color:var(--red)">Blocking the event loop with sync or CPU-heavy code.</p>
+<p class="warn" style="color:var(--red)">Unhandled promise rejections and a missing <code class="i">await</code>.</p>
+<p class="warn" style="color:var(--red)">Forgetting <code class="i">next()</code>, or sending a response twice.</p>
+<p class="warn" style="color:var(--red)">Callback hell instead of async/await.</p>
+<p class="warn" style="color:var(--red)">Leaking secrets: committed <code class="i">.env</code>, logged tokens, keys in client code.</p></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Handle SIGTERM: stop listening, finish requests, close the DB</li><li>Process manager + health check + NODE_ENV=production</li><li>Pin the Node LTS you tested</li></ul></div>
+</section>
+<!-- ======================= INTERVIEW 1 ======================= -->
+<section class="sheet" id="pg-int1" data-part="G · Interview prep" data-label="Interview prep 1: Node basics, V8, modules">
+
+<div class="box plain"><svg class="bulb" aria-hidden="true"><use href="#bulb"/></svg><div><b>How to answer any Node question: the 4 beats.</b> (1) <b>Define</b> it in one sentence. (2) Explain <b>why</b> it exists or works that way. (3) Give a <b>tiny example</b>. (4) Add the <b>edge or trade-off</b>. Say the yellow line out loud first; the rest is your backup.</div></div>
+<div class="err"><b>About these questions.</b> You didn’t give me a list. I built them from the topics your course notes flag or stress (two are marked there: CommonJS vs ESM “for interviews” and “single- or multi-threaded?”), so treat them as likely questions, not an official set.</div>
+
+<h2 data-q="1">Q1 · What is Node.js?<span class="src">Part: ep 1–2</span></h2>
+<div class="say"><b>Say this:</b> “Node.js is a JavaScript runtime built on Chrome’s V8 engine that runs JavaScript outside the browser, using an event-driven, non-blocking I/O model.”</div>
+<ul class="ar"><li><span class="y">Why:</span> Ryan Dahl (2009) wanted a non-blocking server because Apache blocked a thread per request</li>
+<li><span class="y">Parts:</span> V8 (runs JS) + libuv (async I/O) + core modules (<code class="i">fs</code>, <code class="i">http</code>…) + npm</li>
+<li><span class="y">Example:</span> an HTTP server in 4 lines (page 9)</li></ul>
+<h3>Follow-up: is Node a language or a framework?</h3>
+<p>Neither: it’s a runtime. The language is JavaScript (the ECMAScript standard); Express is a framework that runs on Node.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Node is a C++ program with V8 embedded. Globals like <code class="i">process</code> and <code class="i">console</code> come from Node, not from V8: that’s why <code class="i">window</code> doesn’t exist there.</div>
+
+<h2 data-q="2">Q2 · How does V8 run JavaScript?<span class="src">Part: ep 2, 8</span></h2>
+<div class="say"><b>Say this:</b> “V8 parses code into tokens and an AST, the Ignition interpreter turns that into bytecode and runs it, and hot code is optimized by TurboFan into machine code, with deoptimization if its assumptions break; garbage collection runs alongside.”</div>
+<div class="tw"><table><tr><th>Stage</th><th>Output</th></tr><tr><td>Lexical analysis</td><td>tokens</td></tr><tr><td>Syntax analysis</td><td>AST</td></tr><tr><td>Ignition</td><td>bytecode (executed)</td></tr><tr><td>TurboFan</td><td>optimised machine code</td></tr></table></div>
+<h3>Follow-up: is JavaScript interpreted or compiled?</h3>
+<p>Both: V8 uses JIT (Just-In-Time) compilation. Interpreting gives a fast start; compiling hot code gives speed.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Say “JIT” and “deoptimization”. Code whose types keep changing is harder to optimize, so stable shapes and types help performance (general V8 behaviour; I haven’t benchmarked it here).</div>
+
+<h2 data-q="3">Q3 · CommonJS vs ES Modules?<span class="src">Part: ep 4 · flagged for interviews</span></h2>
+<div class="say"><b>Say this:</b> “CommonJS uses <code class="i">require</code> and <code class="i">module.exports</code>, loads modules synchronously and runs non-strict; ES modules use <code class="i">import</code>/<code class="i">export</code>, load asynchronously and run in strict mode.”</div>
+<div class="tw"><table><tr><th></th><th>CommonJS</th><th>ES Modules</th></tr><tr><td>Syntax</td><td>require / module.exports</td><td>import / export</td></tr><tr><td>Loading</td><td>synchronous</td><td>asynchronous</td></tr><tr><td>Mode</td><td>non-strict</td><td>strict</td></tr><tr><td>Enable</td><td>default in Node</td><td><code>"type":"module"</code> or <code>.mjs</code></td></tr></table></div>
+<h3>Follow-up: how do you switch a project to ESM?</h3>
+<p>Add <code class="i">"type": "module"</code> to package.json (or use <code class="i">.mjs</code>), and write relative imports with the file extension.</p>
+<div class="edge"><span class="tag red">Interview edge</span>ESM allows top-level <code class="i">await</code> and static analysis (tree shaking). <code class="i">__dirname</code> is not defined in ESM. Newer Node lines can <code class="i">require()</code> an ES module (exact versions on page 5).</div>
+
+<h2 data-q="4">Q4 · How does require() work behind the scenes?<span class="src">Part: ep 5</span></h2>
+<div class="say"><b>Say this:</b> “Node resolves the path, loads the file, wraps the code in a function (an IIFE), evaluates it to set <code class="i">module.exports</code>, then caches the result so the module runs only once.”</div>
+<div class="code"><pre><code>// counter.js:  console.log('loaded'); module.exports = { n: 0 };
+const a = require('./counter');   // prints "loaded"
+const b = require('./counter');   // cached: no print
+console.log(a === b);</code></pre><div class="out">loaded · true</div></div>
+<h3>Follow-up: why can’t one file see another’s variables?</h3>
+<p>Each module’s code is wrapped in its own function, so its variables are function-scoped and private unless exported.</p>
+<div class="edge"><span class="tag red">Interview edge</span>The real wrapper takes five arguments (<code class="i">exports, require, module, __filename, __dirname</code>); the cache lives in <code class="i">require.cache</code>; circular requires return a partly-filled <code class="i">exports</code> object.</div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Define → why → example → edge</li><li>CJS = sync + non-strict; ESM = async + strict</li><li>require = resolve, load, wrap, evaluate, cache</li></ul></div>
+</section>
+<!-- ======================= INTERVIEW 2 ======================= -->
+<section class="sheet" id="pg-int2" data-part="G · Interview prep" data-label="Interview prep 2: event loop, threads, databases">
+
+<h2 data-q="5">Q5 · Is Node.js single-threaded or multi-threaded?<span class="src">Part: ep 10 · flagged</span></h2>
+<div class="say"><b>Say this:</b> “It depends: your JavaScript runs on one thread, but libuv’s thread pool, 4 threads by default, handles fs, DNS lookup, crypto and zlib in the background.”</div>
+<ul class="ar"><li><span class="y">Why it matters:</span> a synchronous task blocks everything; an async one is offloaded</li>
+<li>Network I/O doesn’t use the pool: it goes through OS sockets (<code class="i">epoll</code>, <code class="i">kqueue</code>)</li></ul>
+<h3>Follow-up: how do you change the pool size?</h3>
+<p><code class="i">UV_THREADPOOL_SIZE=8 node app.js</code>, set before the process starts.</p>
+<h3>Follow-up: what blocks the main thread?</h3>
+<p>Sync fs calls, heavy JSON, complex regex, big loops and calculations.</p>
+<div class="edge"><span class="tag red">Interview edge</span>For CPU-heavy work use <code class="i">worker_threads</code> (page 20), not a bigger pool. Five simultaneous bcrypt or pbkdf2 calls on a pool of four queue up (page 4 demo).</div>
+
+<h2 data-q="6">Q6 · Explain the event loop, and predict the output<span class="src">Part: ep 7, 9</span></h2>
+<div class="say"><b>Say this:</b> “The event loop keeps checking the call stack and the callback queues and runs callbacks phase by phase (timers, pending, poll, check, close), draining nextTick and promise callbacks between them.”</div>
+<div class="code"><pre><code>setTimeout(() =&gt; console.log('timeout'), 0);
+setImmediate(() =&gt; console.log('immediate'));
+Promise.resolve().then(() =&gt; console.log('promise'));
+process.nextTick(() =&gt; console.log('nextTick'));
+console.log('sync');</code></pre><div class="out">sync · nextTick · promise · timeout / immediate (either order from the main module)</div></div>
+<h3>Follow-up: setTimeout(0) vs setImmediate?</h3>
+<p>Timeout runs in the timers phase, immediate in the check phase. Inside an I/O callback, immediate always wins.</p>
+<h3>Follow-up: what is a “tick”?</h3>
+<p>The notes call one full cycle of the loop a tick; <code class="i">process.nextTick</code> is a separate queue that runs between phases.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Recursive <code class="i">process.nextTick</code> can starve the loop, because the queue must empty before the loop moves on. Mention that order puzzles are run in CommonJS; in an ES module the promise line can run before nextTick.</div>
+
+<h2 data-q="7">Q7 · What is libuv, and why offload work to it?<span class="src">Part: ep 6, 10</span></h2>
+<div class="say"><b>Say this:</b> “libuv is a multi-platform C library that gives Node its event loop, thread pool and asynchronous I/O on top of OS facilities such as epoll and kqueue.”</div>
+<ul class="ar"><li><span class="y">Why:</span> V8 is synchronous; handing file, DB, network and timer work to libuv keeps the call stack free</li>
+<li><span class="y">Flow:</span> V8 offloads → libuv registers and keeps the callback → on completion, with an empty call stack, the callback runs</li></ul>
+<h3>Follow-up: what does libuv do with a setTimeout?</h3>
+<p>It registers the timer; when due and the stack is empty, the callback is queued in the timers phase.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Name the split: <b>V8 = language, libuv = I/O</b>. It’s the same engine idea that lets one thread serve thousands of sockets.</div>
+
+<h2 data-q="8">Q8 · SQL vs NoSQL: when do you choose which?<span class="src">Part: ep 12</span></h2>
+<div class="say"><b>Say this:</b> “SQL databases store structured rows in fixed-schema tables with joins and strong transactions; NoSQL databases like MongoDB store flexible documents in collections and scale out easily.”</div>
+<div class="tw"><table><tr><th></th><th>RDBMS (MySQL)</th><th>NoSQL (MongoDB)</th></tr><tr><td>Unit</td><td>table → row → column</td><td>collection → document → field</td></tr><tr><td>Schema</td><td>fixed</td><td>flexible</td></tr><tr><td>Relations</td><td>foreign keys + joins</td><td>nested / referenced</td></tr><tr><td>Typical use</td><td>banking, transactions</td><td>real-time analytics, social media</td></tr></table></div>
+<h3>Follow-up: does MongoDB never need joins?</h3>
+<p>It can avoid many by nesting, but references, <code class="i">populate</code> and <code class="i">$lookup</code> exist when data is shared.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Choose by access patterns and consistency needs, not hype. Both scale: SQL via replication and sharding, Mongo via sharding.</div>
+
+<h2 data-q="0" style="margin-top:30px">Live-coding drills<span class="src">already in this notebook</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li>A basic HTTP server: page 9</li><li>A custom middleware: page 10 · a rate limiter: page 13</li><li>Read a large file with streams: page 8 · a custom EventEmitter: page 7 · a promise-based retry helper: page 7</li></ul></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>“It depends” is correct for single vs multi-threaded: say why</li><li>Predict output: sync → nextTick → promise → timers → immediate</li><li>V8 = language, libuv = I/O</li></ul></div>
+</section>
+<!-- ======================= PAGE: QUICK CHECK ======================= -->
+<section class="sheet" id="pg-check" data-part="H · Wrap-up" data-label="Quick check and summary">
+
+<h2>Quick check<span class="src">5 questions</span></h2>
+<p>Try each one first. Then fold out the answer.</p>
+
+<div class="box" style="border:2px dashed var(--ink);border-radius:14px 6px 16px 8px;background:rgba(255,255,255,.45)">
+<h3 style="margin-top:0">1 · What prints, and in what order?</h3>
+<div class="code"><pre><code>// CommonJS
+console.log('A');
+setTimeout(() =&gt; console.log('B'), 0);
+Promise.resolve().then(() =&gt; console.log('C'));
+process.nextTick(() =&gt; console.log('D'));
+(async () =&gt; { console.log('E'); await null; console.log('F'); })();
+console.log('G');</code></pre></div>
+<details><summary>Show answer</summary><p><b>A E G D C F B.</b> Sync code first: A, E (the async function runs synchronously until its first <code class="i">await</code>), G. Then the nextTick queue: D. Then promise microtasks in the order they were queued: C, then F. Last, the timer: B. (In an ES module the promise callbacks may come before D.)</p></details></div>
+
+<div class="box" style="border:2px dashed var(--ink);border-radius:8px 16px 6px 14px;background:rgba(255,255,255,.45)">
+<h3 style="margin-top:0">2 · What’s wrong with this Express code?</h3>
+<div class="code"><pre><code>app.get('/user/:id', async (req, res) =&gt; {
+  const user = await User.findOne({ _id: req.params.id });
+  if (!user) res.status(404).json({ error: 'not found' });
+  res.json(user);
+});</code></pre></div>
+<details><summary>Show answer</summary><ul class="ar"><li>No <code class="i">return</code> after the 404, so it also runs <code class="i">res.json(user)</code>: <code class="i">ERR_HTTP_HEADERS_SENT</code></li>
+<li>An invalid id throws a Mongoose <code class="i">CastError</code>; validate with <code class="i">mongoose.isValidObjectId</code> and answer 400</li>
+<li>On Express 4 the rejection isn’t forwarded: wrap in <code class="i">asyncHandler</code></li>
+<li>Returns the whole user document, maybe including <code class="i">password</code>; use <code class="i">.select("-password -refreshToken")</code></li>
+<li>Error body shape differs from <code class="i">ApiError</code>/<code class="i">ApiResponse</code></li></ul></details></div>
+
+<div class="box" style="border:2px dashed var(--ink);border-radius:14px 6px 16px 8px;background:rgba(255,255,255,.45)">
+<h3 style="margin-top:0">3 · When do you pick cluster over worker_threads?</h3>
+<details><summary>Show answer</summary><p><b>cluster</b> to use all cores for a <i>server</i>: many copies of the app share one port. <b>worker_threads</b> to move a CPU-heavy <i>task</i> off the main thread inside one process. Trade-off: cluster workers don’t share memory, so shared state goes to Redis or the DB.</p></details></div>
+
+<div class="box" style="border:2px dashed var(--ink);border-radius:8px 16px 6px 14px;background:rgba(255,255,255,.45)">
+<h3 style="margin-top:0">4 · 401 or 403? A logged-in user opens an admin-only route.</h3>
+<details><summary>Show answer</summary><p><b>403.</b> The server knows who they are (authenticated) but they aren’t allowed (authorization). 401 is for a missing or invalid token.</p></details></div>
+
+<div class="box" style="border:2px dashed var(--ink);border-radius:14px 6px 16px 8px;background:rgba(255,255,255,.45)">
+<h3 style="margin-top:0">5 · Why use <code class="i">createReadStream</code> to send a 5 GB file?</h3>
+<details><summary>Show answer</summary><p><code class="i">readFile</code> would load all 5 GB into memory before sending a byte. A stream moves it in small chunks, starts immediately, and backpressure keeps memory flat. Use <code class="i">pipeline</code> so errors and cleanup are handled.</p></details></div>
+
+<div class="box" style="border:2.5px solid var(--red);border-radius:16px 6px 18px 8px;background:rgba(255,241,238,.5)">
+<h3 style="margin-top:0">The whole notebook in three lines</h3>
+<p>1. Node is one JS thread plus helpers: never block the event loop, and send CPU work to workers.<br>
+2. Express is a pipeline: middleware in order, controllers in six steps, one error handler at the end.<br>
+3. Secure by default: env-var secrets, validated input, hashed passwords, short tokens, honest status codes.</p></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Read the question, then guess, then fold out the answer</li><li>Redo the ones you missed tomorrow</li><li>Run every snippet locally at least once</li></ul></div>
+</section>
+<!-- ======================= PAGE: CHEAT SHEET ======================= -->
+<section class="sheet" id="pg-cheat" data-part="H · Wrap-up" data-label="Cheat sheet">
+
+<h2>I want to… → use…<span class="src">one-page cheat sheet</span></h2>
+<div class="tw"><table><tr><th>I want to…</th><th>Use…</th><th>Page</th></tr>
+<tr><td>read a huge file</td><td><code>createReadStream</code> + <code>pipeline</code></td><td>8</td></tr>
+<tr><td>read a small config / JSON file</td><td><code>fs/promises.readFile</code></td><td>6</td></tr>
+<tr><td>run CPU-heavy work</td><td><code>worker_threads</code></td><td>20</td></tr>
+<tr><td>use every CPU core for my server</td><td><code>cluster</code> / PM2 / containers</td><td>20</td></tr>
+<tr><td>run an outside program safely</td><td><code>execFile</code> / <code>spawn</code> with an args array</td><td>20</td></tr>
+<tr><td>share logic across routes</td><td>middleware (<code>app.use</code>, <code>router.use</code>)</td><td>10</td></tr>
+<tr><td>handle async errors in Express</td><td><code>asyncHandler</code> (Express 4) or native (Express 5)</td><td>12</td></tr>
+<tr><td>format every error the same way</td><td><code>ApiError</code> + global error middleware</td><td>18</td></tr>
+<tr><td>read an id from the URL</td><td><code>req.params</code> + <code>isValidObjectId</code></td><td>11</td></tr>
+<tr><td>paginate / search a list</td><td><code>req.query</code>, clamped and allow-listed</td><td>11</td></tr>
+<tr><td>hash a password</td><td><code>bcrypt.hash</code> (cost ≥ 10) or argon2id</td><td>15</td></tr>
+<tr><td>protect a route</td><td><code>verifyJWT</code> (401), role check (403)</td><td>15</td></tr>
+<tr><td>store tokens safely in a browser</td><td>httpOnly + secure + sameSite cookies</td><td>14</td></tr>
+<tr><td>keep secrets out of git</td><td><code>.env</code> + <code>--env-file</code> / env vars</td><td>13</td></tr>
+<tr><td>limit abuse</td><td>rate limiter + <code>express.json({ limit })</code></td><td>13</td></tr>
+<tr><td>accept file uploads</td><td>Multer with limits, filter, unique names</td><td>17</td></tr>
+<tr><td>store user files in production</td><td>Cloudinary / S3 / R2 (keep only the URL)</td><td>17</td></tr>
+<tr><td>run an event after something happens</td><td><code>EventEmitter</code> (+ an <code>'error'</code> listener)</td><td>7</td></tr>
+<tr><td>auto-restart in development</td><td><code>node --watch --env-file=.env</code></td><td>5</td></tr>
+<tr><td>write tests with no framework</td><td><code>node --test</code></td><td>19</td></tr>
+<tr><td>stop cleanly on deploy</td><td>handle <code>SIGTERM</code>, close server, then DB</td><td>21</td></tr>
+<tr><td>restart after crashes</td><td>PM2 / systemd / Docker restart policy</td><td>21</td></tr>
+<tr><td>explain how <code>require</code> works</td><td>resolve, load, wrap (IIFE), evaluate, cache</td><td>5</td></tr>
+<tr><td>predict async output order</td><td>sync → nextTick → promises → timers → immediate → I/O</td><td>4</td></tr>
+<tr><td>run more than 4 fs/crypto jobs at once</td><td><code>UV_THREADPOOL_SIZE=8 node app.js</code></td><td>4</td></tr>
+<tr><td>answer “single or multi-threaded?”</td><td>“It depends”: one JS thread + libuv pool of 4</td><td>23</td></tr></table></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Match the tool to the job: stream, worker, cluster, middleware</li><li>Use this table as your quick lookup before searching</li><li>Page numbers on the right point back to the full notes</li></ul></div>
+</section>
+<!-- ======================= PAGE: WRAP-UP ======================= -->
+<section class="sheet" id="pg-wrap" data-part="H · Wrap-up" data-label="Wrap-up: gaps, errors, next steps">
+
+<h2>Gaps I filled<span class="src">every green box, by topic</span></h2>
+<div class="box added" style="margin-top:30px"><span class="tag">+ added</span>
+<ul class="ar">
+<li><b>How Node runs:</b> V8 + libuv + bindings, the libuv thread pool, browser vs Node</li>
+<li><b>Event loop:</b> phases, nextTick vs microtasks vs setImmediate vs setTimeout, blocking vs non-blocking</li>
+<li><b>Modules and npm:</b> CommonJS vs ESM, semver, lockfile, scripts, engines, <code class="i">--watch</code> / <code class="i">--env-file</code></li>
+<li><b>Core modules:</b> fs, path, os, crypto, url, safe path joining</li>
+<li><b>Async:</b> callbacks → promises → async/await, Promise.all, retry helper, EventEmitter</li>
+<li><b>Streams and Buffers:</b> backpressure, pipeline, readFile vs createReadStream</li>
+<li><b>http module</b> and raw-vs-Express comparison; writing custom middleware</li>
+<li><b>REST design:</b> method semantics, idempotence, pagination styles</li>
+<li><b>Security:</b> helmet, CORS, rate limiting, NoSQL injection, safe query handling, permission model</li>
+<li><b>Auth:</b> sessions vs JWT, cookie options, role checks (403), bcrypt limits</li>
+<li><b>Databases:</b> SQL vs NoSQL, connection pooling</li>
+<li><b>Uploads:</b> safe Multer config, async temp-file cleanup</li>
+<li><b>Errors and logging:</b> global error middleware, operational vs programmer errors, process handlers, structured logging</li>
+<li><b>Testing, debugging, performance:</b> node:test, inspector, profiles, leaks</li>
+<li><b>Scaling:</b> child_process vs cluster vs worker_threads with runnable code</li>
+<li><b>Production:</b> graceful shutdown, process managers, Docker, health checks, common mistakes</li>
+<li><b>Course-notes topics (pages 2–5, 9, 16):</b> green notes only: the real five-argument module wrapper, a <code class="i">require</code> cache demo, a blocking-timer demo, a thread-pool timing demo, corrected <code class="i">.then</code> promise examples, V8 compiler tiers</li>
+<li><b>Interview pages (22–23):</b> the eight questions, “Say this” lines and “Interview edge” boxes are my own, built from the notes’ flagged topics</li></ul></div>
+
+<h2>Errors and risks I flagged in the reference<span class="src">red dashed boxes</span></h2>
+<div class="err"><ul class="ar" style="margin:4px 0">
+<li>Startup log prints <code class="i">process.env.PORT</code> (undefined) instead of the real port (page 1)</li>
+<li>Validation <code class="i">f?.trim() === ""</code> lets missing fields through (page 11)</li>
+<li><code class="i">req.files?.avatar[0]</code> throws if no avatar is sent (page 11)</li>
+<li>Duplicate phrase in §11.1 (page 11)</li>
+<li><code class="i">unique</code> described as a validator; it is an index (page 16)</li>
+<li>Multer saves by original name: collisions, no limits, no type filter (page 17)</li>
+<li><code class="i">fs.unlinkSync</code> in an async upload helper; unchecked <code class="i">avatar.url</code> after a failed upload (page 17)</li>
+<li>Refresh flow: unguarded <code class="i">jwt.verify</code>, possibly mismatched <code class="i">newRefreshToken</code> name (page 14)</li>
+<li>Cookie options: <code class="i">secure: true</code> on local http, no <code class="i">sameSite</code>/<code class="i">maxAge</code>, tokens also in the JSON body (page 14)</li>
+<li>Older patterns kept but marked: nodemon + <code class="i">-r dotenv/config</code> + experimental JSON flag, and the Express 4 <code class="i">asyncHandler</code> wrapper</li></ul></div>
+
+<h2>Errors and risks I flagged in the course notes<span class="src">Notes ep-1 to 13</span></h2>
+<div class="err"><ul class="ar" style="margin:4px 0">
+<li><code class="i">Promise.resolve(() =&gt; ...)</code> in Codes 2–4 schedules nothing; it needs <code class="i">.then(...)</code> (page 4)</li>
+<li>Timer-before-immediate order in Code 1 isn’t guaranteed from the main module (page 4)</li>
+<li>Setting <code class="i">process.env.UV_THREADPOOL_SIZE</code> inside the script is unreliable; set it in the environment (page 4)</li>
+<li><code class="i">fs.readfiles</code> typo and an unused-parameter <code class="i">multiplyFn</code> in <code class="i">async.js</code> (page 3)</li>
+<li>“A single thread or a single process” blurs threads and processes (page 3)</li>
+<li>The module-wrapper sketch shows two parameters; the real one has five (page 5)</li>
+<li>CommonJS vs ESM table names only <code class="i">.mjs</code>; <code class="i">"type": "module"</code> also enables ESM (page 5)</li>
+<li>“SMT server” should be SMTP (page 9); missing <code class="i">=</code> and “bdb” typos in the MongoDB code (page 16)</li>
+<li>“No need for joins or normalization in NoSQL” is overstated (page 16)</li></ul></div>
+
+<h2>Where next?<span class="src">after these notes</span></h2>
+<div class="added"><span class="tag">+ added</span>
+<ul class="ar"><li><span class="y">TypeScript with Node</span>: Node 26 runs simple TS directly (type stripping, stable in v26), or use a build step for full TS features</li>
+<li><span class="y">NestJS</span>: an opinionated framework built around controllers, providers and decorators</li>
+<li><span class="y">ORMs / query builders</span>: Prisma, Drizzle or TypeORM when you move to SQL</li>
+<li><span class="y">WebSockets / Socket.IO</span> for real-time features</li>
+<li><span class="y">Message queues</span> (BullMQ, RabbitMQ) for background jobs like video processing</li>
+<li><span class="y">Docker + CI/CD</span>, and observability (metrics, tracing)</li></ul></div>
+
+<h2>What I could not verify<span class="src">be honest about gaps</span></h2>
+<div class="err"><p style="margin:4px 0"><b>Verified this session (3 Nov 2026) from nodejs.org:</b> the release table (v26 LTS “Lithium”, latest 26.13.0; v24 and v22 LTS; v20 EOL; v27 alpha) and the note that v27 moves to an annual cycle. From nodejs.org docs and release notes in search results: <code class="i">--watch</code> and the permission model stable, <code class="i">--cpu-prof</code>/<code class="i">--heap-prof</code> stable, Node 26 type stripping stable, Temporal on by default, and the extensionless-ESM change.</p>
+<p style="margin:4px 0"><b>Not re-verified:</b> exact versions for built-in <code class="i">fetch</code>, <code class="i">node:test</code> stability, <code class="i">--env-file</code> / <code class="i">loadEnvFile</code> history, <code class="i">require(esm)</code> unflagging, the nextTick-vs-promise order in ES modules, <code class="i">import.meta.dirname</code> availability, Express 5 async handling, Mongoose hook and <code class="i">maxPoolSize</code> defaults, current OWASP hashing numbers, pino API details, the Docker image tag, and the versions of every npm package named. Treat those as “check the docs before relying on them”.</p>
+<p style="margin:4px 0"><b>Also run, not just read:</b> I executed the notes’ puzzles (with the <code class="i">.then</code> fix), the <code class="i">require</code> cache demo, the blocking-timer demo and the thread-pool demo in Node v22.22.2 in my sandbox, not on Node 26. Outputs matched, but timing numbers will differ on your machine. <b>Not re-verified:</b> V8 14.6 in Node 26 (third-party summary), Sparkplug/Maglev tiers, and <code class="i">UV_THREADPOOL_SIZE</code> in-script behaviour on Windows.</p>
+<p style="margin:4px 0"><b>Sources:</b> the LinkedIn post page was blocked; the course notes came from your uploaded PDF, read by eye because OCR failed on the handwriting.</p></div>
+<div class="sticky"><h3>Remember!</h3><ul><li>Re-read the red boxes: mistakes teach fastest</li><li>Check version-specific claims against nodejs.org</li><li>Build something small with every page</li></ul></div>
+</section>
+
+<script>
+(function () {
+  'use strict';
+  var sheets = Array.prototype.slice.call(document.querySelectorAll('.sheet'));
+  var pages = sheets.filter(function (s) { return !s.classList.contains('cover'); });
+
+  pages.forEach(function (s, i) {
+    var n = i + 1;
+    s.setAttribute('data-n', n);
+
+    var head = document.createElement('div');
+    head.className = 'phead';
+    var pn = document.createElement('span'); pn.className = 'pn'; pn.textContent = 'Page ' + n;
+    var pl = document.createElement('span'); pl.className = 'pl'; pl.textContent = s.getAttribute('data-label') || '';
+    head.appendChild(pn); head.appendChild(pl);
+    s.insertBefore(head, s.firstChild);
+
+    var c = 0;
+    Array.prototype.forEach.call(s.querySelectorAll('h2'), function (h) {
+      if (h.hasAttribute('data-q')) return;
+      c += 1;
+      var sp = document.createElement('span');
+      sp.className = 'num';
+      sp.textContent = String(c);
+      h.insertBefore(sp, h.firstChild);
+    });
+
+    var foot = document.createElement('div');
+    foot.className = 'pfoot';
+    var prev = document.createElement('a');
+    var next = document.createElement('a');
+    var mid = document.createElement('span');
+    prev.href = i > 0 ? '#' + pages[i - 1].id : '#contents';
+    prev.textContent = i > 0 ? '← previous' : '← contents';
+    next.href = i < pages.length - 1 ? '#' + pages[i + 1].id : '#contents';
+    next.textContent = i < pages.length - 1 ? 'next →' : 'back to contents ↑';
+    mid.textContent = '— ' + n + ' —';
+    foot.appendChild(prev); foot.appendChild(mid); foot.appendChild(next);
+    s.appendChild(foot);
+  });
+
+  var toc = document.getElementById('toc');
+  var order = [], groups = {};
+  pages.forEach(function (s) {
+    var part = s.getAttribute('data-part');
+    if (!groups[part]) { groups[part] = []; order.push(part); }
+    groups[part].push(s);
+  });
+  order.forEach(function (part) {
+    var d = document.createElement('div'); d.className = 'part';
+    var h = document.createElement('h3'); h.textContent = part; d.appendChild(h);
+    var ol = document.createElement('ol');
+    groups[part].forEach(function (s) {
+      var li = document.createElement('li');
+      var a = document.createElement('a'); a.href = '#' + s.id;
+      var pg = document.createElement('span'); pg.className = 'pg'; pg.textContent = s.getAttribute('data-n') + '.';
+      a.appendChild(pg);
+      a.appendChild(document.createTextNode(' ' + s.getAttribute('data-label')));
+      li.appendChild(a); ol.appendChild(li);
+    });
+    d.appendChild(ol); toc.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>
