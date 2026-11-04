@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Machine Coding and Frontend LLD Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--paper:#fbf8ee;--rule:#cfe0f3;--ink:#1f3d8f;--red:#c0392b;--green:#17743a;--yellow:#fff176;--pink:#ffc0dc;--desk:#d8cdb4;--code:#fffdf4;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(12px + env(safe-area-inset-top,0px));-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:'Caveat','Comic Sans MS','Segoe Print','Bradley Hand',cursive;font-size:22px;line-height:32px;padding:calc(18px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+a{color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.68em;background:rgba(31,61,143,.09);padding:1px 5px;border-radius:4px 7px 5px 8px;color:#16306e;word-break:break-word}
+.sheet{position:relative;max-width:880px;margin:0 auto 46px;padding:20px 30px 18px 96px;background-color:var(--paper);background-image:linear-gradient(to bottom,transparent 31px,var(--rule) 31px,var(--rule) 32px);background-size:100% 32px;background-position:0 14px;border-radius:7px 16px 9px 20px/14px 7px 18px 9px;box-shadow:0 2px 3px rgba(60,40,10,.18),0 12px 28px rgba(60,40,10,.22)}
+.sheet::before{content:"";position:absolute;top:0;bottom:0;left:74px;width:2px;background:#e36b6b;opacity:.8;box-shadow:3px 0 0 rgba(227,107,107,.3);pointer-events:none;z-index:0}
+.sheet::after{content:"";position:absolute;left:20px;top:0;bottom:0;width:30px;pointer-events:none;z-index:0;background-image:radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px);background-size:30px 30px;background-repeat:no-repeat;background-position:0 12%,0 50%,0 88%}
+.sheet>*{position:relative;z-index:1}
+.sh{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:4px double var(--red);padding-bottom:4px;margin-bottom:18px}
+.sh .pg{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;background:var(--red);color:#fff;padding:0 12px;border-radius:14px 4px 12px 5px;transform:rotate(-2deg);line-height:28px}
+.sh h2{margin:0;font-size:42px;line-height:44px;color:var(--red);font-weight:700;transform:rotate(-.6deg)}
+.t{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:30px 0 8px;font-size:32px;line-height:36px;color:var(--red);font-weight:700;counter-increment:tp}
+.sheet{counter-reset:tp}
+.t .ttl{display:flex;align-items:center;gap:10px;transform:rotate(-.5deg)}
+.t .ttl::before{content:counter(tp);display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;border:2.5px solid var(--red);border-radius:52% 48% 55% 45%/48% 55% 45% 52%;font-size:23px;line-height:1;transform:rotate(-6deg)}
+.t .src{font-family:'Patrick Hand','Caveat',cursive;font-size:16px;font-weight:400;line-height:20px;color:#4a5f9c;border:1.5px dashed #8aa0d6;padding:2px 10px;border-radius:12px 4px 10px 5px;transform:rotate(1.2deg)}
+.st{font-size:27px;line-height:32px;color:var(--red);font-weight:700;margin:20px 0 4px;transform:rotate(-.4deg)}
+p{margin:6px 0}
+.plain{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.5);padding:10px 16px 10px 74px;margin:12px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px;transform:rotate(-.3deg)}
+.plain b{font-family:'Patrick Hand','Caveat',cursive;font-weight:400;font-size:19px;color:#2457c5;display:block;line-height:24px}
+.plain .bulb{position:absolute;left:14px;top:12px;width:46px;height:52px}
+.pts{list-style:none;margin:8px 0;padding:0}
+.pts li{position:relative;padding-left:34px;margin:2px 0}
+.pts li::before{content:"\279C";position:absolute;left:6px;top:0;color:var(--red);font-size:22px}
+.pts li:nth-child(3n+1){transform:rotate(-.4deg)}.pts li:nth-child(3n+2){transform:rotate(.35deg)}.pts li:nth-child(3n){transform:rotate(-.15deg)}
+mark{color:inherit;padding:0 4px;border-radius:3px 9px 4px 10px}
+mark.y{background:linear-gradient(104deg,transparent 1%,var(--yellow) 3%,#fff59d 96%,transparent 99%)}
+mark.p{background:linear-gradient(100deg,transparent 1%,var(--pink) 3%,#ffd3e6 96%,transparent 99%)}
+.code{position:relative;background:var(--code);border:2.2px dashed #85744f;padding:14px 16px 12px;margin:22px 0 8px;border-radius:12px 3px 14px 4px/4px 14px 3px 12px;box-shadow:2px 3px 0 rgba(120,100,60,.2);transform:rotate(.15deg)}
+.code::before{content:"";position:absolute;top:-13px;left:26px;width:92px;height:24px;background:rgba(255,222,120,.72);transform:rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.code .cap{position:absolute;top:-12px;right:18px;font-family:'Patrick Hand','Caveat',cursive;font-size:15px;line-height:20px;background:#fff;border:1.5px solid #85744f;padding:0 8px;border-radius:9px 3px 8px 3px;color:#5b4b2c;transform:rotate(2deg)}
+.code pre{margin:0;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.55;color:#1c2b4a;tab-size:2;-webkit-overflow-scrolling:touch}
+.sees{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;line-height:26px;color:#0f5a2c;margin:6px 0 12px;padding-left:12px;border-left:4px solid #6bbf86}
+.warn{color:var(--red);margin:4px 0 4px 6px;padding-left:2px;transform:rotate(-.3deg)}
+.tw{overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;min-width:460px;background:rgba(255,255,255,.55)}
+th,td{border:1.8px solid var(--ink);padding:4px 10px;text-align:left;vertical-align:top}
+th{background:rgba(255,241,118,.6);color:var(--red);font-weight:400}
+td code{font-size:.78em}
+.add,.old,.flag{position:relative;margin:20px 0 10px;padding:16px 16px 10px;border-radius:14px 4px 16px 5px/5px 16px 4px 14px}
+.add{border:2.5px solid var(--green);background:rgba(190,236,203,.55);color:#0f5a2c}
+.add code{color:#0b4a22;background:rgba(23,116,58,.12)}
+.add .code{border-color:#3d8a58}
+.add a{color:#0f5a2c}
+.old{border:2.2px dashed var(--red);background:rgba(255,226,222,.55);color:#8c2a1f}
+.flag{border:2.5px solid var(--red);background:rgba(255,204,214,.5);color:#8c1f2f}
+.tag{position:absolute;top:-15px;left:16px;font-family:'Patrick Hand','Caveat',cursive;font-size:17px;line-height:24px;padding:0 12px;color:#fff;border-radius:12px 3px 12px 4px;transform:rotate(-2deg);box-shadow:1px 2px 0 rgba(0,0,0,.2)}
+.add .tag{background:var(--green)}.old .tag,.flag .tag{background:var(--red)}
+.ver{display:inline-block;font-family:'Patrick Hand','Caveat',cursive;font-size:14px;line-height:20px;padding:0 8px;border:1.5px solid currentColor;border-radius:10px 3px 9px 3px;vertical-align:middle;margin:0 2px;transform:rotate(-2deg)}
+.sticky{position:relative;width:min(100%,430px);margin:30px 0 8px auto;padding:20px 20px 12px;background:#fff59a;box-shadow:2px 6px 10px rgba(80,60,0,.28);transform:rotate(1.4deg);border-radius:3px 3px 26px 3px/3px 3px 14px 3px;color:#5b3d00}
+.sticky::before{content:"";position:absolute;top:-12px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(255,255,255,.6);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sticky h4{margin:0 0 4px;font-size:30px;line-height:32px;color:var(--red)}
+.sticky ul{list-style:none;margin:0;padding:0}
+.sticky li{position:relative;padding-left:28px;line-height:28px}
+.sticky li::before{content:"\279C";position:absolute;left:4px;color:var(--red)}
+.diagram{margin:14px 0;overflow-x:auto}
+.diagram svg{display:block;min-width:520px;width:100%;height:auto;max-width:760px;margin:0 auto}
+.diagram svg text{font-family:'Caveat','Comic Sans MS',cursive;fill:#1f3d8f;font-size:19px}
+.diagram .cap2{text-align:center;font-family:'Patrick Hand','Caveat',cursive;font-size:16px;color:#4a5f9c;line-height:22px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:26px;padding-top:6px;border-top:2px dashed var(--ink);font-family:'Patrick Hand','Caveat',cursive;font-size:18px}
+.ft .mid{color:#4a5f9c}
+.ft a.off{visibility:hidden}
+.fab{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--red);color:#fff;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;padding:6px 16px;border-radius:20px 6px 18px 7px;text-decoration:none;box-shadow:2px 4px 8px rgba(0,0,0,.3);transform:rotate(-2deg)}
+details{margin:8px 0;border:2px dashed #3b6fd4;border-radius:12px 4px 12px 5px;background:rgba(255,255,255,.6);padding:4px 12px}
+details summary{cursor:pointer;color:var(--red);font-weight:700}
+details[open] summary{margin-bottom:4px}
+/* cover */
+.cover{padding-top:44px;padding-bottom:30px}
+.cover .ring{position:absolute;right:46px;top:54px;width:150px;height:150px;border-radius:50%;border:9px solid rgba(120,72,30,.2);border-right-color:rgba(120,72,30,.07);border-bottom-color:rgba(120,72,30,.28);box-shadow:inset 0 0 12px rgba(120,72,30,.12);transform:rotate(-24deg);z-index:0;pointer-events:none}
+.cover h1{font-size:68px;line-height:70px;margin:8px 0 0;color:var(--red);transform:rotate(-1.4deg);font-weight:700}
+.cover .sub{font-size:28px;margin:10px 0 18px;transform:rotate(-.5deg)}
+.how{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.45);padding:10px 16px 12px;margin:18px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px}
+.how h3,.legend h3,.toc h3{margin:0 0 2px;color:var(--red);font-size:30px}
+.legend{margin:16px 0}
+.legend ul{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.chip{display:inline-block;min-width:22px;height:20px;vertical-align:-3px;margin-right:8px;border-radius:4px 8px 5px 9px;border:2px solid var(--ink)}
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin-top:8px}
+.toc .part{break-inside:avoid;margin-bottom:10px}
+.toc h4{margin:6px 0 2px;color:var(--red);font-size:25px;line-height:28px;border-bottom:2px dashed var(--red)}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{line-height:28px}
+.toc li a{color:var(--ink);text-decoration:none;border-bottom:2px dotted #8aa0d6}
+.toc li a:hover{background:var(--yellow)}
+.toc li span{display:inline-block;min-width:34px;color:var(--red);font-weight:700}
+@media(max-width:700px){
+body{font-size:20px;line-height:30px}
+.sheet{padding:14px 14px 14px 50px;background-size:100% 30px;margin-bottom:34px}
+.sheet::before{left:36px}
+.sheet::after{left:5px;width:22px;background-size:22px 22px;background-image:radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px)}
+.sh h2{font-size:32px;line-height:36px}
+.t{font-size:27px;line-height:31px}
+.plain{padding:10px 12px 10px 12px}.plain .bulb{position:static;display:block;width:34px;height:38px;margin-bottom:2px}
+.cover h1{font-size:46px;line-height:50px}.cover .sub{font-size:23px;line-height:28px}.cover .ring{width:90px;height:90px;right:12px;top:10px}
+.toc{grid-template-columns:1fr}.legend ul{grid-template-columns:1fr}
+.sticky{margin-right:auto}
+}
+@media print{
+body{background:#fff;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.fab{display:none}
+.sheet{box-shadow:none;margin:0;max-width:none;break-after:page;page-break-after:always;border-radius:0}
+.sheet:last-of-type{break-after:auto;page-break-after:auto}
+.code,.add,.old,.flag,.sticky,.plain,.diagram,table{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="bulb" viewBox="0 0 48 54">
+<path d="M24 8c-8 0-13 6-13 12 0 5 3 7 5 10 1 2 1 4 1 5h14c0-1 0-3 1-5 2-3 5-5 5-10 0-6-5-12-13-12z" fill="#fff59a" stroke="#1f3d8f" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M18 40h12M20 45h8M22 49h4" fill="none" stroke="#1f3d8f" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M24 1v4M7 7l3 3M41 7l-3 3M2 22h4M42 22h4" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-linecap="round"/>
+</symbol>
+<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#c0392b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#1f3d8f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+</svg>
+
+<a class="fab" href="#contents">↑ contents</a>
+
+<!-- ============ COVER ============ -->
+<section class="sheet cover" id="top">
+  <div class="ring"></div>
+  <h1>Machine Coding &amp; Frontend LLD: my handwritten notebook</h1>
+  <p class="sub">The UI components interviewers ask you to build in 45 to 60 minutes, with the approach, working React code, the edge cases and what gets scored</p>
+  <p>Each problem follows the same shape: <mark class="y">requirements → data and state → component tree → working code → edge cases → what the interviewer evaluates</mark>. All code is plain React 18/19 with hooks, no UI library, so you can type it into an empty sandbox.</p>
+
+  <div class="how">
+    <h3>How to use these notes</h3>
+    <ul class="pts">
+      <li>Read the <b>requirements</b> and the <b>state design</b> first, then close the page and build it yourself against a 45-minute timer. Compare afterwards.</li>
+      <li>Get the <mark class="y">happy path working first</mark>, then add loading, empty and error states, then keyboard and accessibility, then performance. That order is itself part of the score.</li>
+      <li>Say your decisions aloud while you code: where state lives, why, and what you would change at scale.</li>
+      <li>Every page ends with <b>edge cases</b>. Hitting two or three of them unprompted is what separates a pass from a strong pass.</li>
+      <li>Do the <b>Quick check</b> on the last page, answers are folded away.</li>
+    </ul>
+  </div>
+
+  <div class="legend">
+    <h3>Colour legend</h3>
+    <ul>
+      <li><span class="chip" style="background:#fff;border-color:#1f3d8f"></span>Blue ink = the explanation and code</li>
+      <li><span class="chip" style="background:#fff;border-color:#c0392b"></span>Red = headings and ⚠ gotchas</li>
+      <li><span class="chip" style="background:rgba(190,236,203,.9);border-color:#17743a"></span>Green box = <b>interview edge</b></li>
+      <li><span class="chip" style="background:rgba(255,226,222,.9);border-color:#c0392b;border-style:dashed"></span>Red dashed = <b>⚠ anti-pattern</b></li>
+      <li><span class="chip" style="background:var(--yellow)"></span><span class="chip" style="background:var(--pink)"></span>Highlighter = key terms</li>
+    </ul>
+  </div>
+
+  <div class="toc-wrap" id="contents">
+    <h3 style="margin:18px 0 0;color:var(--red);font-size:36px">Contents</h3>
+    <div class="toc" id="toc"></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="sheet" id="pg-approach" data-part="Part A: The approach" data-title="How to attack any machine-coding round">
+
+<h3 class="t"><span class="ttl">The 8-step frame</span><span class="src">use it on every problem</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Before I write code I spend five minutes on requirements, the data shape and the component tree. I build the core flow first, then harden it. I will tell you what I am skipping and why.”</div>
+<div class="tw"><table>
+<tr><th>#</th><th>Step</th><th>What you do</th><th>Minutes (of 60)</th></tr>
+<tr><td>1</td><td>Clarify</td><td>functional scope, what is <b>out</b> of scope, data source (mock or real API), browsers, mobile?</td><td>3</td></tr>
+<tr><td>2</td><td>Data shape and API</td><td>the item type, ids, pagination style; write a fake <code>fetch</code> that returns it</td><td>3</td></tr>
+<tr><td>3</td><td>Component tree</td><td>a box-and-arrow sketch: who owns what, which are presentational</td><td>4</td></tr>
+<tr><td>4</td><td>State design</td><td>what is state vs derived; where it lives; normalised or not</td><td>3</td></tr>
+<tr><td>5</td><td>Core flow</td><td>the happy path, working end to end, ugly is fine</td><td>25</td></tr>
+<tr><td>6</td><td>Edge cases</td><td>loading, empty, error, race, double submit, bad input</td><td>10</td></tr>
+<tr><td>7</td><td>Accessibility and keyboard</td><td>semantic elements, labels, focus, ARIA only where needed</td><td>5</td></tr>
+<tr><td>8</td><td>Performance, tests, next steps</td><td>memoisation, virtualisation, what you would test, what you would add</td><td>7</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Where does state live? Four rules</span><span class="src">the most-judged decision</span></h3>
+<ul class="pts">
+  <li><b>1 · Derive, do not duplicate.</b> If it can be computed from other state (filtered list, total, “is valid”), compute it in render (<code>useMemo</code> only if costly). Two copies of one truth always drift apart.</li>
+  <li><b>2 · Keep state as low as possible,</b> lift to the nearest common parent only when two siblings need it.</li>
+  <li><b>3 · Normalise relational data.</b> Store <code>byId</code> maps plus id lists, not nested trees. Updating one card or comment then touches one place.</li>
+  <li><b>4 · Server data is not UI state.</b> Loading, error and cache belong in a fetching layer or hook, separate from open/closed or selected-tab state.</li>
+</ul>
+<div class="code"><pre>// Not this: filtered list stored in state, out of sync after any edit
+const [items, setItems] = useState([])
+const [filtered, setFiltered] = useState([])
+
+// This: one source, one derived value
+const [items, setItems] = useState([])
+const [query, setQuery] = useState("")
+const filtered = useMemo(() =&gt; items.filter(i =&gt; i.name.includes(query)), [items, query])</pre></div>
+
+<h3 class="t"><span class="ttl">Designing a reusable component API</span><span class="src">asked as “make it reusable”</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A reusable component does one job, takes data and callbacks as props, supports both <b>controlled and uncontrolled</b> use, and exposes extension points (render props or slots) instead of boolean flags for every variation.”</div>
+<div class="code"><pre>// Works controlled (value + onChange) or uncontrolled (defaultValue)
+function useControllable({ value, defaultValue, onChange }) {
+  const [inner, setInner] = useState(defaultValue)
+  const controlled = value !== undefined
+  const current = controlled ? value : inner
+  const set = useCallback(next =&gt; {
+    if (!controlled) setInner(next)
+    onChange?.(next)
+  }, [controlled, onChange])
+  return [current, set]
+}
+
+// Compound components: the parts share state through context
+&lt;Tabs defaultValue="a"&gt;
+  &lt;Tabs.List&gt;&lt;Tabs.Tab value="a"&gt;One&lt;/Tabs.Tab&gt;&lt;Tabs.Tab value="b"&gt;Two&lt;/Tabs.Tab&gt;&lt;/Tabs.List&gt;
+  &lt;Tabs.Panel value="a"&gt;…&lt;/Tabs.Panel&gt;
+&lt;/Tabs&gt;</pre></div>
+<ul class="pts">
+  <li><b>Headless hook + thin view:</b> <code>useAutocomplete()</code> holds behaviour, the component renders it. Styling and behaviour can change independently.</li>
+  <li>Spread the rest props onto the root element (<code>{...rest}</code>), forward <code>ref</code>, accept <code>className</code>.</li>
+  <li>Avoid prop explosions (<code>isBig isRed hasIcon</code>): use <code>variant</code>/<code>size</code> unions or composition.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>Ask “what will you grade?” at the start. Typical rubric: <b>component design and reuse</b>, <b>state management</b>, <b>edge-case handling</b>, <b>code quality and naming</b>, <b>accessibility</b>, <b>performance awareness</b>, and <b>communication</b>. A finished, boring, correct solution beats an ambitious half-working one.</div>
+<div class="old"><span class="tag">⚠ common failures</span>Starting with CSS polish, a giant 400-line component, copying props into state (<code>useState(props.value)</code>) so it never updates, no loading or error state, mutating state, and using the index as a key.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Requirements → state → tree → core → edges</li>
+<li>Derive, do not duplicate</li>
+<li>Normalise relational state</li>
+<li>Finished and simple beats clever and broken</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="sheet" id="pg-autocomplete" data-part="Part B: Classic problems" data-title="Autocomplete / typeahead">
+
+<h3 class="t"><span class="ttl">Requirements</span><span class="src">asked in 5+ loops</span></h3>
+<ul class="pts">
+  <li>Type in an input, show matching suggestions from an async source after a short pause.</li>
+  <li>Arrow keys move the highlight, Enter selects, Escape closes, click selects.</li>
+  <li><b>Out of the box:</b> debounce, cancel stale requests, a result cache, loading / empty / error states, highlight the matched text, accessible combobox semantics.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>State design</b><code>query</code>, <code>items</code>, <code>status</code> (<code>idle | loading | error</code>), <code>open</code>, <code>active</code> index. The cache is a <code>useRef(Map)</code>: changing it must not re-render. Pass <code>fetchSuggestions(query, signal)</code> in as a prop so the component works with any API.</div>
+
+<h3 class="t"><span class="ttl">The component</span><span class="src">working code</span></h3>
+<div class="code"><pre>function Autocomplete({ fetchSuggestions, onSelect, debounceMs = 300, minChars = 2 }) {
+  const [query, setQuery]   = useState("")
+  const [items, setItems]   = useState([])
+  const [status, setStatus] = useState("idle")        // idle | loading | error
+  const [open, setOpen]     = useState(false)
+  const [active, setActive] = useState(-1)
+  const cache  = useRef(new Map())
+  const listId = useId()
+
+  useEffect(() =&gt; {
+    const q = query.trim()
+    if (q.length &lt; minChars) { setItems([]); setStatus("idle"); return }
+    if (cache.current.has(q)) { setItems(cache.current.get(q)); setStatus("idle"); return }
+
+    const ctrl = new AbortController()
+    setStatus("loading")
+    const t = setTimeout(async () =&gt; {
+      try {
+        const res = await fetchSuggestions(q, ctrl.signal)
+        cache.current.set(q, res)
+        setItems(res); setActive(-1); setStatus("idle")
+      } catch (e) {
+        if (e.name !== "AbortError") setStatus("error")
+      }
+    }, debounceMs)
+    return () =&gt; { clearTimeout(t); ctrl.abort() }   // cancels debounce AND the stale request
+  }, [query, minChars, debounceMs, fetchSuggestions])
+
+  function choose(item) { setQuery(item.label); setOpen(false); onSelect?.(item) }
+
+  function onKeyDown(e) {
+    if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive(i =&gt; Math.min(i + 1, items.length - 1)) }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(i =&gt; Math.max(i - 1, 0)) }
+    else if (e.key === "Enter" &amp;&amp; open &amp;&amp; items[active]) { e.preventDefault(); choose(items[active]) }
+    else if (e.key === "Escape") setOpen(false)
+  }
+
+  return (
+    &lt;div className="ac"&gt;
+      &lt;input
+        role="combobox" aria-autocomplete="list" aria-expanded={open}
+        aria-controls={listId} aria-activedescendant={active &gt;= 0 ? `${listId}-${active}` : undefined}
+        value={query}
+        onChange={e =&gt; { setQuery(e.target.value); setOpen(true) }}
+        onKeyDown={onKeyDown}
+        onFocus={() =&gt; setOpen(true)}
+        onBlur={() =&gt; setOpen(false)}
+      /&gt;
+      {open &amp;&amp; query.trim().length &gt;= minChars &amp;&amp; (
+        &lt;ul id={listId} role="listbox"&gt;
+          {status === "loading" &amp;&amp; &lt;li className="muted"&gt;Searching…&lt;/li&gt;}
+          {status === "error"   &amp;&amp; &lt;li className="muted"&gt;Something went wrong&lt;/li&gt;}
+          {status === "idle" &amp;&amp; items.length === 0 &amp;&amp; &lt;li className="muted"&gt;No results&lt;/li&gt;}
+          {items.map((it, i) =&gt; (
+            &lt;li key={it.id} id={`${listId}-${i}`} role="option" aria-selected={i === active}
+                onMouseDown={e =&gt; { e.preventDefault(); choose(it) }}   // before blur closes the list
+                onMouseEnter={() =&gt; setActive(i)}&gt;
+              &lt;Highlight text={it.label} query={query} /&gt;
+            &lt;/li&gt;
+          ))}
+        &lt;/ul&gt;
+      )}
+    &lt;/div&gt;
+  )
+}
+
+function Highlight({ text, query }) {
+  const i = text.toLowerCase().indexOf(query.trim().toLowerCase())
+  if (i &lt; 0 || !query.trim()) return text
+  return &lt;&gt;{text.slice(0, i)}&lt;mark&gt;{text.slice(i, i + query.trim().length)}&lt;/mark&gt;{text.slice(i + query.trim().length)}&lt;/&gt;
+}</pre></div>
+<p class="sees">▶ Why <code>onMouseDown</code> and not <code>onClick</code>: the input loses focus (<code>blur</code>) before <code>click</code> fires, which would close the list and unmount the option before the click lands.</p>
+
+<h3 class="t"><span class="ttl">Edge cases and follow-ups</span><span class="src">what gets probed</span></h3>
+<ul class="pts">
+  <li><b>Race / stale response:</b> cleanup aborts the previous request. If the API cannot be aborted, compare the response’s query with the current one before setting state.</li>
+  <li><b>Fast typing and caching:</b> cache by trimmed, lower-cased query; cap the size (LRU) so memory does not grow forever.</li>
+  <li><b>Millions of records:</b> the server does prefix search (a trie, or an index with <code>ILIKE 'abc%'</code>) and returns the top 10. The client never filters a huge list.</li>
+  <li><b>Keyboard:</b> scroll the active option into view (<code>scrollIntoView({ block: "nearest" })</code>); wrap around at the ends if asked.</li>
+  <li><b>IME and paste:</b> composition events (CJK input) should not trigger search mid-composition.</li>
+  <li><b>Unstable-prop bug:</b> <code>fetchSuggestions</code> must be stable (<code>useCallback</code> or defined outside), or the effect re-runs every render.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>The scoring points are: <b>debounce + abort</b>, <b>keyboard navigation</b>, <b>combobox ARIA</b>, and <b>the cache</b>. Mentioning a server-side trie or index for huge datasets shows you think past the component. The system design version of this problem is the typeahead case study in the System Design notebook.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Debounce + <code>AbortController</code> in the effect cleanup</li>
+<li>Cache in a ref, not state</li>
+<li><code>onMouseDown</code> beats blur</li>
+<li>combobox + listbox + <code>aria-activedescendant</code></li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="sheet" id="pg-infinite" data-part="Part B: Classic problems" data-title="Infinite scroll feed">
+
+<h3 class="t"><span class="ttl">Requirements</span><span class="src">asked in 4 loops</span></h3>
+<ul class="pts">
+  <li>Load the first page, load the next automatically as the user nears the end, stop at the end of data.</li>
+  <li><b>Out of the box:</b> no duplicate requests, <b>cursor</b> pagination, failed-page retry, a loading indicator, no duplicate items, and a plan for very long lists.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I put an invisible <b>sentinel</b> element below the list and watch it with an <code>IntersectionObserver</code>. When it comes into view I fetch the next page. I use a <b>cursor</b> rather than a page number so items inserted at the top do not shift pages and produce duplicates or gaps.”</div>
+
+<h3 class="t"><span class="ttl">The hook and the component</span><span class="src">working code</span></h3>
+<div class="code"><pre>function useInfinite(fetchPage) {                    // fetchPage(cursor) → { data, nextCursor }
+  const [items, setItems]   = useState([])
+  const [status, setStatus] = useState("idle")        // idle | loading | error | done
+  const cursor = useRef(null)
+  const busy   = useRef(false)                        // blocks overlapping requests
+  const seen   = useRef(new Set())                    // dedupe by id
+
+  const loadMore = useCallback(async () =&gt; {
+    if (busy.current) return
+    busy.current = true
+    setStatus("loading")
+    try {
+      const { data, nextCursor } = await fetchPage(cursor.current)
+      const fresh = data.filter(x =&gt; !seen.current.has(x.id))
+      fresh.forEach(x =&gt; seen.current.add(x.id))
+      setItems(prev =&gt; [...prev, ...fresh])
+      cursor.current = nextCursor
+      setStatus(nextCursor ? "idle" : "done")
+    } catch {
+      setStatus("error")
+    } finally {
+      busy.current = false
+    }
+  }, [fetchPage])
+
+  return { items, status, loadMore }
+}
+
+function Feed({ fetchPage }) {
+  const { items, status, loadMore } = useInfinite(fetchPage)
+  const sentinel = useRef(null)
+
+  useEffect(() =&gt; {
+    const el = sentinel.current
+    if (!el || status !== "idle") return              // not while loading, failed or finished
+    const io = new IntersectionObserver(
+      ([entry]) =&gt; entry.isIntersecting &amp;&amp; loadMore(),
+      { rootMargin: "400px" }                          // start loading before it is visible
+    )
+    io.observe(el)
+    return () =&gt; io.disconnect()
+  }, [status, loadMore])
+
+  return (
+    &lt;div&gt;
+      {items.map(p =&gt; &lt;Post key={p.id} post={p} /&gt;)}
+      {status === "loading" &amp;&amp; &lt;Skeleton /&gt;}
+      {status === "error" &amp;&amp; &lt;button onClick={loadMore}&gt;Failed to load. Retry&lt;/button&gt;}
+      {status === "done" &amp;&amp; &lt;p&gt;You are all caught up&lt;/p&gt;}
+      {status === "idle" &amp;&amp; &lt;div ref={sentinel} aria-hidden="true" style={{ height: 1 }} /&gt;}
+    &lt;/div&gt;
+  )
+}</pre></div>
+<p class="sees">▶ Why the observer is re-created when <code>status</code> changes: if the new page is still short enough that the sentinel is on screen, a fresh observer fires immediately and keeps loading. The very first load works the same way (empty list, sentinel visible).</p>
+
+<h3 class="t"><span class="ttl">Edge cases and follow-ups</span><span class="src">what gets probed</span></h3>
+<ul class="pts">
+  <li><b>Failed page:</b> status <code>error</code> removes the sentinel, so there is no retry loop; the user presses Retry (or auto-retry with backoff).</li>
+  <li><b>Offset vs cursor:</b> with <code>?page=2</code>, a new item at the top pushes everything down and page 2 repeats an old item. A cursor (<code>?after=lastId</code>) always continues from the right place.</li>
+  <li><b>10,000+ items in the DOM</b> get slow: <b>virtualise</b> (window the list), or keep only a bounded number of pages and drop far-away ones. See the virtualisation example in the React notebook.</li>
+  <li><b>Scroll restoration:</b> when the user opens an item and comes back, keep the loaded pages (cache) and the scroll offset.</li>
+  <li><b>Scroll events instead of an observer</b> need throttling and layout reads; <code>IntersectionObserver</code> does that off the main thread. Prefer it.</li>
+  <li><b>Accessibility:</b> infinite scroll hurts keyboard users (the footer is unreachable) and screen-reader users. Offer a “Load more” button as an alternative, and announce new content politely.</li>
+  <li><b>New items at the top</b> (“12 new posts”): show a pill the user clicks, do not shove content while they read.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>The scoring points are: <b>IntersectionObserver instead of scroll listeners</b>, <b>a busy guard</b>, <b>cursor pagination</b>, <b>error and end states</b>, and <b>what you do when the list gets huge</b>. Say “dedupe by id” out loud; it shows you have seen the real bug.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Sentinel + <code>IntersectionObserver</code> + <code>rootMargin</code></li>
+<li>Busy ref prevents duplicate requests</li>
+<li>Cursor, not page number</li>
+<li>Huge list → virtualise</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="sheet" id="pg-form" data-part="Part B: Classic problems" data-title="Multi-step form and a schema-driven form engine">
+
+<h3 class="t"><span class="ttl">Requirements</span><span class="src">asked in 4 loops</span></h3>
+<ul class="pts">
+  <li>A form split into steps, Next / Back, validation before moving on, a final review and submit.</li>
+  <li>Going Back <b>must keep</b> what the user typed.</li>
+  <li><b>Form engine version:</b> the form is described by a <b>schema</b> (JSON) with dynamic fields, validation rules and conditional visibility, and one generic renderer draws it.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>State design</b>All values live in <b>one object in the parent</b> (<code>values</code>), not inside each step, so unmounting a step loses nothing. Plus <code>stepIndex</code>, <code>errors</code> and <code>touched</code>. Whether a field is visible and whether a step is valid are <b>derived</b>, never stored.</div>
+
+<h3 class="t"><span class="ttl">The schema and the validators</span><span class="src">working code</span></h3>
+<div class="code"><pre>const schema = {
+  steps: [
+    { title: "Account", fields: [
+      { name: "email", label: "Email", type: "email",
+        rules: { required: true, pattern: /^\S+@\S+\.\S+$/, message: "Enter a valid email" } },
+      { name: "password", label: "Password", type: "password", rules: { required: true, min: 8 } },
+    ]},
+    { title: "Plan", fields: [
+      { name: "plan", label: "Plan", type: "select", options: ["free", "team"], rules: { required: true } },
+      { name: "company", label: "Company", type: "text",
+        showIf: v =&gt; v.plan === "team", rules: { required: true } },     // conditional field
+    ]},
+  ],
+}
+
+function validateField(f, value) {
+  const r = f.rules ?? {}
+  const text = String(value ?? "").trim()
+  if (r.required &amp;&amp; !text) return `${f.label} is required`
+  if (text &amp;&amp; r.min &amp;&amp; text.length &lt; r.min) return `${f.label} needs at least ${r.min} characters`
+  if (text &amp;&amp; r.pattern &amp;&amp; !r.pattern.test(text)) return r.message ?? `${f.label} is invalid`
+  return null
+}
+
+function validateStep(step, values) {
+  const errors = {}
+  for (const f of step.fields) {
+    if (f.showIf &amp;&amp; !f.showIf(values)) continue            // hidden fields are not validated
+    const msg = validateField(f, values[f.name])
+    if (msg) errors[f.name] = msg
+  }
+  return errors
+}</pre></div>
+
+<h3 class="t"><span class="ttl">The engine</span><span class="src">working code</span></h3>
+<div class="code"><pre>function FormEngine({ schema, onSubmit }) {
+  const [values, setValues]   = useState({})
+  const [errors, setErrors]   = useState({})
+  const [step, setStep]       = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const current = schema.steps[step]
+  const last = step === schema.steps.length - 1
+
+  const setField = (name, value) =&gt; {
+    setValues(v =&gt; ({ ...v, [name]: value }))
+    setErrors(e =&gt; (e[name] ? { ...e, [name]: undefined } : e))   // clear that field's error on edit
+  }
+
+  async function next(e) {
+    e.preventDefault()
+    const errs = validateStep(current, values)
+    setErrors(errs)
+    if (Object.keys(errs).length) return                          // stay, show errors
+    if (!last) return setStep(s =&gt; s + 1)
+
+    setSubmitting(true)
+    const visible = Object.fromEntries(                           // drop values of hidden fields
+      schema.steps.flatMap(s =&gt; s.fields)
+        .filter(f =&gt; !f.showIf || f.showIf(values))
+        .map(f =&gt; [f.name, values[f.name]]))
+    try { await onSubmit(visible) } finally { setSubmitting(false) }
+  }
+
+  return (
+    &lt;form onSubmit={next} noValidate&gt;
+      &lt;p aria-live="polite"&gt;Step {step + 1} of {schema.steps.length}: {current.title}&lt;/p&gt;
+      {current.fields.map(f =&gt;
+        (!f.showIf || f.showIf(values)) &amp;&amp; (
+          &lt;Field key={f.name} field={f} value={values[f.name] ?? ""} error={errors[f.name]}
+                 onChange={v =&gt; setField(f.name, v)} /&gt;
+        ))}
+      &lt;button type="button" disabled={step === 0} onClick={() =&gt; setStep(s =&gt; s - 1)}&gt;Back&lt;/button&gt;
+      &lt;button disabled={submitting}&gt;{last ? (submitting ? "Saving…" : "Submit") : "Next"}&lt;/button&gt;
+    &lt;/form&gt;
+  )
+}
+
+function Field({ field, value, error, onChange }) {
+  const id = useId()
+  const common = { id, value, "aria-invalid": !!error, "aria-describedby": error ? id + "-err" : undefined,
+                   onChange: e =&gt; onChange(e.target.value) }
+  return (
+    &lt;div&gt;
+      &lt;label htmlFor={id}&gt;{field.label}&lt;/label&gt;
+      {field.type === "select"
+        ? &lt;select {...common}&gt;&lt;option value=""&gt;Choose…&lt;/option&gt;{field.options.map(o =&gt; &lt;option key={o}&gt;{o}&lt;/option&gt;)}&lt;/select&gt;
+        : &lt;input type={field.type} {...common} /&gt;}
+      {error &amp;&amp; &lt;span id={id + "-err"} role="alert"&gt;{error}&lt;/span&gt;}
+    &lt;/div&gt;
+  )
+}</pre></div>
+
+<h3 class="t"><span class="ttl">Edge cases and follow-ups</span><span class="src">what gets probed</span></h3>
+<ul class="pts">
+  <li><b>Preserve data on Back:</b> because <code>values</code> is held by the parent, steps can unmount freely. Persist to <code>sessionStorage</code> for refresh safety (and never persist passwords).</li>
+  <li><b>Jumping ahead:</b> a step indicator should only let users click steps whose predecessors validated.</li>
+  <li><b>Double submit:</b> disable the button while submitting; on the server use an idempotency key.</li>
+  <li><b>Server-side errors</b> (“email already taken”) map back onto fields: <code>setErrors(serverErrors)</code>, and focus the first invalid field.</li>
+  <li><b>Validate when?</b> on blur first, then on change after the first error, and always on submit. Validating on every keystroke from the start is hostile.</li>
+  <li><b>Conditional fields:</b> a field’s value should be cleared (or not submitted) when it becomes hidden.</li>
+  <li><b>Extensibility:</b> a map of field type to component (<code>{ text: TextInput, select: Select }</code>) and a rules registry let you add a field type without touching the engine. Async validators (username availability) are debounced and cancellable.</li>
+  <li><b>Performance:</b> a big form re-renders on each keystroke; memoise <code>Field</code> or use an uncontrolled approach (React Hook Form) and say why.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>The scoring points are: <b>state held above the steps</b>, <b>validation kept separate from UI</b>, <b>schema-driven rendering</b>, <b>conditional visibility</b> and <b>accessible error messages</b> (<code>aria-invalid</code>, <code>aria-describedby</code>, focus the first error). Then name the production answer: “React Hook Form plus Zod”.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>One <code>values</code> object in the parent</li>
+<li>Validation = pure functions on a schema</li>
+<li>Hidden fields: do not validate or submit</li>
+<li>Server errors map back to fields</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="sheet" id="pg-upload-ui" data-part="Part B: Classic problems" data-title="File upload manager">
+
+<h3 class="t"><span class="ttl">Requirements</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li>Pick or drop several files, show each with a name, size and a progress bar, with Cancel, Retry and Remove.</li>
+  <li>Enforce type and size limits <b>before</b> uploading, upload at most N files at once, and retry transient failures.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I keep the upload logic <b>outside React</b> in a small queue class that knows nothing about the UI. It has a concurrency limit and emits changes. A hook subscribes to it and the component only renders. <code>fetch</code> cannot report upload progress, so I use <code>XMLHttpRequest</code>.”</div>
+
+<h3 class="t"><span class="ttl">The upload function and the queue</span><span class="src">working code</span></h3>
+<div class="code"><pre>function uploadFile(file, { onProgress, signal }) {
+  return new Promise((resolve, reject) =&gt; {
+    const xhr = new XMLHttpRequest()
+    xhr.open("POST", "/api/upload")
+    xhr.upload.onprogress = e =&gt; e.lengthComputable &amp;&amp; onProgress(Math.round((e.loaded / e.total) * 100))
+    xhr.onload  = () =&gt; xhr.status &lt; 300
+      ? resolve(JSON.parse(xhr.responseText))
+      : reject(Object.assign(new Error("HTTP " + xhr.status), { status: xhr.status }))
+    xhr.onerror = () =&gt; reject(new Error("network"))
+    signal.addEventListener("abort", () =&gt; { xhr.abort(); reject(new DOMException("Aborted", "AbortError")) })
+    const body = new FormData(); body.append("file", file)
+    xhr.send(body)
+  })
+}
+
+const MAX_BYTES = 10 * 1024 * 1024
+const ALLOWED = ["image/png", "image/jpeg", "application/pdf"]
+
+class UploadQueue {
+  items = []                                  // { id, file, status, progress, error, ctrl, tries }
+  running = 0
+  listeners = new Set()
+  constructor(limit = 3) { this.limit = limit }
+
+  subscribe = fn =&gt; { this.listeners.add(fn); return () =&gt; this.listeners.delete(fn) }
+  emit() { this.snapshot = [...this.items]; this.listeners.forEach(l =&gt; l()) }
+  snapshot = []
+
+  add(files) {
+    for (const file of files) {
+      const error = !ALLOWED.includes(file.type) ? "Unsupported type"
+                  : file.size &gt; MAX_BYTES ? "Larger than 10 MB" : null
+      this.items.push({ id: crypto.randomUUID(), file, progress: 0, tries: 0,
+                        status: error ? "rejected" : "queued", error })
+    }
+    this.emit(); this.pump()
+  }
+
+  patch(id, change) { this.items = this.items.map(i =&gt; i.id === id ? { ...i, ...change } : i); this.emit() }
+
+  pump() {
+    while (this.running &lt; this.limit) {
+      const next = this.items.find(i =&gt; i.status === "queued")
+      if (!next) return
+      this.run(next)
+    }
+  }
+
+  async run(item) {
+    const ctrl = new AbortController()
+    this.running++
+    this.patch(item.id, { status: "uploading", ctrl, error: null })
+    try {
+      await uploadFile(item.file, { signal: ctrl.signal, onProgress: p =&gt; this.patch(item.id, { progress: p }) })
+      this.patch(item.id, { status: "done", progress: 100 })
+    } catch (e) {
+      const tries = item.tries + 1
+      if (e.name === "AbortError") this.patch(item.id, { status: "cancelled" })
+      else if ((!e.status || e.status &gt;= 500) &amp;&amp; tries &lt;= 2) {      // retry transient errors only
+        this.patch(item.id, { status: "queued", tries })
+      } else this.patch(item.id, { status: "failed", error: e.message, tries })
+    } finally {
+      this.running--; this.pump()
+    }
+  }
+
+  cancel(id) { this.items.find(i =&gt; i.id === id)?.ctrl?.abort() }
+  retry(id)  { this.patch(id, { status: "queued", tries: 0 }); this.pump() }
+  remove(id) { this.cancel(id); this.items = this.items.filter(i =&gt; i.id !== id); this.emit() }
+}
+
+const queue = new UploadQueue(3)
+const useUploads = () =&gt; useSyncExternalStore(queue.subscribe, () =&gt; queue.snapshot)</pre></div>
+
+<h3 class="t"><span class="ttl">The UI</span><span class="src">working code</span></h3>
+<div class="code"><pre>function Uploader() {
+  const items = useUploads()
+  const [over, setOver] = useState(false)
+  return (
+    &lt;div onDragOver={e =&gt; { e.preventDefault(); setOver(true) }}
+         onDragLeave={() =&gt; setOver(false)}
+         onDrop={e =&gt; { e.preventDefault(); setOver(false); queue.add([...e.dataTransfer.files]) }}
+         className={over ? "drop over" : "drop"}&gt;
+      &lt;label&gt;Choose files
+        &lt;input type="file" multiple accept={ALLOWED.join(",")} hidden
+               onChange={e =&gt; { queue.add([...e.target.files]); e.target.value = "" }} /&gt;   {/* allow re-picking same file */}
+      &lt;/label&gt;
+      &lt;ul&gt;
+        {items.map(i =&gt; (
+          &lt;li key={i.id}&gt;
+            {i.file.name} ({(i.file.size / 1024).toFixed(0)} KB) · {i.status}
+            {i.status === "uploading" &amp;&amp; &lt;progress value={i.progress} max="100" /&gt;}
+            {i.error &amp;&amp; &lt;span role="alert"&gt; {i.error}&lt;/span&gt;}
+            {i.status === "uploading" &amp;&amp; &lt;button onClick={() =&gt; queue.cancel(i.id)}&gt;Cancel&lt;/button&gt;}
+            {["failed", "cancelled"].includes(i.status) &amp;&amp; &lt;button onClick={() =&gt; queue.retry(i.id)}&gt;Retry&lt;/button&gt;}
+            &lt;button onClick={() =&gt; queue.remove(i.id)}&gt;Remove&lt;/button&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  )
+}</pre></div>
+
+<h3 class="t"><span class="ttl">Edge cases and follow-ups</span><span class="src">what gets probed</span></h3>
+<ul class="pts">
+  <li><b>Validate by MIME type and extension on the client, and again on the server.</b> The client check is only a courtesy; <code>file.type</code> can be spoofed.</li>
+  <li><b>Concurrency limit</b> protects the browser (6 connections per host on HTTP/1.1) and the server.</li>
+  <li><b>Large files:</b> never read them into memory on the server. Use <b>chunked or multipart upload</b>: the client splits the file (<code>file.slice</code>), uploads parts in parallel, and can <b>resume</b> after a failure. The common production design is a <b>presigned URL</b> so the browser uploads straight to object storage (S3) and your API only signs and records it. Protocols: tus, S3 multipart.</li>
+  <li><b>Image previews:</b> <code>URL.createObjectURL(file)</code>, and <code>URL.revokeObjectURL</code> on cleanup to avoid a memory leak.</li>
+  <li><b>Leaving the page</b> while uploading: warn with <code>beforeunload</code>.</li>
+  <li><b>Duplicate files:</b> detect by name + size + <code>lastModified</code>, or hash if needed.</li>
+  <li><b>Retry only safe failures</b> (network, 5xx), never 4xx like 413 or 415.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>The scoring points are: <b>separation of queue logic from UI</b>, <b>progress with XHR</b>, <b>concurrency control</b>, <b>cancellation</b>, <b>per-file status</b> and <b>validation</b>. Mention chunked or presigned uploads for big files and you have covered the senior follow-up.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Queue class outside React + <code>useSyncExternalStore</code></li>
+<li>XHR for upload progress</li>
+<li>Limit concurrency, retry only transient errors</li>
+<li>Big files: chunk, resume, presigned URL</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="sheet" id="pg-kanban" data-part="Part B: Classic problems" data-title="Kanban board with drag and drop">
+
+<h3 class="t"><span class="ttl">Requirements</span><span class="src">asked in 4 loops</span></h3>
+<ul class="pts">
+  <li>Several columns with cards. Drag a card within a column to reorder, or into another column.</li>
+  <li>Add and delete cards. Keep it fast with hundreds of cards.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>State design</b>Normalise it. <code>tasks</code> is a map by id, each column holds an ordered <code>taskIds</code> array. Moving a card then rewrites exactly two arrays, and every unrelated column keeps its object identity, so memoised columns skip re-rendering. Nested <code>columns[i].cards[]</code> makes both the move and the memoisation harder.</div>
+<div class="code"><pre>const initial = {
+  order: ["todo", "doing", "done"],
+  columns: {
+    todo:  { id: "todo",  title: "To do", taskIds: ["t1", "t2"] },
+    doing: { id: "doing", title: "Doing", taskIds: ["t3"] },
+    done:  { id: "done",  title: "Done",  taskIds: [] },
+  },
+  tasks: { t1: { id: "t1", title: "Write spec" }, t2: { id: "t2", title: "Build UI" }, t3: { id: "t3", title: "Review" } },
+}</pre></div>
+
+<h3 class="t"><span class="ttl">The pure move function</span><span class="src">the heart of it, easy to unit-test</span></h3>
+<div class="code"><pre>// Insert taskId into column toCol at toIndex (index in the list WITHOUT the dragged card)
+function moveTask(board, taskId, toCol, toIndex) {
+  const from = Object.values(board.columns).find(c =&gt; c.taskIds.includes(taskId))
+  if (!from) return board
+  const fromIds = from.taskIds.filter(id =&gt; id !== taskId)
+  const base = from.id === toCol ? fromIds : board.columns[toCol].taskIds
+  const toIds = [...base.slice(0, toIndex), taskId, ...base.slice(toIndex)]
+  return {
+    ...board,
+    columns: {
+      ...board.columns,
+      [from.id]: { ...from, taskIds: fromIds },
+      [toCol]:   { ...board.columns[toCol], taskIds: toIds },     // wins when same column
+    },
+  }
+}</pre></div>
+
+<h3 class="t"><span class="ttl">The components (native HTML5 drag and drop)</span><span class="src">working code</span></h3>
+<div class="code"><pre>function Board() {
+  const [board, setBoard] = useState(initial)
+  const move = useCallback((taskId, col, index) =&gt; setBoard(b =&gt; moveTask(b, taskId, col, index)), [])
+  return (
+    &lt;div className="board"&gt;
+      {board.order.map(id =&gt; &lt;Column key={id} column={board.columns[id]} tasks={board.tasks} onMove={move} /&gt;)}
+    &lt;/div&gt;
+  )
+}
+
+const Column = memo(function Column({ column, tasks, onMove }) {
+  const [over, setOver] = useState(false)
+
+  function drop(e, overId) {
+    e.preventDefault(); e.stopPropagation()
+    setOver(false)
+    const taskId = e.dataTransfer.getData("text/plain")
+    const ids = column.taskIds.filter(id =&gt; id !== taskId)        // list without the dragged card
+    const index = overId ? ids.indexOf(overId) : ids.length         // before the card we dropped on, else the end
+    onMove(taskId, column.id, index &lt; 0 ? ids.length : index)
+  }
+
+  return (
+    &lt;section className={over ? "col over" : "col"}
+             onDragOver={e =&gt; { e.preventDefault(); setOver(true) }}   // required, or drop never fires
+             onDragLeave={() =&gt; setOver(false)}
+             onDrop={e =&gt; drop(e, null)}&gt;
+      &lt;h3&gt;{column.title} ({column.taskIds.length})&lt;/h3&gt;
+      {column.taskIds.map(id =&gt; (
+        &lt;Card key={id} task={tasks[id]} onDropOn={drop} /&gt;
+      ))}
+    &lt;/section&gt;
+  )
+})
+
+const Card = memo(function Card({ task, onDropOn }) {
+  return (
+    &lt;article draggable
+             onDragStart={e =&gt; e.dataTransfer.setData("text/plain", task.id)}
+             onDrop={e =&gt; onDropOn(e, task.id)}&gt;
+      {task.title}
+    &lt;/article&gt;
+  )
+})</pre></div>
+<p class="sees">▶ Dropping a card <em>on another card</em> inserts before it; dropping on empty column space appends. <code>stopPropagation</code> stops the column’s own drop handler from running a second time.</p>
+
+<h3 class="t"><span class="ttl">Edge cases and follow-ups</span><span class="src">what gets probed</span></h3>
+<ul class="pts">
+  <li><b>Re-renders:</b> <code>memo</code> on <code>Column</code> and <code>Card</code>, a stable <code>onMove</code> (<code>useCallback</code>), and normalised state: dragging one card re-renders only the two affected columns. Hundreds of cards in one column: virtualise it.</li>
+  <li><b>Touch devices:</b> native HTML5 drag and drop does not work on touch screens. Use pointer events, or a library such as <code>dnd-kit</code>.</li>
+  <li><b>Keyboard and screen readers:</b> drag and drop is inaccessible by itself. Offer a “Move to…” menu on each card, or use a library with a keyboard sensor (Space to lift, arrows to move, Space to drop) and live announcements.</li>
+  <li><b>Persisting order:</b> sending the whole array each time races with other users. Better: <code>PATCH /tasks/:id { columnId, afterId }</code>, or <b>fractional indexing</b> (a <code>position</code> string/number between neighbours) so one row changes. <b>Optimistic update with rollback</b> if the request fails.</li>
+  <li><b>Drop indicator:</b> show where the card will land; auto-scroll when dragging near an edge.</li>
+  <li><b>Concurrent edits</b> (two users): last write wins per card, or push updates over a WebSocket and merge.</li>
+  <li><b>Undo:</b> because <code>moveTask</code> is pure, keep a history stack of boards.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>The scoring points are: <b>normalised state</b>, <b>a pure, tested move function</b>, <b>avoiding re-renders</b>, and <b>knowing that native DnD fails on touch and for keyboards</b>. In real life say you would reach for <code>dnd-kit</code>, but that you can build the core to show understanding.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Normalised: <code>tasks</code> map + <code>taskIds</code> arrays</li>
+<li>Pure <code>moveTask</code>, unit-testable</li>
+<li><code>onDragOver</code> must <code>preventDefault</code></li>
+<li>Touch + keyboard need pointer events or dnd-kit</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 7 ============ -->
+<section class="sheet" id="pg-overlays" data-part="Part B: Classic problems" data-title="Modal manager and toast notification system">
+
+<h3 class="t"><span class="ttl">Modal manager: requirements</span><span class="src">asked in 3 loops</span></h3>
+<ul class="pts">
+  <li>Open a modal from anywhere in the app, support <b>nested modals</b>, close on Escape (top one only) and on backdrop click.</li>
+  <li><b>Accessibility:</b> focus moves in, stays trapped while open, and returns to the button that opened it. Background does not scroll.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“State is a <b>stack</b> of open modals in a provider near the root. Any component calls <code>open(renderFn)</code> from a hook. The provider renders the stack through a <b>portal</b> into <code>document.body</code> so it escapes parent <code>overflow</code> and <code>z-index</code> issues.”</div>
+<div class="code"><pre>const ModalCtx = createContext(null)
+export const useModal = () =&gt; useContext(ModalCtx)
+
+export function ModalProvider({ children }) {
+  const [stack, setStack] = useState([])
+  const open  = useCallback(render =&gt; { const id = crypto.randomUUID(); setStack(s =&gt; [...s, { id, render }]); return id }, [])
+  const close = useCallback(id =&gt; setStack(s =&gt; id ? s.filter(m =&gt; m.id !== id) : s.slice(0, -1)), [])
+  const api = useMemo(() =&gt; ({ open, close }), [open, close])    // stable: consumers do not re-render
+
+  useEffect(() =&gt; {                                              // lock background scroll while any modal is open
+    if (!stack.length) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () =&gt; { document.body.style.overflow = prev }
+  }, [stack.length &gt; 0])
+
+  return (
+    &lt;ModalCtx.Provider value={api}&gt;
+      {children}
+      {createPortal(
+        stack.map((m, i) =&gt; (
+          &lt;Modal key={m.id} isTop={i === stack.length - 1} onClose={() =&gt; close(m.id)}&gt;
+            {m.render({ close: () =&gt; close(m.id) })}
+          &lt;/Modal&gt;
+        )),
+        document.body
+      )}
+    &lt;/ModalCtx.Provider&gt;
+  )
+}
+
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
+
+function Modal({ children, onClose, isTop }) {
+  const ref = useRef(null)
+
+  useEffect(() =&gt; {                                  // focus in on open, back out on close
+    const opener = document.activeElement
+    ;(ref.current.querySelector(FOCUSABLE) ?? ref.current).focus()
+    return () =&gt; opener?.focus?.()
+  }, [])
+
+  useEffect(() =&gt; {
+    if (!isTop) return                                // only the top modal reacts to the keyboard
+    function onKey(e) {
+      if (e.key === "Escape") return onClose()
+      if (e.key !== "Tab") return
+      const nodes = [...ref.current.querySelectorAll(FOCUSABLE)]
+      if (!nodes.length) return e.preventDefault()
+      const first = nodes[0], last = nodes[nodes.length - 1]
+      if (e.shiftKey &amp;&amp; document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey &amp;&amp; document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+    document.addEventListener("keydown", onKey)
+    return () =&gt; document.removeEventListener("keydown", onKey)
+  }, [isTop, onClose])
+
+  return (
+    &lt;div className="backdrop" onMouseDown={e =&gt; e.target === e.currentTarget &amp;&amp; onClose()}&gt;
+      &lt;div ref={ref} role="dialog" aria-modal="true" tabIndex={-1} className="dialog"&gt;{children}&lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+
+// usage anywhere
+const { open } = useModal()
+&lt;button onClick={() =&gt; open(({ close }) =&gt; &lt;ConfirmDelete onCancel={close} onConfirm={() =&gt; { remove(); close() }} /&gt;)}&gt;Delete&lt;/button&gt;</pre></div>
+<ul class="pts">
+  <li><b>Backdrop click uses <code>mousedown</code> on the backdrop itself</b> (<code>target === currentTarget</code>) so a drag that starts inside the dialog and ends outside does not close it.</li>
+  <li>The simplest correct modern option is the native <code>&lt;dialog&gt;</code> with <code>showModal()</code>: focus trap, Escape and top layer for free. Know it, then say why you built it by hand.</li>
+  <li><b>Next.js / SSR:</b> <code>document.body</code> does not exist on the server, so render the portal only after mount.</li>
+  <li>Add <code>aria-labelledby</code> pointing at the dialog title, and make the rest of the page <code>inert</code> while open.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Toast notifications: requirements</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li>Call <code>toast.success("Saved")</code> from <b>anywhere</b>, even outside React (an API interceptor).</li>
+  <li>Several toasts stack without overlapping, each auto-dismisses after a timeout, hovering pauses it, a cap on how many show at once.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Because it must be callable outside components, the store is a plain module with <code>show/dismiss</code> and subscribers, and React reads it with <code>useSyncExternalStore</code>. No context needed, and no re-render of the app when a toast appears.”</div>
+<div class="code"><pre>// toast-store.js
+let toasts = []
+let seq = 0
+const listeners = new Set()
+const emit = () =&gt; listeners.forEach(l =&gt; l())
+
+export const toast = {
+  show(message, { type = "info", duration = 4000 } = {}) {
+    const id = ++seq
+    toasts = [...toasts, { id, message, type, duration }].slice(-5)   // keep at most 5
+    emit()
+    return id
+  },
+  success: (m, o) =&gt; toast.show(m, { ...o, type: "success" }),
+  error:   (m, o) =&gt; toast.show(m, { ...o, type: "error", duration: 8000 }),
+  dismiss(id) { toasts = toasts.filter(t =&gt; t.id !== id); emit() },
+}
+export const useToasts = () =&gt;
+  useSyncExternalStore(cb =&gt; { listeners.add(cb); return () =&gt; listeners.delete(cb) }, () =&gt; toasts, () =&gt; [])
+
+// Toaster.jsx: mount once near the root
+export function Toaster() {
+  const list = useToasts()
+  return createPortal(
+    &lt;div className="toaster" role="region" aria-label="Notifications" aria-live="polite"&gt;
+      {list.map(t =&gt; &lt;ToastItem key={t.id} t={t} /&gt;)}
+    &lt;/div&gt;, document.body)
+}
+
+function ToastItem({ t }) {
+  const [paused, setPaused] = useState(false)
+  useEffect(() =&gt; {
+    if (paused || !t.duration) return
+    const id = setTimeout(() =&gt; toast.dismiss(t.id), t.duration)
+    return () =&gt; clearTimeout(id)
+  }, [paused, t])
+  return (
+    &lt;div className={"toast " + t.type} role={t.type === "error" ? "alert" : "status"}
+         onMouseEnter={() =&gt; setPaused(true)} onMouseLeave={() =&gt; setPaused(false)}&gt;
+      {t.message}
+      &lt;button aria-label="Dismiss" onClick={() =&gt; toast.dismiss(t.id)}&gt;×&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}
+
+/* .toaster { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px } */</pre></div>
+<div class="add"><span class="tag">interview edge</span>The scoring points: <b>a store reachable outside React</b>, <b>a stack with a cap</b>, <b>timer cleanup</b>, <b>pause on hover</b> and <b>aria-live</b> (errors <code>role="alert"</code>, others <code>role="status"</code>). Follow-up answer: de-duplicate identical messages by key, and respect <code>prefers-reduced-motion</code> for the slide-in. Simplification to mention: resuming after hover restarts the full timer; a precise version stores the remaining time.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Modal = stack + portal + focus trap + restore focus</li>
+<li>Only the top modal handles Escape</li>
+<li>Toast store outside React + <code>useSyncExternalStore</code></li>
+<li>Clean up timers; <code>aria-live</code></li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 8 ============ -->
+<section class="sheet" id="pg-grid-ui" data-part="Part B: Classic problems" data-title="Data grid: sort, filter, paginate, select, resize">
+
+<h3 class="t"><span class="ttl">Requirements</span><span class="src">asked in 4 loops</span></h3>
+<ul class="pts">
+  <li>A table driven by a <code>columns</code> config: click a header to sort, a search box filters, pagination, row selection, optionally resizable columns.</li>
+  <li><b>Two modes:</b> small data handled in the browser, large data handled by the server.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>State design</b><code>sort {key, dir}</code>, <code>filter</code>, <code>page</code>, <code>selected</code> (a <code>Set</code> of row ids). The visible rows are <b>derived</b> with <code>useMemo</code>: filter → sort → slice. Never keep a sorted copy in state.</div>
+
+<h3 class="t"><span class="ttl">Client-side grid</span><span class="src">working code</span></h3>
+<div class="code"><pre>const compare = (a, b) =&gt;
+  typeof a === "number" &amp;&amp; typeof b === "number" ? a - b : String(a).localeCompare(String(b))
+
+function DataTable({ columns, rows, pageSize = 10 }) {   // columns: [{ key, label, sortable, render? }]
+  const [sort, setSort]         = useState({ key: null, dir: "asc" })
+  const [filter, setFilter]     = useState("")
+  const [page, setPage]         = useState(0)
+  const [selected, setSelected] = useState(() =&gt; new Set())
+  const deferred = useDeferredValue(filter)             // typing stays instant on big tables
+
+  const view = useMemo(() =&gt; {
+    const q = deferred.trim().toLowerCase()
+    let out = q ? rows.filter(r =&gt; columns.some(c =&gt; String(r[c.key]).toLowerCase().includes(q))) : rows
+    if (sort.key) {
+      const dir = sort.dir === "asc" ? 1 : -1
+      out = [...out].sort((a, b) =&gt; dir * compare(a[sort.key], b[sort.key]))   // copy: never mutate props
+    }
+    return out
+  }, [rows, columns, deferred, sort])
+
+  const pages = Math.max(1, Math.ceil(view.length / pageSize))
+  const current = Math.min(page, pages - 1)             // clamp if the filter shrank the data
+  const slice = view.slice(current * pageSize, (current + 1) * pageSize)
+
+  function toggleSort(key) {                            // none → asc → desc → none
+    setPage(0)
+    setSort(s =&gt; s.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : { key: null, dir: "asc" })
+  }
+  const toggleRow = id =&gt; setSelected(prev =&gt; { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const allOnPage = slice.length &gt; 0 &amp;&amp; slice.every(r =&gt; selected.has(r.id))
+
+  return (
+    &lt;div&gt;
+      &lt;input value={filter} onChange={e =&gt; { setFilter(e.target.value); setPage(0) }} placeholder="Search…" aria-label="Search table" /&gt;
+      &lt;table&gt;
+        &lt;thead&gt;&lt;tr&gt;
+          &lt;th&gt;&lt;input type="checkbox" aria-label="Select page" checked={allOnPage}
+                     onChange={() =&gt; setSelected(prev =&gt; { const n = new Set(prev); slice.forEach(r =&gt; allOnPage ? n.delete(r.id) : n.add(r.id)); return n })} /&gt;&lt;/th&gt;
+          {columns.map(c =&gt; (
+            &lt;th key={c.key} aria-sort={sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}&gt;
+              {c.sortable ? &lt;button onClick={() =&gt; toggleSort(c.key)}&gt;{c.label}{sort.key === c.key ? (sort.dir === "asc" ? " ▲" : " ▼") : ""}&lt;/button&gt; : c.label}
+            &lt;/th&gt;
+          ))}
+        &lt;/tr&gt;&lt;/thead&gt;
+        &lt;tbody&gt;
+          {slice.length === 0 &amp;&amp; &lt;tr&gt;&lt;td colSpan={columns.length + 1}&gt;No results&lt;/td&gt;&lt;/tr&gt;}
+          {slice.map(r =&gt; (
+            &lt;tr key={r.id} aria-selected={selected.has(r.id)}&gt;
+              &lt;td&gt;&lt;input type="checkbox" aria-label={"Select " + r.id} checked={selected.has(r.id)} onChange={() =&gt; toggleRow(r.id)} /&gt;&lt;/td&gt;
+              {columns.map(c =&gt; &lt;td key={c.key}&gt;{c.render ? c.render(r) : r[c.key]}&lt;/td&gt;)}
+            &lt;/tr&gt;
+          ))}
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+      &lt;button disabled={current === 0} onClick={() =&gt; setPage(current - 1)}&gt;Prev&lt;/button&gt;
+      Page {current + 1} / {pages} · {selected.size} selected
+      &lt;button disabled={current &gt;= pages - 1} onClick={() =&gt; setPage(current + 1)}&gt;Next&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}</pre></div>
+
+<h3 class="t"><span class="ttl">Server-side mode and column resizing</span><span class="src">the follow-ups</span></h3>
+<div class="code"><pre>// Server-driven: sort/filter/page become query params, the server returns one page
+const params = new URLSearchParams({ q: debouncedFilter, sort: sort.key ?? "", dir: sort.dir, page, size })
+const { rows, total } = await fetch(`/api/orders?${params}`, { signal }).then(r =&gt; r.json())
+// keep the previous page on screen while the next loads (no flash), cancel stale requests,
+// and keep these params in the URL so the view is shareable and survives refresh
+
+// Resize a column with pointer events on a handle in the header
+function startResize(e, key) {
+  const startX = e.clientX, startW = widths[key]
+  const move = ev =&gt; setWidths(w =&gt; ({ ...w, [key]: Math.max(60, startW + ev.clientX - startX) }))
+  const up = () =&gt; { removeEventListener("pointermove", move); removeEventListener("pointerup", up) }
+  addEventListener("pointermove", move); addEventListener("pointerup", up)
+}
+/* table { table-layout: fixed } and set each &lt;col style={{ width }}&gt; */</pre></div>
+<ul class="pts">
+  <li><b>Client or server?</b> A few thousand rows: client. Beyond that, or data that changes: server-side, with indexes on sort columns and <b>cursor</b> pagination for deep pages.</li>
+  <li><b>Big client tables:</b> virtualise rows; keep cells cheap; memoise row components keyed by id.</li>
+  <li><b>Selection across pages</b> works because <code>selected</code> holds ids, not row objects. “Select all” across <em>all</em> pages for server data means “all matching this filter”, not a huge id list.</li>
+  <li><b>Stable sort and ties:</b> <code>Array.sort</code> is stable in modern engines; add a secondary key (id) when the primary ties.</li>
+  <li><b>Accessibility:</b> real <code>&lt;table&gt;</code> semantics, <code>aria-sort</code>, buttons in headers, labelled checkboxes, a visible focus ring.</li>
+  <li><b>Modularity:</b> split into <code>Header</code>, <code>Body</code>, <code>Pagination</code> and a <code>useTable</code> hook so each can be reused or replaced.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>The scoring points: <b>config-driven columns</b>, <b>derived rows with <code>useMemo</code></b>, <b>reset the page when filter or sort changes</b>, <b>no mutation when sorting</b>, <b>ids not objects in selection</b>, and <b>the client-versus-server decision</b>.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Derive: filter → sort → slice</li>
+<li><code>[...rows].sort</code>, never mutate</li>
+<li>Selection stores ids in a <code>Set</code></li>
+<li>Big data → server pagination + virtualise</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 9 ============ -->
+<section class="sheet" id="pg-widgets" data-part="Part B: Classic problems" data-title="Tabs, accordion and a responsive sidebar">
+
+<h3 class="t"><span class="ttl">Vanilla JavaScript tabs</span><span class="src">asked in 3 loops (no framework)</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“One listener on the tablist (event delegation). Clicking a tab marks it selected, makes it the only tab in the Tab order (<b>roving tabindex</b>), and shows its panel. Arrow keys move between tabs, as the ARIA tabs pattern requires.”</div>
+<div class="code"><pre>&lt;div class="tabs"&gt;
+  &lt;div role="tablist" aria-label="Sections"&gt;
+    &lt;button role="tab" id="t1" aria-controls="p1" aria-selected="true"&gt;Overview&lt;/button&gt;
+    &lt;button role="tab" id="t2" aria-controls="p2" aria-selected="false" tabindex="-1"&gt;Details&lt;/button&gt;
+    &lt;button role="tab" id="t3" aria-controls="p3" aria-selected="false" tabindex="-1"&gt;Reviews&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div role="tabpanel" id="p1" aria-labelledby="t1"&gt;Overview content&lt;/div&gt;
+  &lt;div role="tabpanel" id="p2" aria-labelledby="t2" hidden&gt;Details content&lt;/div&gt;
+  &lt;div role="tabpanel" id="p3" aria-labelledby="t3" hidden&gt;Reviews content&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const list = document.querySelector('[role="tablist"]')
+const tabs = [...list.querySelectorAll('[role="tab"]')]
+
+function select(tab) {
+  tabs.forEach(t =&gt; {
+    const on = t === tab
+    t.setAttribute("aria-selected", on)
+    t.tabIndex = on ? 0 : -1                       // roving tabindex
+    document.getElementById(t.getAttribute("aria-controls")).hidden = !on
+  })
+  tab.focus()
+}
+list.addEventListener("click", e =&gt; { const t = e.target.closest('[role="tab"]'); if (t) select(t) })
+list.addEventListener("keydown", e =&gt; {
+  const i = tabs.indexOf(document.activeElement)
+  const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key]
+  if (to !== undefined) { e.preventDefault(); select(tabs[(to + tabs.length) % tabs.length]) }
+})
+&lt;/script&gt;</pre></div>
+<ul class="pts">
+  <li>Animated switching: fade with <code>opacity</code>/<code>transform</code> (cheap), keep panels mounted or unmount for heavy content, and honour <code>prefers-reduced-motion</code>. In React use CSS transitions or Framer Motion; <code>CSSTransition</code> is the older option.</li>
+  <li>Dynamic tabs from data: <code>tabs.map(...)</code> keyed by id; store only the <b>active id</b>, never an index that goes stale when tabs are removed.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Accordion (single or multiple open)</span><span class="src">asked in 2 loops</span></h3>
+<div class="code"><pre>function Accordion({ items, allowMultiple = false }) {      // items: [{ id, title, content }]
+  const [open, setOpen] = useState(() =&gt; new Set())
+  const toggle = id =&gt; setOpen(prev =&gt; {
+    const next = new Set(allowMultiple ? prev : [])           // single mode starts empty, so only one stays open
+    if (!prev.has(id)) next.add(id)                           // re-clicking an open item closes it
+    else if (allowMultiple) next.delete(id)
+    return next
+  })
+  return items.map(it =&gt; {
+    const isOpen = open.has(it.id)
+    return (
+      &lt;section key={it.id}&gt;
+        &lt;h3&gt;&lt;button aria-expanded={isOpen} aria-controls={"acc-" + it.id} onClick={() =&gt; toggle(it.id)}&gt;{it.title}&lt;/button&gt;&lt;/h3&gt;
+        &lt;div id={"acc-" + it.id} role="region" className={isOpen ? "panel open" : "panel"}&gt;
+          &lt;div className="inner"&gt;{it.content}&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+    )
+  })
+}
+
+/* Smooth height animation without measuring in JS: animate grid rows */
+.panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s }
+.panel.open { grid-template-rows: 1fr }
+.panel .inner { overflow: hidden }</pre></div>
+
+<h3 class="t"><span class="ttl">Responsive sidebar navigation (hamburger)</span><span class="src">asked in 3 loops</span></h3>
+<div class="code"><pre>function Layout({ children }) {
+  const [open, setOpen] = useState(false)
+  const btn = useRef(null)
+  useEffect(() =&gt; {
+    if (!open) return
+    const onKey = e =&gt; { if (e.key === "Escape") { setOpen(false); btn.current.focus() } }
+    document.addEventListener("keydown", onKey)
+    return () =&gt; document.removeEventListener("keydown", onKey)
+  }, [open])
+
+  return (
+    &lt;&gt;
+      &lt;button ref={btn} className="menu-btn" aria-expanded={open} aria-controls="nav" onClick={() =&gt; setOpen(o =&gt; !o)}&gt;
+        &lt;span className="sr-only"&gt;Menu&lt;/span&gt;☰
+      &lt;/button&gt;
+      &lt;nav id="nav" className={open ? "sidebar open" : "sidebar"}&gt;
+        &lt;NavLink to="/" onClick={() =&gt; setOpen(false)}&gt;Home&lt;/NavLink&gt;       {/* close after navigating */}
+        &lt;Submenu title="Reports"&gt;&lt;NavLink to="/reports/sales"&gt;Sales&lt;/NavLink&gt;&lt;/Submenu&gt;
+      &lt;/nav&gt;
+      {open &amp;&amp; &lt;div className="overlay" onClick={() =&gt; setOpen(false)} /&gt;}
+      &lt;main&gt;{children}&lt;/main&gt;
+    &lt;/&gt;
+  )
+}
+
+/* Mobile first: sidebar is off-canvas; desktop: always visible */
+.sidebar { position: fixed; inset: 0 auto 0 0; width: 260px; transform: translateX(-100%); transition: transform .25s }
+.sidebar.open { transform: none }
+.menu-btn { min-width: 44px; min-height: 44px }
+@media (min-width: 900px) {
+  .sidebar { position: static; transform: none }
+  .menu-btn, .overlay { display: none }
+}</pre></div>
+<div class="add"><span class="tag">interview edge</span>The scoring points: <b>correct ARIA roles and keyboard support</b> (tabs: arrows and roving tabindex; accordion and menu: <code>aria-expanded</code>), <b>animating <code>transform</code> or grid rows, not <code>height</code></b>, <b>mobile-first CSS</b>, and <b>closing the menu on navigation and Escape</b>. Mention that the active route should be styled through <code>NavLink</code>’s active state with <code>aria-current="page"</code>.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Tabs: delegation + roving tabindex + arrow keys</li>
+<li>Accordion: a <code>Set</code> of open ids</li>
+<li>Animate <code>transform</code> / grid rows</li>
+<li>Close the menu on route change and Escape</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 10 ============ -->
+<section class="sheet" id="pg-comments" data-part="Part B: Classic problems" data-title="Nested comment thread and optimistic like button">
+
+<h3 class="t"><span class="ttl">Comment thread: requirements</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li>Comments with replies to any depth. Reply inline, collapse a branch, show reply counts.</li>
+  <li>Adding a reply must not re-render the whole tree.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>State design</b>Store comments <b>flat</b>, each with a <code>parentId</code>. Build two derived lookups: <code>byId</code> and <code>childrenOf[parentId] = [ids]</code>. The view is a <b>recursive component</b> that receives only an <code>id</code> and looks itself up. A nested tree in state would force you to deep-clone a path just to add one reply.</div>
+<div class="code"><pre>const initial = [
+  { id: "1", parentId: null, author: "Asha", text: "Great post" },
+  { id: "2", parentId: "1",  author: "Ben",  text: "Agreed" },
+  { id: "3", parentId: "2",  author: "Asha", text: "Thanks!" },
+  { id: "4", parentId: null, author: "Chen", text: "Question about section 2" },
+]
+
+function Comments() {
+  const [list, setList] = useState(initial)
+
+  const { byId, childrenOf } = useMemo(() =&gt; {
+    const byId = {}, childrenOf = {}
+    for (const c of list) {
+      byId[c.id] = c
+      ;(childrenOf[c.parentId ?? "root"] ??= []).push(c.id)
+    }
+    return { byId, childrenOf }
+  }, [list])
+
+  const addReply = useCallback((parentId, text) =&gt;
+    setList(l =&gt; [...l, { id: crypto.randomUUID(), parentId, author: "You", text }]), [])
+
+  return (childrenOf.root ?? []).map(id =&gt;
+    &lt;Thread key={id} id={id} byId={byId} childrenOf={childrenOf} onReply={addReply} depth={0} /&gt;)
+}
+
+const Thread = memo(function Thread({ id, byId, childrenOf, onReply, depth }) {
+  const c = byId[id]
+  const kids = childrenOf[id] ?? []
+  const [replying, setReplying]   = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+
+  return (
+    &lt;div style={{ marginLeft: Math.min(depth, 6) * 16 }}&gt;       {/* cap indent so deep threads stay readable */}
+      &lt;p&gt;&lt;b&gt;{c.author}&lt;/b&gt;: {c.text}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setReplying(r =&gt; !r)}&gt;Reply&lt;/button&gt;
+      {kids.length &gt; 0 &amp;&amp; (
+        &lt;button aria-expanded={!collapsed} onClick={() =&gt; setCollapsed(x =&gt; !x)}&gt;
+          {collapsed ? `Show ${kids.length} repl${kids.length === 1 ? "y" : "ies"}` : "Hide replies"}
+        &lt;/button&gt;
+      )}
+      {replying &amp;&amp; (
+        &lt;ReplyForm onSubmit={text =&gt; { onReply(id, text); setReplying(false) }} onCancel={() =&gt; setReplying(false)} /&gt;
+      )}
+      {!collapsed &amp;&amp; kids.map(k =&gt;
+        &lt;Thread key={k} id={k} byId={byId} childrenOf={childrenOf} onReply={onReply} depth={depth + 1} /&gt;)}
+    &lt;/div&gt;
+  )
+})
+
+function ReplyForm({ onSubmit, onCancel }) {
+  const [text, setText] = useState("")
+  return (
+    &lt;form onSubmit={e =&gt; { e.preventDefault(); if (text.trim()) onSubmit(text.trim()) }}&gt;
+      &lt;textarea autoFocus value={text} onChange={e =&gt; setText(e.target.value)} aria-label="Write a reply" /&gt;
+      &lt;button disabled={!text.trim()}&gt;Post&lt;/button&gt;&lt;button type="button" onClick={onCancel}&gt;Cancel&lt;/button&gt;
+    &lt;/form&gt;
+  )
+}</pre></div>
+<ul class="pts">
+  <li><b>Why re-renders are small:</b> <code>memo</code> + stable <code>onReply</code>; but <code>byId</code>/<code>childrenOf</code> are new objects after each add, so every thread still re-renders here. To localise updates, store each comment’s children in a context or store with selectors, or pass only that thread’s <code>kids</code> array and comment, which keep their identity.</li>
+  <li><b>Very deep or very large threads:</b> cap the indent, show “Continue thread →” past a depth limit, and <b>load replies on demand</b> (<code>GET /comments/:id/replies</code>) instead of the whole tree.</li>
+  <li><b>Keys</b> are the comment ids, never indexes, so collapsing and reply boxes keep their state.</li>
+  <li><b>Optimistic add:</b> insert with a temporary id and <code>status: "sending"</code>, replace with the server id, roll back on error. <b>Delete</b> may leave a “[deleted]” placeholder to keep replies attached.</li>
+  <li><b>Safety:</b> render text, never HTML (XSS); trim and length-limit input.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Like button with optimistic update</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Update the UI immediately, send the request, and put the previous value back if it fails. I guard against rapid double clicks so two requests do not race.”</div>
+<div class="code"><pre>function LikeButton({ postId, initialLiked, initialCount }) {
+  const [state, setState] = useState({ liked: initialLiked, count: initialCount })
+  const pending = useRef(false)
+
+  async function toggle() {
+    if (pending.current) return                     // ignore clicks while a request is in flight
+    pending.current = true
+    const prev = state                              // snapshot for rollback
+    const next = { liked: !prev.liked, count: prev.count + (prev.liked ? -1 : 1) }
+    setState(next)                                  // optimistic
+    try {
+      await api.setLike(postId, next.liked)         // PUT, idempotent: sets a state, not "toggle"
+    } catch {
+      setState(prev)                                // rollback
+      toast.error("Could not update your like")
+    } finally {
+      pending.current = false
+    }
+  }
+
+  return (
+    &lt;button aria-pressed={state.liked} onClick={toggle}&gt;
+      {state.liked ? "♥" : "♡"} {state.count}
+    &lt;/button&gt;
+  )
+}</pre></div>
+<div class="add"><span class="tag">interview edge</span>Make the endpoint <b>idempotent</b> (<code>PUT /posts/:id/like { liked: true }</code>, not a toggle), so a retry or double send cannot flip the state twice. A better UX than ignoring clicks: keep only the <b>latest intent</b> and send it once the in-flight request ends. In React 19 you can use <code>useOptimistic</code>; in TanStack Query use <code>onMutate / onError / onSettled</code>. Use <code>aria-pressed</code> for toggle buttons.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Flat list + <code>parentId</code>, derive <code>childrenOf</code></li>
+<li>Recursive component keyed by id</li>
+<li>Cap depth, lazy-load replies</li>
+<li>Optimistic: snapshot, update, rollback</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 11 ============ -->
+<section class="sheet" id="pg-live" data-part="Part B: Classic problems" data-title="Live chat, a polling dashboard widget and permission-based UI">
+
+<h3 class="t"><span class="ttl">Live chat: requirements</span><span class="src">asked in 3 loops</span></h3>
+<ul class="pts">
+  <li>Send and receive messages in real time; show “sending”, “failed” and a typing indicator; reconnect automatically.</li>
+  <li>Auto-scroll to new messages, but not if the user scrolled up to read history.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“The socket lives in a hook with <b>reconnect and backoff</b>. Messages are kept in a <b>reducer</b> keyed by a <b>client-generated id</b>: I add my own message instantly as ‘sending’, and when the server echoes it back with the same <code>clientId</code> I flip it to ‘sent’ instead of adding a duplicate.”</div>
+<div class="code"><pre>function chatReducer(state, a) {
+  switch (a.type) {
+    case "local":    return [...state, { ...a.msg, status: "sending" }]
+    case "incoming": {
+      const i = state.findIndex(m =&gt; m.clientId &amp;&amp; m.clientId === a.msg.clientId)   // my own echo
+      if (i &gt;= 0) return state.map((m, j) =&gt; j === i ? { ...a.msg, status: "sent" } : m)
+      return state.some(m =&gt; m.id === a.msg.id) ? state : [...state, a.msg]            // dedupe
+    }
+    case "failed":   return state.map(m =&gt; m.clientId === a.clientId ? { ...m, status: "failed" } : m)
+    default:         return state
+  }
+}
+
+function useChat(roomId, user) {
+  const [messages, dispatch] = useReducer(chatReducer, [])
+  const [typing, setTyping]  = useState(false)
+  const socketRef = useRef(null)
+
+  useEffect(() =&gt; {
+    let closed = false, tries = 0, timer
+    function connect() {
+      const ws = new WebSocket(`wss://example.com/rooms/${roomId}`)
+      socketRef.current = ws
+      ws.onopen = () =&gt; { tries = 0; ws.send(JSON.stringify({ type: "sync", after: lastId() })) }   // fetch what I missed
+      ws.onmessage = e =&gt; {
+        const m = JSON.parse(e.data)
+        if (m.type === "message") dispatch({ type: "incoming", msg: m })
+        if (m.type === "typing" &amp;&amp; m.user !== user.id) { setTyping(true); clearTimeout(connect.t); connect.t = setTimeout(() =&gt; setTyping(false), 2000) }
+      }
+      ws.onclose = () =&gt; { if (!closed) timer = setTimeout(connect, Math.min(30000, 500 * 2 ** tries++) * (0.5 + Math.random() / 2)) }
+    }
+    connect()
+    return () =&gt; { closed = true; clearTimeout(timer); socketRef.current?.close() }
+  }, [roomId, user.id])
+
+  const send = useCallback(text =&gt; {
+    const clientId = crypto.randomUUID()
+    dispatch({ type: "local", msg: { clientId, text, userId: user.id } })
+    const ws = socketRef.current
+    if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "message", clientId, text }))
+    else dispatch({ type: "failed", clientId })                       // or queue and flush on reconnect
+  }, [user.id])
+
+  return { messages, typing, send }
+}
+
+// Auto-scroll only when the user is already near the bottom
+const listRef = useRef(null)
+useLayoutEffect(() =&gt; {
+  const el = listRef.current
+  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight &lt; 80
+  if (nearBottom) el.scrollTop = el.scrollHeight
+}, [messages])</pre></div>
+<ul class="pts">
+  <li><code>lastId()</code> stands for “the id of the newest message I have”; the server replays anything newer after a reconnect.</li>
+  <li><b>Typing indicator:</b> throttle outgoing “typing” events (once per ~2 s); they are ephemeral, never stored.</li>
+  <li><b>Fallback:</b> if WebSockets are blocked, use SSE for receiving and <code>fetch POST</code> for sending, or polling. Heartbeat pings detect half-open connections.</li>
+  <li><b>History:</b> load older pages on scroll-up and keep the scroll position stable (infinite scroll in reverse).</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Dashboard widget: “Top 5 items” with polling</span><span class="src">asked in a live-coding round</span></h3>
+<div class="code"><pre>function useTopItems(url, intervalMs = 5000) {
+  const [state, setState] = useState({ items: [], error: null, loading: true })
+
+  useEffect(() =&gt; {
+    let stopped = false, timer, failures = 0
+    const ctrl = new AbortController()
+
+    async function tick() {
+      if (!document.hidden) {                                   // do not poll a background tab
+        try {
+          const res = await fetch(url, { signal: ctrl.signal })
+          if (!res.ok) throw new Error("HTTP " + res.status)
+          const data = await res.json()
+          failures = 0
+          if (!stopped) setState({ items: [...data].sort((a, b) =&gt; b.score - a.score).slice(0, 5), error: null, loading: false })
+        } catch (e) {
+          if (e.name === "AbortError") return
+          failures++
+          if (!stopped) setState(s =&gt; ({ ...s, error: e, loading: false }))   // keep the last good data visible
+        }
+      }
+      if (!stopped) timer = setTimeout(tick, Math.min(60000, intervalMs * 2 ** failures))   // backoff while failing
+    }
+    tick()
+    return () =&gt; { stopped = true; clearTimeout(timer); ctrl.abort() }
+  }, [url, intervalMs])
+
+  return state
+}
+
+function TopFive() {
+  const { items, error, loading } = useTopItems("/api/items")
+  if (loading) return &lt;Skeleton /&gt;
+  return (
+    &lt;section aria-live="polite"&gt;
+      {error &amp;&amp; &lt;p role="alert"&gt;Showing last known data. Retrying…&lt;/p&gt;}
+      &lt;ol&gt;{items.map(i =&gt; &lt;li key={i.id}&gt;{i.name}: {i.score}&lt;/li&gt;)}&lt;/ol&gt;
+    &lt;/section&gt;
+  )
+}</pre></div>
+<ul class="pts">
+  <li><b><code>setTimeout</code> chain, not <code>setInterval</code>:</b> the next poll is scheduled only after the previous one finishes, so slow responses never overlap or pile up.</li>
+  <li>Cleanup clears the timer <b>and</b> aborts the in-flight request. Missing it is the classic interval leak.</li>
+  <li>For real freshness prefer SSE or WebSocket; use <code>ETag</code>/<code>If-None-Match</code> so unchanged polls return a cheap 304.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Permission-based UI</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“The server sends the user’s <b>permissions</b> (not just a role name) after login. The frontend only reads them to decide what to show. Every action is checked <b>again on the server</b>, because hiding a button is not security.”</div>
+<div class="code"><pre>const PermissionContext = createContext(new Set())
+
+export function PermissionProvider({ permissions, children }) {
+  const set = useMemo(() =&gt; new Set(permissions), [permissions])
+  return &lt;PermissionContext.Provider value={set}&gt;{children}&lt;/PermissionContext.Provider&gt;
+}
+export const useCan = perm =&gt; useContext(PermissionContext).has(perm)
+
+export function Can({ perm, fallback = null, children }) {
+  return useCan(perm) ? children : fallback
+}
+
+&lt;Can perm="invoice:delete"&gt;&lt;button onClick={remove}&gt;Delete&lt;/button&gt;&lt;/Can&gt;
+&lt;Can perm="invoice:edit" fallback={&lt;button disabled title="You need edit access"&gt;Edit&lt;/button&gt;}&gt;
+  &lt;button onClick={edit}&gt;Edit&lt;/button&gt;
+&lt;/Can&gt;</pre></div>
+<ul class="pts">
+  <li><b>Hide or disable?</b> Hide actions the user can never have; disable (with an explanation) ones that are temporarily unavailable or that they could request.</li>
+  <li><b>Consistency:</b> use the same permission strings on both sides, shared as a typed constant or generated from the backend. Re-fetch permissions on role change and on a 403.</li>
+  <li><b>Handle 403 anyway:</b> a global handler shows “You do not have access” and refreshes permissions; permissions can change while the page is open.</li>
+  <li><b>Routes:</b> a guard component around route groups (see the RBAC example in the React interview prep), plus data-level checks (can see <em>this</em> invoice, not just invoices).</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>For chat, the scoring points are <b>optimistic message with a client id</b>, <b>dedupe</b>, <b>reconnect with backoff and resync</b>, and <b>scroll behaviour</b>. For the widget: <b>cleanup, retry with backoff, and no overlapping requests</b>. For permissions: <b>server enforces, client hints</b>.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Client id for optimistic messages, dedupe on echo</li>
+<li>Reconnect: backoff + jitter + resync</li>
+<li>Poll with a <code>setTimeout</code> chain; clear and abort on cleanup</li>
+<li>Permissions: UI hints only, server enforces</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 12 ============ -->
+<section class="sheet" id="pg-small" data-part="Part C: Warm-ups" data-title="Small builds: star rating, OTP input, countdown, throttled click">
+
+<h3 class="t"><span class="ttl">Star rating</span><span class="src">asked in 3 loops</span></h3>
+<div class="code"><pre>function StarRating({ value = 0, max = 5, onChange, readOnly = false }) {
+  const [hover, setHover] = useState(0)
+  const shown = hover || value
+  return (
+    &lt;div role="radiogroup" aria-label="Rating" onMouseLeave={() =&gt; setHover(0)}&gt;
+      {Array.from({ length: max }, (_, i) =&gt; i + 1).map(n =&gt; (
+        &lt;button key={n} type="button" role="radio" aria-checked={value === n} aria-label={`${n} star${n &gt; 1 ? "s" : ""}`}
+                disabled={readOnly}
+                onMouseEnter={() =&gt; !readOnly &amp;&amp; setHover(n)}
+                onClick={() =&gt; onChange?.(n === value ? 0 : n)}      // click the same star again to clear
+                style={{ color: n &lt;= shown ? "gold" : "#bbb", background: "none", border: 0, fontSize: 28 }}&gt;
+          ★
+        &lt;/button&gt;
+      ))}
+    &lt;/div&gt;
+  )
+}</pre></div>
+<p class="sees">▶ Follow-ups: half stars (compare <code>e.nativeEvent.offsetX</code> to the star width), keyboard arrows (a radio group should move with arrow keys), and fractional display of an average using a clipped overlay (<code>width: 73%</code>).</p>
+
+<h3 class="t"><span class="ttl">OTP input</span><span class="src">asked in 3 loops</span></h3>
+<div class="code"><pre>function OtpInput({ length = 6, onComplete }) {
+  const [digits, setDigits] = useState(() =&gt; Array(length).fill(""))
+  const refs = useRef([])
+
+  function update(next) {
+    setDigits(next)
+    if (next.every(Boolean)) onComplete?.(next.join(""))
+  }
+  function onChange(i, e) {
+    const v = e.target.value.replace(/\D/g, "").slice(-1)            // one digit only
+    const next = [...digits]; next[i] = v
+    update(next)
+    if (v &amp;&amp; i &lt; length - 1) refs.current[i + 1].focus()
+  }
+  function onKeyDown(i, e) {
+    if (e.key === "Backspace" &amp;&amp; !digits[i] &amp;&amp; i &gt; 0) refs.current[i - 1].focus()
+    if (e.key === "ArrowLeft"  &amp;&amp; i &gt; 0)          refs.current[i - 1].focus()
+    if (e.key === "ArrowRight" &amp;&amp; i &lt; length - 1) refs.current[i + 1].focus()
+  }
+  function onPaste(e) {
+    e.preventDefault()
+    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length)
+    if (!text) return
+    const next = Array.from({ length }, (_, i) =&gt; text[i] ?? "")
+    update(next)
+    refs.current[Math.min(text.length, length - 1)].focus()
+  }
+
+  return (
+    &lt;div onPaste={onPaste}&gt;
+      {digits.map((d, i) =&gt; (
+        &lt;input key={i} ref={el =&gt; (refs.current[i] = el)} value={d}
+               inputMode="numeric" autoComplete={i === 0 ? "one-time-code" : "off"} maxLength={1}
+               aria-label={`Digit ${i + 1} of ${length}`}
+               onChange={e =&gt; onChange(i, e)} onKeyDown={e =&gt; onKeyDown(i, e)} onFocus={e =&gt; e.target.select()} /&gt;
+      ))}
+    &lt;/div&gt;
+  )
+}</pre></div>
+<p class="sees">▶ Key ideas: <code>inputMode="numeric"</code> opens the number pad, <code>autoComplete="one-time-code"</code> lets mobile browsers autofill from SMS, paste spreads across boxes, Backspace on an empty box jumps back. Using the index as a key is acceptable here because the boxes never reorder.</p>
+
+<h3 class="t"><span class="ttl">Countdown and stopwatch that do not drift</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<code>setInterval</code> is not exact: it drifts and is throttled in background tabs. I store the <b>target end time</b> and compute the remaining time from <code>Date.now()</code> on each tick, so a late or skipped tick never loses time.”</div>
+<div class="code"><pre>function useCountdown(seconds) {
+  const [endAt, setEndAt] = useState(null)
+  const [left, setLeft]   = useState(seconds * 1000)
+
+  useEffect(() =&gt; {
+    if (!endAt) return
+    const id = setInterval(() =&gt; {
+      const remaining = Math.max(0, endAt - Date.now())
+      setLeft(remaining)
+      if (remaining === 0) { clearInterval(id); setEndAt(null) }
+    }, 200)                                              // tick faster than 1 s; the maths keeps it exact
+    return () =&gt; clearInterval(id)
+  }, [endAt])
+
+  return {
+    secondsLeft: Math.ceil(left / 1000),
+    running: endAt !== null,
+    start:  () =&gt; setEndAt(Date.now() + left),
+    pause:  () =&gt; { setLeft(Math.max(0, endAt - Date.now())); setEndAt(null) },
+    reset:  () =&gt; { setEndAt(null); setLeft(seconds * 1000) },
+  }
+}</pre></div>
+<p class="sees">▶ Stopwatch is the same idea counting up from a <code>startedAt</code>. For display use <code>padStart(2, "0")</code> on minutes and seconds. Use <code>performance.now()</code> when you need a clock that cannot be changed by the user.</p>
+
+<h3 class="t"><span class="ttl">Stop duplicate API hits on a button</span><span class="src">asked in 3 loops</span></h3>
+<div class="code"><pre>// 1. In-flight guard: the right fix for "submit / pay" buttons
+function useOnce(fn) {
+  const busy = useRef(false)
+  const [loading, setLoading] = useState(false)
+  const run = useCallback(async (...args) =&gt; {
+    if (busy.current) return
+    busy.current = true; setLoading(true)
+    try { return await fn(...args) } finally { busy.current = false; setLoading(false) }
+  }, [fn])
+  return [run, loading]
+}
+const [pay, paying] = useOnce(submitPayment)
+&lt;button disabled={paying} onClick={pay}&gt;Pay&lt;/button&gt;
+
+// 2. Leading-edge throttle: act on the first click, ignore the rest for N ms
+function throttle(fn, ms) {
+  let last = 0
+  return (...args) =&gt; { const now = Date.now(); if (now - last &gt;= ms) { last = now; return fn(...args) } }
+}
+
+// 3. Debounce: wait until the user stops (search, resize), the wrong tool for a Buy button</pre></div>
+<div class="add"><span class="tag">interview edge</span>Say which tool fits: <b>throttle</b> for repeated actions you want to <em>limit</em> (scroll, like), <b>debounce</b> for “wait until finished” (typing), an <b>in-flight guard</b> for non-repeatable actions (payment), and on the server an <b>idempotency key</b> because a client guard alone cannot stop two tabs. Keep a throttled function stable across renders (<code>useMemo</code>/<code>useRef</code>), or each render creates a fresh timer state.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Timers: store the end time, not a counter</li>
+<li>OTP: paste, backspace, <code>one-time-code</code></li>
+<li>Throttle limits, debounce waits, guard blocks</li>
+<li>Payments also need a server idempotency key</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 13 ============ -->
+<section class="sheet" id="pg-check" data-part="Part D: Wrap-up" data-title="Quick check, scoring rubric and cheat sheet">
+
+<h3 class="t"><span class="ttl">Quick check</span><span class="src">answers folded away</span></h3>
+<details><summary>1. In an autocomplete, how do you stop an old slow response overwriting a newer one?</summary><p>Abort the previous request in the effect cleanup (<code>AbortController</code>) and clear the debounce timer. If it cannot be aborted, ignore responses whose query no longer matches the current one.</p></details>
+<details><summary>2. Why <code>onMouseDown</code> instead of <code>onClick</code> on suggestion items?</summary><p>The input’s <code>blur</code> fires before <code>click</code> and would close the list first. <code>mousedown</code> happens before blur.</p></details>
+<details><summary>3. Why cursor pagination for infinite scroll?</summary><p>Items inserted at the top shift offset-based pages, causing duplicates or gaps. A cursor always continues after the last item seen.</p></details>
+<details><summary>4. Where should multi-step form values live?</summary><p>In the parent, as one object, so steps can unmount without losing data. Validation and visibility are derived, not stored.</p></details>
+<details><summary>5. Why can’t you show upload progress with <code>fetch</code>?</summary><p><code>fetch</code> has no upload-progress event. Use <code>XMLHttpRequest</code> (<code>xhr.upload.onprogress</code>), or a stream-based approach in newer browsers.</p></details>
+<details><summary>6. Why is native HTML5 drag and drop a weak choice for a Kanban board?</summary><p>No touch support and no keyboard accessibility. Use pointer events or <code>dnd-kit</code>, and offer a “Move to…” menu.</p></details>
+<details><summary>7. What must a modal do for accessibility?</summary><p><code>role="dialog"</code> with <code>aria-modal</code> and a label, move focus in, trap Tab, close on Escape, restore focus to the opener, and stop the background scrolling.</p></details>
+<details><summary>8. Why keep the toast store outside React?</summary><p>So any code, even an API interceptor, can call <code>toast.error()</code>. Components subscribe with <code>useSyncExternalStore</code>.</p></details>
+<details><summary>9. How do you store comments for nested replies?</summary><p>Flat with <code>parentId</code>, derive <code>byId</code> and <code>childrenOf</code>, render with a recursive component keyed by id.</p></details>
+<details><summary>10. Why is a countdown built on <code>Date.now()</code> and not a counter?</summary><p>Intervals drift and are throttled in background tabs. Computing remaining time from a stored end time stays correct however late the ticks are.</p></details>
+<details><summary>11. <code>setInterval</code> or a <code>setTimeout</code> chain for polling?</summary><p>A <code>setTimeout</code> chain: the next request is scheduled after the previous finishes, so requests never overlap, and backoff is easy.</p></details>
+<details><summary>12. Does hiding a button enforce permissions?</summary><p>No. It is UX only. The server must authorise every request.</p></details>
+
+<h3 class="t"><span class="ttl">What interviewers score</span><span class="src">the rubric in one table</span></h3>
+<div class="tw"><table>
+<tr><th>Area</th><th>Strong signal</th><th>Weak signal</th></tr>
+<tr><td>Requirements</td><td>asks questions, states scope and what is out of scope</td><td>starts typing immediately</td></tr>
+<tr><td>State design</td><td>derived values, normalised data, state placed deliberately</td><td>duplicated state, props copied into state</td></tr>
+<tr><td>Component design</td><td>small, reusable, clear props, logic in hooks</td><td>one 400-line component</td></tr>
+<tr><td>Edge cases</td><td>loading, empty, error, race, double submit handled unprompted</td><td>only the happy path</td></tr>
+<tr><td>Async correctness</td><td>cancel, dedupe, cleanup, backoff</td><td>stale responses, leaked timers</td></tr>
+<tr><td>Accessibility</td><td>semantic HTML, keyboard, focus, ARIA where needed</td><td>clickable <code>div</code>s</td></tr>
+<tr><td>Performance</td><td>memoisation where it matters, virtualisation, measured thinking</td><td>memoising everything, or nothing</td></tr>
+<tr><td>Communication</td><td>explains trade-offs and what they would do with more time</td><td>silent coding</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Cheat sheet</span><span class="src">one line per problem</span></h3>
+<div class="tw"><table>
+<tr><th>Problem</th><th>Key idea</th></tr>
+<tr><td>Autocomplete</td><td>debounce + abort in cleanup, cache in a ref, combobox ARIA, <code>onMouseDown</code></td></tr>
+<tr><td>Infinite scroll</td><td>sentinel + <code>IntersectionObserver</code>, busy ref, cursor, dedupe</td></tr>
+<tr><td>Multi-step form</td><td>values in parent, schema + pure validators, hidden fields skipped</td></tr>
+<tr><td>File upload</td><td>queue class, XHR progress, concurrency limit, chunk or presign for big files</td></tr>
+<tr><td>Kanban</td><td>normalised state, pure <code>moveTask</code>, memo columns, touch + keyboard gaps</td></tr>
+<tr><td>Modal</td><td>stack + portal + focus trap + restore focus</td></tr>
+<tr><td>Toast</td><td>external store, <code>useSyncExternalStore</code>, timers, <code>aria-live</code></td></tr>
+<tr><td>Data grid</td><td>derive filter → sort → slice, ids in selection, server mode</td></tr>
+<tr><td>Tabs / accordion / nav</td><td>roving tabindex, <code>aria-expanded</code>, animate transform / grid rows</td></tr>
+<tr><td>Comments</td><td>flat + <code>parentId</code>, recursive component, lazy replies</td></tr>
+<tr><td>Like button</td><td>snapshot, optimistic update, rollback, idempotent PUT</td></tr>
+<tr><td>Live chat</td><td>client id, dedupe echo, reconnect + resync, smart auto-scroll</td></tr>
+<tr><td>Polling widget</td><td><code>setTimeout</code> chain, backoff, clear + abort on cleanup</td></tr>
+<tr><td>Permissions</td><td>server sends permissions, <code>&lt;Can&gt;</code>, server enforces</td></tr>
+<tr><td>Timers</td><td>end time + <code>Date.now()</code>, never a drifting counter</td></tr>
+</table></div>
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Core flow first, edges second, polish last</li>
+<li>Say your trade-offs aloud</li>
+<li>Finished and correct beats fancy</li>
+</ul></div>
+</section>
+
+
+<script>
+(function () {
+  var sheets = [].slice.call(document.querySelectorAll('.sheet[data-title]'));
+  var total = sheets.length;
+  var toc = document.getElementById('toc');
+  var partsOrder = [], partsMap = {};
+
+  sheets.forEach(function (s, i) {
+    var n = i + 1;
+
+    var head = document.createElement('div');
+    head.className = 'sh';
+    head.innerHTML = '<span class="pg">Page ' + n + '</span><h2>' + s.getAttribute('data-title') + '</h2>';
+    s.insertBefore(head, s.firstChild);
+
+    var prev = sheets[i - 1], next = sheets[i + 1];
+    var ft = document.createElement('div');
+    ft.className = 'ft';
+    ft.innerHTML =
+      '<a ' + (prev ? 'href="#' + prev.id + '"' : 'class="off" aria-hidden="true"') + '>← previous</a>' +
+      '<span class="mid">Page ' + n + ' of ' + total + '</span>' +
+      '<a ' + (next ? 'href="#' + next.id + '"' : 'href="#contents"') + '>' + (next ? 'next →' : 'back to contents ↑') + '</a>';
+    s.appendChild(ft);
+
+    var part = s.getAttribute('data-part');
+    if (!partsMap[part]) { partsMap[part] = []; partsOrder.push(part); }
+    partsMap[part].push({ n: n, id: s.id, title: s.getAttribute('data-title') });
+  });
+
+  partsOrder.forEach(function (p) {
+    var d = document.createElement('div');
+    d.className = 'part';
+    var html = '<h4>' + p + '</h4><ol>';
+    partsMap[p].forEach(function (x) {
+      html += '<li><span>' + x.n + '.</span><a href="#' + x.id + '">' + x.title + '</a></li>';
+    });
+    d.innerHTML = html + '</ol>';
+    toc.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

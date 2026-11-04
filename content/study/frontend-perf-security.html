@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Frontend Performance, Browser and Security Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--paper:#fbf8ee;--rule:#cfe0f3;--ink:#1f3d8f;--red:#c0392b;--green:#17743a;--yellow:#fff176;--pink:#ffc0dc;--desk:#d8cdb4;--code:#fffdf4;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(12px + env(safe-area-inset-top,0px));-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:'Caveat','Comic Sans MS','Segoe Print','Bradley Hand',cursive;font-size:22px;line-height:32px;padding:calc(18px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+a{color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.68em;background:rgba(31,61,143,.09);padding:1px 5px;border-radius:4px 7px 5px 8px;color:#16306e;word-break:break-word}
+.sheet{position:relative;max-width:880px;margin:0 auto 46px;padding:20px 30px 18px 96px;background-color:var(--paper);background-image:linear-gradient(to bottom,transparent 31px,var(--rule) 31px,var(--rule) 32px);background-size:100% 32px;background-position:0 14px;border-radius:7px 16px 9px 20px/14px 7px 18px 9px;box-shadow:0 2px 3px rgba(60,40,10,.18),0 12px 28px rgba(60,40,10,.22)}
+.sheet::before{content:"";position:absolute;top:0;bottom:0;left:74px;width:2px;background:#e36b6b;opacity:.8;box-shadow:3px 0 0 rgba(227,107,107,.3);pointer-events:none;z-index:0}
+.sheet::after{content:"";position:absolute;left:20px;top:0;bottom:0;width:30px;pointer-events:none;z-index:0;background-image:radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px);background-size:30px 30px;background-repeat:no-repeat;background-position:0 12%,0 50%,0 88%}
+.sheet>*{position:relative;z-index:1}
+.sh{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:4px double var(--red);padding-bottom:4px;margin-bottom:18px}
+.sh .pg{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;background:var(--red);color:#fff;padding:0 12px;border-radius:14px 4px 12px 5px;transform:rotate(-2deg);line-height:28px}
+.sh h2{margin:0;font-size:42px;line-height:44px;color:var(--red);font-weight:700;transform:rotate(-.6deg)}
+.t{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:30px 0 8px;font-size:32px;line-height:36px;color:var(--red);font-weight:700;counter-increment:tp}
+.sheet{counter-reset:tp}
+.t .ttl{display:flex;align-items:center;gap:10px;transform:rotate(-.5deg)}
+.t .ttl::before{content:counter(tp);display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;border:2.5px solid var(--red);border-radius:52% 48% 55% 45%/48% 55% 45% 52%;font-size:23px;line-height:1;transform:rotate(-6deg)}
+.t .src{font-family:'Patrick Hand','Caveat',cursive;font-size:16px;font-weight:400;line-height:20px;color:#4a5f9c;border:1.5px dashed #8aa0d6;padding:2px 10px;border-radius:12px 4px 10px 5px;transform:rotate(1.2deg)}
+.st{font-size:27px;line-height:32px;color:var(--red);font-weight:700;margin:20px 0 4px;transform:rotate(-.4deg)}
+p{margin:6px 0}
+.plain{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.5);padding:10px 16px 10px 74px;margin:12px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px;transform:rotate(-.3deg)}
+.plain b{font-family:'Patrick Hand','Caveat',cursive;font-weight:400;font-size:19px;color:#2457c5;display:block;line-height:24px}
+.plain .bulb{position:absolute;left:14px;top:12px;width:46px;height:52px}
+.pts{list-style:none;margin:8px 0;padding:0}
+.pts li{position:relative;padding-left:34px;margin:2px 0}
+.pts li::before{content:"\279C";position:absolute;left:6px;top:0;color:var(--red);font-size:22px}
+.pts li:nth-child(3n+1){transform:rotate(-.4deg)}.pts li:nth-child(3n+2){transform:rotate(.35deg)}.pts li:nth-child(3n){transform:rotate(-.15deg)}
+mark{color:inherit;padding:0 4px;border-radius:3px 9px 4px 10px}
+mark.y{background:linear-gradient(104deg,transparent 1%,var(--yellow) 3%,#fff59d 96%,transparent 99%)}
+mark.p{background:linear-gradient(100deg,transparent 1%,var(--pink) 3%,#ffd3e6 96%,transparent 99%)}
+.code{position:relative;background:var(--code);border:2.2px dashed #85744f;padding:14px 16px 12px;margin:22px 0 8px;border-radius:12px 3px 14px 4px/4px 14px 3px 12px;box-shadow:2px 3px 0 rgba(120,100,60,.2);transform:rotate(.15deg)}
+.code::before{content:"";position:absolute;top:-13px;left:26px;width:92px;height:24px;background:rgba(255,222,120,.72);transform:rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.code .cap{position:absolute;top:-12px;right:18px;font-family:'Patrick Hand','Caveat',cursive;font-size:15px;line-height:20px;background:#fff;border:1.5px solid #85744f;padding:0 8px;border-radius:9px 3px 8px 3px;color:#5b4b2c;transform:rotate(2deg)}
+.code pre{margin:0;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.55;color:#1c2b4a;tab-size:2;-webkit-overflow-scrolling:touch}
+.sees{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;line-height:26px;color:#0f5a2c;margin:6px 0 12px;padding-left:12px;border-left:4px solid #6bbf86}
+.warn{color:var(--red);margin:4px 0 4px 6px;padding-left:2px;transform:rotate(-.3deg)}
+.tw{overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;min-width:460px;background:rgba(255,255,255,.55)}
+th,td{border:1.8px solid var(--ink);padding:4px 10px;text-align:left;vertical-align:top}
+th{background:rgba(255,241,118,.6);color:var(--red);font-weight:400}
+td code{font-size:.78em}
+.add,.old,.flag{position:relative;margin:20px 0 10px;padding:16px 16px 10px;border-radius:14px 4px 16px 5px/5px 16px 4px 14px}
+.add{border:2.5px solid var(--green);background:rgba(190,236,203,.55);color:#0f5a2c}
+.add code{color:#0b4a22;background:rgba(23,116,58,.12)}
+.add .code{border-color:#3d8a58}
+.add a{color:#0f5a2c}
+.old{border:2.2px dashed var(--red);background:rgba(255,226,222,.55);color:#8c2a1f}
+.flag{border:2.5px solid var(--red);background:rgba(255,204,214,.5);color:#8c1f2f}
+.tag{position:absolute;top:-15px;left:16px;font-family:'Patrick Hand','Caveat',cursive;font-size:17px;line-height:24px;padding:0 12px;color:#fff;border-radius:12px 3px 12px 4px;transform:rotate(-2deg);box-shadow:1px 2px 0 rgba(0,0,0,.2)}
+.add .tag{background:var(--green)}.old .tag,.flag .tag{background:var(--red)}
+.ver{display:inline-block;font-family:'Patrick Hand','Caveat',cursive;font-size:14px;line-height:20px;padding:0 8px;border:1.5px solid currentColor;border-radius:10px 3px 9px 3px;vertical-align:middle;margin:0 2px;transform:rotate(-2deg)}
+.sticky{position:relative;width:min(100%,430px);margin:30px 0 8px auto;padding:20px 20px 12px;background:#fff59a;box-shadow:2px 6px 10px rgba(80,60,0,.28);transform:rotate(1.4deg);border-radius:3px 3px 26px 3px/3px 3px 14px 3px;color:#5b3d00}
+.sticky::before{content:"";position:absolute;top:-12px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(255,255,255,.6);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sticky h4{margin:0 0 4px;font-size:30px;line-height:32px;color:var(--red)}
+.sticky ul{list-style:none;margin:0;padding:0}
+.sticky li{position:relative;padding-left:28px;line-height:28px}
+.sticky li::before{content:"\279C";position:absolute;left:4px;color:var(--red)}
+.diagram{margin:14px 0;overflow-x:auto}
+.diagram svg{display:block;min-width:520px;width:100%;height:auto;max-width:760px;margin:0 auto}
+.diagram svg text{font-family:'Caveat','Comic Sans MS',cursive;fill:#1f3d8f;font-size:19px}
+.diagram .cap2{text-align:center;font-family:'Patrick Hand','Caveat',cursive;font-size:16px;color:#4a5f9c;line-height:22px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:26px;padding-top:6px;border-top:2px dashed var(--ink);font-family:'Patrick Hand','Caveat',cursive;font-size:18px}
+.ft .mid{color:#4a5f9c}
+.ft a.off{visibility:hidden}
+.fab{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--red);color:#fff;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;padding:6px 16px;border-radius:20px 6px 18px 7px;text-decoration:none;box-shadow:2px 4px 8px rgba(0,0,0,.3);transform:rotate(-2deg)}
+details{margin:8px 0;border:2px dashed #3b6fd4;border-radius:12px 4px 12px 5px;background:rgba(255,255,255,.6);padding:4px 12px}
+details summary{cursor:pointer;color:var(--red);font-weight:700}
+details[open] summary{margin-bottom:4px}
+/* cover */
+.cover{padding-top:44px;padding-bottom:30px}
+.cover .ring{position:absolute;right:46px;top:54px;width:150px;height:150px;border-radius:50%;border:9px solid rgba(120,72,30,.2);border-right-color:rgba(120,72,30,.07);border-bottom-color:rgba(120,72,30,.28);box-shadow:inset 0 0 12px rgba(120,72,30,.12);transform:rotate(-24deg);z-index:0;pointer-events:none}
+.cover h1{font-size:68px;line-height:70px;margin:8px 0 0;color:var(--red);transform:rotate(-1.4deg);font-weight:700}
+.cover .sub{font-size:28px;margin:10px 0 18px;transform:rotate(-.5deg)}
+.how{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.45);padding:10px 16px 12px;margin:18px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px}
+.how h3,.legend h3,.toc h3{margin:0 0 2px;color:var(--red);font-size:30px}
+.legend{margin:16px 0}
+.legend ul{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.chip{display:inline-block;min-width:22px;height:20px;vertical-align:-3px;margin-right:8px;border-radius:4px 8px 5px 9px;border:2px solid var(--ink)}
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin-top:8px}
+.toc .part{break-inside:avoid;margin-bottom:10px}
+.toc h4{margin:6px 0 2px;color:var(--red);font-size:25px;line-height:28px;border-bottom:2px dashed var(--red)}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{line-height:28px}
+.toc li a{color:var(--ink);text-decoration:none;border-bottom:2px dotted #8aa0d6}
+.toc li a:hover{background:var(--yellow)}
+.toc li span{display:inline-block;min-width:34px;color:var(--red);font-weight:700}
+@media(max-width:700px){
+body{font-size:20px;line-height:30px}
+.sheet{padding:14px 14px 14px 50px;background-size:100% 30px;margin-bottom:34px}
+.sheet::before{left:36px}
+.sheet::after{left:5px;width:22px;background-size:22px 22px;background-image:radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px)}
+.sh h2{font-size:32px;line-height:36px}
+.t{font-size:27px;line-height:31px}
+.plain{padding:10px 12px 10px 12px}.plain .bulb{position:static;display:block;width:34px;height:38px;margin-bottom:2px}
+.cover h1{font-size:46px;line-height:50px}.cover .sub{font-size:23px;line-height:28px}.cover .ring{width:90px;height:90px;right:12px;top:10px}
+.toc{grid-template-columns:1fr}.legend ul{grid-template-columns:1fr}
+.sticky{margin-right:auto}
+}
+@media print{
+body{background:#fff;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.fab{display:none}
+.sheet{box-shadow:none;margin:0;max-width:none;break-after:page;page-break-after:always;border-radius:0}
+.sheet:last-of-type{break-after:auto;page-break-after:auto}
+.code,.add,.old,.flag,.sticky,.plain,.diagram,table{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="bulb" viewBox="0 0 48 54">
+<path d="M24 8c-8 0-13 6-13 12 0 5 3 7 5 10 1 2 1 4 1 5h14c0-1 0-3 1-5 2-3 5-5 5-10 0-6-5-12-13-12z" fill="#fff59a" stroke="#1f3d8f" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M18 40h12M20 45h8M22 49h4" fill="none" stroke="#1f3d8f" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M24 1v4M7 7l3 3M41 7l-3 3M2 22h4M42 22h4" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-linecap="round"/>
+</symbol>
+<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#c0392b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#1f3d8f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+</svg>
+
+<a class="fab" href="#contents">↑ contents</a>
+
+<!-- ============ COVER ============ -->
+<section class="sheet cover" id="top">
+  <div class="ring"></div>
+  <h1>Frontend Performance, Browser &amp; Security: my handwritten notebook</h1>
+  <p class="sub">The browser, speed, security and senior-level architecture questions that frontend and full-stack interviews keep asking, with answers you can say out loud</p>
+  <p>Covers the gaps the React, JavaScript and HTML/CSS notebooks do not: <mark class="y">how the browser renders</mark>, <mark class="y">Core Web Vitals</mark>, bundle and runtime performance, <mark class="y">XSS / CSRF / CORS / token storage</mark>, accessibility, offline and real-time, monitoring, and architecture for senior roles.</p>
+
+  <div class="how">
+    <h3>How to use these notes</h3>
+    <ul class="pts">
+      <li>Every topic starts with a dashed blue <b>Say this</b> box: the answer in two or three spoken sentences. Cover the rest, say it aloud, then read on.</li>
+      <li>Use the 4-beat shape on any question: <mark class="y">define → how it works → tiny example → trade-off or what fails</mark>.</li>
+      <li>Senior interviews reward <b>measure first, then fix</b>, and <b>what happens when it fails</b>. Both appear in almost every answer here.</li>
+      <li>Do the <b>Quick check</b> on the last page, answers are folded away.</li>
+      <li>Use the floating <b>↑ contents</b> button to jump back here.</li>
+    </ul>
+  </div>
+
+  <div class="legend">
+    <h3>Colour legend</h3>
+    <ul>
+      <li><span class="chip" style="background:#fff;border-color:#1f3d8f"></span>Blue ink = the explanation</li>
+      <li><span class="chip" style="background:#fff;border-color:#c0392b"></span>Red = headings and ⚠ gotchas</li>
+      <li><span class="chip" style="background:rgba(190,236,203,.9);border-color:#17743a"></span>Green box = <b>interview edge</b>, the line that separates good from great</li>
+      <li><span class="chip" style="background:rgba(255,226,222,.9);border-color:#c0392b;border-style:dashed"></span>Red dashed = <b>⚠ anti-pattern</b></li>
+      <li><span class="chip" style="background:var(--yellow)"></span><span class="chip" style="background:var(--pink)"></span>Highlighter = key terms</li>
+    </ul>
+  </div>
+
+  <div class="toc-wrap" id="contents">
+    <h3 style="margin:18px 0 0;color:var(--red);font-size:36px">Contents</h3>
+    <div class="toc" id="toc"></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="sheet" id="pg-render" data-part="Part A: The browser" data-title="The rendering pipeline and the critical rendering path">
+
+<h3 class="t"><span class="ttl">From bytes to pixels</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“The browser parses HTML into the <b>DOM</b> and CSS into the <b>CSSOM</b>, combines them into a <b>render tree</b> (only visible nodes), runs <b>layout</b> to compute sizes and positions, <b>paints</b> pixels into layers, and the compositor <b>composites</b> the layers on the GPU. JavaScript can interrupt every step.”</div>
+<div class="diagram"><svg viewBox="0 0 760 120" role="img" aria-label="Rendering pipeline">
+<g fill="none" stroke="#1f3d8f" stroke-width="2.2">
+<rect x="6" y="38" width="96" height="44" rx="8"/><rect x="128" y="38" width="96" height="44" rx="8"/><rect x="250" y="38" width="110" height="44" rx="8"/><rect x="386" y="38" width="96" height="44" rx="8"/><rect x="508" y="38" width="96" height="44" rx="8"/><rect x="630" y="38" width="118" height="44" rx="8"/>
+</g>
+<g fill="none" stroke="#c0392b" stroke-width="2.2" marker-end="url(#ah)"><path d="M104 60h22"/><path d="M226 60h22"/><path d="M362 60h22"/><path d="M484 60h22"/><path d="M606 60h22"/></g>
+<text x="54" y="66" text-anchor="middle">HTML→DOM</text><text x="176" y="66" text-anchor="middle">CSS→CSSOM</text><text x="305" y="66" text-anchor="middle">Render tree</text><text x="434" y="66" text-anchor="middle">Layout</text><text x="556" y="66" text-anchor="middle">Paint</text><text x="689" y="66" text-anchor="middle">Composite</text>
+<text x="434" y="108" text-anchor="middle" style="fill:#c0392b">reflow</text><text x="556" y="108" text-anchor="middle" style="fill:#c0392b">repaint</text><text x="689" y="108" text-anchor="middle" style="fill:#17743a">cheapest</text>
+</svg><div class="cap2">Change a property early in the chain and everything after it re-runs.</div></div>
+<ul class="pts">
+  <li><b>Critical rendering path</b> = the steps and resources needed for the <em>first</em> paint. Shorten it by sending less, sooner.</li>
+  <li><b>CSS is render-blocking:</b> the browser will not paint until the CSSOM is built, so keep critical CSS small (inline it) and load the rest later.</li>
+  <li><b>JavaScript is parser-blocking</b> by default: a plain <code>&lt;script&gt;</code> stops HTML parsing while it downloads and runs, and it waits for pending CSS.</li>
+</ul>
+<div class="tw"><table>
+<tr><th>Script tag</th><th>Download</th><th>Runs</th><th>Order kept?</th></tr>
+<tr><td><code>&lt;script&gt;</code></td><td>blocks parsing</td><td>immediately</td><td>yes</td></tr>
+<tr><td><code>async</code></td><td>parallel</td><td>as soon as ready, pauses parsing</td><td>no</td></tr>
+<tr><td><code>defer</code></td><td>parallel</td><td>after parsing, before <code>DOMContentLoaded</code></td><td>yes</td></tr>
+<tr><td><code>type="module"</code></td><td>parallel</td><td>deferred by default</td><td>yes</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Reflow, repaint and what is cheap to animate</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Changing geometry (<code>width</code>, <code>top</code>, <code>margin</code>, font size) forces <b>layout</b> and usually paint. Changing colour forces only <b>paint</b>. Changing <code>transform</code> or <code>opacity</code> on a promoted layer only needs <b>compositing</b> on the GPU, so I animate those.”</div>
+<div class="tw"><table>
+<tr><th>Property you change</th><th>Cost</th><th>Runs on</th></tr>
+<tr><td><code>width</code>, <code>height</code>, <code>top</code>, <code>left</code>, <code>margin</code></td><td>layout + paint + composite</td><td>main thread</td></tr>
+<tr><td><code>background</code>, <code>color</code>, <code>box-shadow</code></td><td>paint + composite</td><td>main thread</td></tr>
+<tr><td><code>transform</code>, <code>opacity</code></td><td>composite only</td><td>compositor / GPU</td></tr>
+</table></div>
+<div class="old"><span class="tag">⚠ layout thrashing</span>
+<div class="code"><pre>// Read, write, read, write: each read forces a synchronous layout
+items.forEach(el =&gt; {
+  const h = el.offsetHeight          // READ  → forces layout
+  el.style.height = h + 10 + "px"    // WRITE → invalidates layout
+})
+
+// Fix: batch all reads, then all writes
+const heights = items.map(el =&gt; el.offsetHeight)
+items.forEach((el, i) =&gt; { el.style.height = heights[i] + 10 + "px" })</pre></div></div>
+<ul class="pts">
+  <li>Move things with <code>transform: translateX()</code>, not <code>left</code>. Hint with <code>will-change: transform</code> sparingly: every layer costs memory.</li>
+  <li>Do visual updates inside <code>requestAnimationFrame</code> so they run once per frame, just before paint.</li>
+  <li>Set <code>width</code>/<code>height</code> (or <code>aspect-ratio</code>) on images so the layout does not jump (CLS).</li>
+  <li><code>content-visibility: auto</code> lets the browser skip layout and paint for off-screen sections.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">How the event loop interacts with rendering</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“JavaScript and rendering share the main thread. One loop turn runs a task, then <b>drains all microtasks</b> (promises, <code>queueMicrotask</code>), and only then may the browser <b>render</b>. A long task or an endless promise chain starves rendering and input.”</div>
+<div class="code"><pre>button.onclick = () =&gt; {
+  el.textContent = "Loading…"           // style change queued
+  Promise.resolve().then(() =&gt; heavy()) // microtask: runs BEFORE the browser paints "Loading…"
+}
+
+button.onclick = () =&gt; {
+  el.textContent = "Loading…"
+  setTimeout(heavy, 0)                  // macrotask: browser can paint first, then run heavy()
+}</pre></div>
+<ul class="pts">
+  <li>Order per turn: <b>one macrotask → all microtasks → (maybe) rAF callbacks → style, layout, paint</b>.</li>
+  <li>A task over <b>50 ms</b> is a “long task”. Break up work with <code>setTimeout</code> / <code>scheduler.yield()</code>, or move it to a <b>Web Worker</b>.</li>
+  <li><code>async/await</code> is microtask based: <code>await</code> alone never lets the browser paint.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>Tie it back to a symptom: “Typing lags because a long task blocks the main thread, so the browser cannot process the keypress. I find it in the Performance panel (red-cornered tasks) and fix it by chunking, deferring or moving the work to a worker.”</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>DOM + CSSOM → render tree → layout → paint → composite</li>
+<li>CSS blocks render, plain JS blocks parsing</li>
+<li>Animate transform and opacity only</li>
+<li>Microtasks run before the browser paints</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="sheet" id="pg-vitals" data-part="Part A: The browser" data-title="Core Web Vitals, measuring and explaining performance">
+
+<h3 class="t"><span class="ttl">The metrics that matter</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Core Web Vitals are three user-centred metrics: <b>LCP</b> (how fast the main content shows), <b>INP</b> (how fast the page responds to interaction) and <b>CLS</b> (how much the layout jumps). They are measured on real users at the 75th percentile.”</div>
+<div class="tw"><table>
+<tr><th>Metric</th><th>Measures</th><th>Good</th><th>Poor</th><th>Usual fix</th></tr>
+<tr><td><b>LCP</b> Largest Contentful Paint</td><td>loading</td><td>≤ 2.5 s</td><td>&gt; 4 s</td><td>faster server, preload the hero image, no render-blocking, SSR/SSG</td></tr>
+<tr><td><b>INP</b> Interaction to Next Paint</td><td>responsiveness (replaced FID in March 2024)</td><td>≤ 200 ms</td><td>&gt; 500 ms</td><td>break up long tasks, less JS, defer non-urgent work, transitions</td></tr>
+<tr><td><b>CLS</b> Cumulative Layout Shift</td><td>visual stability</td><td>≤ 0.1</td><td>&gt; 0.25</td><td>size images/embeds, reserve ad space, no late-injected content above, <code>font-display</code></td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Other metric</th><th>Meaning</th></tr>
+<tr><td><b>TTFB</b></td><td>time until the first byte of the response: server and network speed</td></tr>
+<tr><td><b>FCP</b> First Contentful Paint</td><td>first text or image appears: “something is happening”</td></tr>
+<tr><td><b>TBT</b> Total Blocking Time</td><td>lab metric: total time long tasks blocked the main thread between FCP and TTI. Good lab proxy for INP</td></tr>
+<tr><td><b>TTI</b> Time to Interactive</td><td>older lab metric, removed from Lighthouse 10; use TBT and INP instead</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Lab data vs field data, and the tools</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<b>Lab</b> tools (Lighthouse, DevTools) give repeatable, debuggable runs on a simulated device. <b>Field</b> data (real-user monitoring, the Chrome UX Report) shows what real users on real networks experience. I find problems in the field, then reproduce and fix them in the lab.”</div>
+<ul class="pts">
+  <li><b>Lab:</b> Lighthouse, DevTools Performance and Network panels, WebPageTest. Throttle CPU 4× and network to “Fast 3G”.</li>
+  <li><b>Field:</b> <code>web-vitals</code> library sending to your analytics, CrUX / PageSpeed Insights, Sentry or Datadog RUM.</li>
+  <li><b>Guard it:</b> Lighthouse CI and a <b>performance budget</b> in the pipeline so a regression fails the PR.</li>
+</ul>
+<div class="code"><pre>import { onLCP, onINP, onCLS } from "web-vitals"
+
+function send(metric) {
+  navigator.sendBeacon("/analytics", JSON.stringify({   // survives page unload
+    name: metric.name, value: metric.value, id: metric.id, page: location.pathname,
+  }))
+}
+onLCP(send); onINP(send); onCLS(send)</pre></div>
+
+<h3 class="t"><span class="ttl">Explaining performance to non-technical people</span><span class="src">managerial round</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I translate each metric to a user moment and a business outcome: LCP is ‘how long until the page looks ready’, INP is ‘does it react when I tap’, CLS is ‘does it jump while I read’. Then I show the revenue or conversion link and a before/after.”</div>
+<ul class="pts">
+  <li><b>LCP:</b> “the product photo appears in 2 s instead of 5 s”. Slow pages lose users before they see anything.</li>
+  <li><b>INP:</b> “the Buy button responds instantly instead of feeling stuck”.</li>
+  <li><b>CLS:</b> “the Pay button no longer moves just as you tap it”, the accidental-tap problem.</li>
+  <li>Always attach <b>one number, one outcome, one next step</b>: “p75 LCP 4.1 s → 2.3 s, expected to lift checkout conversion, next we are fixing images.”</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“Reduce page load time by 40%”: how you plan it</span><span class="src">asked in 2 loops</span></h3>
+<div class="tw"><table>
+<tr><th>Order</th><th>Action</th><th>Typical win</th></tr>
+<tr><td>1</td><td>Baseline p75 in the field and a lab trace; find the LCP element</td><td>know the target</td></tr>
+<tr><td>2</td><td>Remove or defer unused JavaScript, code split by route, drop heavy libraries (e.g. moment → date-fns / <code>Intl</code>)</td><td>often the biggest</td></tr>
+<tr><td>3</td><td>Fix the request waterfall: parallelise, preload the LCP image, <code>preconnect</code> to key origins</td><td>large</td></tr>
+<tr><td>4</td><td>Images: AVIF/WebP, <code>srcset</code>, lazy-load below the fold, sized</td><td>large on media pages</td></tr>
+<tr><td>5</td><td>Caching + CDN + Brotli, SSR/SSG for first paint</td><td>TTFB + repeat visits</td></tr>
+<tr><td>6</td><td>Set a budget, add Lighthouse CI, monitor in the field</td><td>keeps the gain</td></tr>
+</table></div>
+<div class="add"><span class="tag">interview edge</span>Say that you would <b>order by biggest win per effort</b> and re-measure after each change. “40%” is a measured claim, so name the metric and percentile before promising it.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>LCP ≤ 2.5 s · INP ≤ 200 ms · CLS ≤ 0.1</li>
+<li>INP replaced FID; TTI is retired</li>
+<li>Field finds it, lab fixes it</li>
+<li>One number, one outcome, one next step</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="sheet" id="pg-load" data-part="Part B: Performance" data-title="Load performance: bundles, images, fonts and resource hints">
+
+<h3 class="t"><span class="ttl">Shrinking and analysing the JavaScript bundle</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“JavaScript is the most expensive byte: it must be downloaded, parsed, compiled and executed on the main thread. I look at the bundle visually, find the heavy and duplicated parts, then split, tree-shake or replace them.”</div>
+<ul class="pts">
+  <li><b>Analyse:</b> <code>webpack-bundle-analyzer</code>, <code>rollup-plugin-visualizer</code>, <code>vite-bundle-visualizer</code>, <code>source-map-explorer</code>. Look for one giant vendor chunk, duplicated packages and whole-library imports.</li>
+  <li><b>Route-level code splitting</b> (<code>React.lazy</code>, dynamic <code>import()</code>) so each route ships only its own code, then split heavy widgets (charts, editors, maps).</li>
+  <li><b>Tree shaking</b> needs ES modules and <code>"sideEffects": false</code>. Import what you use, not the world.</li>
+  <li><b>Dedupe and replace:</b> one version of each dependency, lighter alternatives, native APIs.</li>
+  <li><b>Third-party scripts:</b> analytics, chat and tag managers often cost more than your own code: load them <code>async</code>, after interaction or in a worker.</li>
+  <li><b>Budget:</b> fail CI when a route’s JS grows past a limit (<code>size-limit</code>, <code>bundlesize</code>).</li>
+</ul>
+<div class="code"><pre>import _ from "lodash"                  // pulls the whole library
+import debounce from "lodash/debounce"     // just one function
+import { debounce } from "lodash-es"       // tree-shakeable build
+
+const Chart = lazy(() =&gt; import("./Chart"))        // loaded only when rendered
+
+button.onclick = async () =&gt; {
+  const { exportPdf } = await import("./exportPdf")  // on demand, on click
+  exportPdf(data)
+}</pre></div>
+<div class="add"><span class="tag">interview edge</span>For “hundreds of routes”: split by route automatically (the framework does it), keep a <b>shared chunk</b> for common code but not a catch-all vendor chunk, and enforce a <b>per-route budget</b> in CI so the 200th route cannot quietly add 300 KB.</div>
+
+<h3 class="t"><span class="ttl">Resource hints: preload, prefetch, preconnect</span><span class="src">asked in 2 loops</span></h3>
+<div class="tw"><table>
+<tr><th>Hint</th><th>Meaning</th><th>Use for</th></tr>
+<tr><td><code>preload</code></td><td>fetch now, I need it for <em>this</em> page, high priority</td><td>LCP image, critical font, critical script</td></tr>
+<tr><td><code>prefetch</code></td><td>fetch when idle, I may need it for the <em>next</em> page</td><td>next route’s chunk</td></tr>
+<tr><td><code>preconnect</code></td><td>open DNS + TCP + TLS early</td><td>API or CDN origin you will call</td></tr>
+<tr><td><code>dns-prefetch</code></td><td>only the DNS lookup</td><td>cheap fallback for third parties</td></tr>
+<tr><td><code>fetchpriority="high"</code></td><td>raise priority of one resource</td><td>the hero (LCP) image</td></tr>
+</table></div>
+<div class="code"><pre>&lt;link rel="preconnect" href="https://api.example.com" crossorigin&gt;
+&lt;link rel="preload" as="image" href="/hero.avif" fetchpriority="high"&gt;
+&lt;link rel="preload" as="font" href="/inter.woff2" type="font/woff2" crossorigin&gt;
+&lt;script src="/app.js" defer&gt;&lt;/script&gt;</pre></div>
+<p class="warn">⚠ Preloading everything defeats the purpose: it competes with truly critical resources. Preload only the one or two that gate LCP.</p>
+
+<h3 class="t"><span class="ttl">Images and fonts</span><span class="src">common LCP and CLS causes</span></h3>
+<div class="code"><pre>&lt;img src="hero-800.avif" width="800" height="450"
+     srcset="hero-400.avif 400w, hero-800.avif 800w, hero-1600.avif 1600w"
+     sizes="(max-width: 600px) 100vw, 800px"
+     fetchpriority="high" alt="…"&gt;                &lt;!-- above the fold: eager --&gt;
+
+&lt;img src="card.avif" width="300" height="200" loading="lazy" decoding="async" alt="…"&gt;  &lt;!-- below the fold --&gt;
+
+@font-face { font-family: Inter; src: url(inter.woff2) format("woff2");
+             font-display: swap; }               /* show fallback text immediately */</pre></div>
+<ul class="pts">
+  <li>Modern formats (AVIF, WebP), responsive <code>srcset</code>, an image CDN that resizes on the fly. Never lazy-load the LCP image.</li>
+  <li><code>width</code> + <code>height</code> (or <code>aspect-ratio</code>) reserve space, which prevents layout shift.</li>
+  <li>Fonts: WOFF2, subset to the characters you use, self-host, preload the one critical file, <code>font-display: swap</code> (or <code>optional</code> to avoid shifts).</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Compression, caching and the CDN</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li><b>Brotli</b> (or gzip) for text assets: HTML, CSS, JS, JSON, SVG. Not for already-compressed images.</li>
+  <li><b>Hashed filenames</b> (<code>app.3f9a1c.js</code>) + <code>Cache-Control: public, max-age=31536000, immutable</code>: cached forever, and a new deploy gets a new URL.</li>
+  <li><b>HTML</b> is not hashed, so <code>no-cache</code> (revalidate with <code>ETag</code>) or a short max-age, so users pick up new deploys.</li>
+  <li>A <b>CDN</b> serves static files from the nearest edge, cutting latency and origin load. HTTP/2 or HTTP/3 multiplexes many requests over one connection.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Analyse → split → tree-shake → budget</li>
+<li>preload = now, prefetch = next, preconnect = origin</li>
+<li>Never lazy-load the LCP image</li>
+<li>Hashed assets cached forever, HTML revalidated</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="sheet" id="pg-runtime" data-part="Part B: Performance" data-title="Runtime performance: long tasks, workers, lagging dashboards">
+
+<h3 class="t"><span class="ttl">A dashboard lags when users apply filters. How do you profile and fix it?</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I record the interaction in the Performance panel and read where the time goes: scripting, rendering, layout or painting. Then I fix that specific cost. Guessing at <code>useMemo</code> first is how you waste a week.”</div>
+<div class="tw"><table>
+<tr><th>What the trace shows</th><th>Cause</th><th>Fix</th></tr>
+<tr><td>One long yellow (scripting) task</td><td>heavy filter or sort in JS</td><td>do it once with memoisation, index the data, move to a Web Worker, or filter on the server</td></tr>
+<tr><td>Many React commits, flame graph full of components</td><td>too many re-renders</td><td>Profiler: push state down, <code>memo</code> rows, selectors, <code>useDeferredValue</code> for the list</td></tr>
+<tr><td>Purple (layout) after every update</td><td>forced reflow, thousands of DOM nodes</td><td>virtualise, avoid read-after-write, simpler CSS</td></tr>
+<tr><td>Green (paint) large areas</td><td>expensive paint (shadows, filters, huge repaint area)</td><td>promote to a layer, <code>contain</code>, reduce paint area</td></tr>
+<tr><td>Filter on every keystroke</td><td>work per input event</td><td>debounce the input, or transition the render</td></tr>
+</table></div>
+<div class="code"><pre>// Move the heavy filtering off the main thread
+// worker.js
+self.onmessage = ({ data: { rows, query } }) =&gt; {
+  self.postMessage(rows.filter(r =&gt; r.name.toLowerCase().includes(query)))
+}
+// app
+const worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" })
+worker.postMessage({ rows, query })
+worker.onmessage = e =&gt; setVisible(e.data)</pre></div>
+<div class="add"><span class="tag">interview edge</span>A worker cannot touch the DOM, and copying a big array with <code>postMessage</code> has a cost (structured clone). Use <b>transferable</b> objects (<code>ArrayBuffer</code>) or <code>SharedArrayBuffer</code> for large data. Keep it for real CPU work; for under about 10 ms of work it is not worth it.</div>
+
+<h3 class="t"><span class="ttl">Large tables with real-time updates</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Render only what is visible (virtualisation), update only the rows that changed (by id, memoised rows), and <b>batch</b> incoming messages so I commit at most once per frame, however fast the feed is.”</div>
+<div class="code"><pre>// Buffer socket messages, flush once per animation frame
+const buffer = new Map()
+let scheduled = false
+socket.onmessage = e =&gt; {
+  const row = JSON.parse(e.data)
+  buffer.set(row.id, row)                     // later update of same id replaces earlier one
+  if (!scheduled) {
+    scheduled = true
+    requestAnimationFrame(() =&gt; {
+      applyUpdates([...buffer.values()])      // ONE state update
+      buffer.clear(); scheduled = false
+    })
+  }
+}</pre></div>
+<ul class="pts">
+  <li>Normalise rows into a map by id; rows get stable keys and <code>React.memo</code>, so only changed rows re-render.</li>
+  <li>Highlight changes with a CSS animation class instead of re-rendering styles in JS.</li>
+  <li>Server-side sort, filter and cursor pagination so the client never holds a million rows.</li>
+  <li>Pause updates while the user is scrolling or selecting, then catch up.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Keeping the main thread free</span><span class="src">toolbox</span></h3>
+<ul class="pts">
+  <li><b>Chunk the work:</b> process 500 items, <code>await scheduler.yield()</code> (or <code>setTimeout</code>), continue. The browser handles input between chunks.</li>
+  <li><b>Defer non-urgent work:</b> <code>requestIdleCallback</code>, React transitions, load third parties after the first interaction.</li>
+  <li><b>Cache expensive results:</b> memoise pure functions; <code>useMemo</code> for derived data; a <code>Map</code> keyed by input.</li>
+  <li><b>Passive event listeners</b> for scroll and touch (<code>{ passive: true }</code>) so scrolling never waits on your handler; <code>IntersectionObserver</code> instead of scroll handlers.</li>
+  <li><b>Throttle</b> continuous events (scroll, resize, mousemove) with rAF; <b>debounce</b> “wait until the user stops” events (typing).</li>
+</ul>
+<div class="code"><pre>async function processAll(items) {
+  for (let i = 0; i &lt; items.length; i += 500) {
+    items.slice(i, i + 500).forEach(handle)
+    await new Promise(r =&gt; setTimeout(r))     // yield to the browser between chunks
+  }
+}</pre></div>
+
+<h3 class="t"><span class="ttl">Memory leaks in the browser</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A leak is memory that stays reachable when it should be garbage. Usual suspects are listeners, timers, observers, sockets and caches that outlive the thing that created them, and DOM nodes still referenced after removal.”</div>
+<ul class="pts">
+  <li><b>Detect:</b> DevTools → Memory → take a heap snapshot, repeat the action, force GC, take another and use <b>Comparison</b>. Filter “Detached” to find DOM nodes kept alive. The Performance panel memory graph that never returns to its baseline is the symptom.</li>
+  <li><b>Fix:</b> pair every <code>add</code> with a <code>remove</code>; <code>AbortController</code> to cancel listeners and fetches; <code>disconnect()</code> observers; <code>clearInterval</code>; bounded caches (LRU); <code>WeakMap</code>/<code>WeakRef</code> for per-object metadata.</li>
+</ul>
+<div class="code"><pre>const ctrl = new AbortController()
+window.addEventListener("resize", onResize, { signal: ctrl.signal })
+window.addEventListener("scroll", onScroll, { signal: ctrl.signal, passive: true })
+// teardown: one call removes both listeners
+ctrl.abort()</pre></div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Profile → read the colour → fix that cost</li>
+<li>Batch live updates per animation frame</li>
+<li>Chunk long tasks or use a worker</li>
+<li>Heap snapshot comparison finds leaks</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="sheet" id="pg-network" data-part="Part B: Performance" data-title="Networking and data-fetching architecture: caching, retries, real time">
+
+<h3 class="t"><span class="ttl">A data-fetching layer: caching, background updates, retries, deduplication</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I do not write this per component. One client layer owns <b>caching</b> keyed by request, <b>deduplicates</b> identical in-flight calls, serves stale data while <b>revalidating</b> in the background, and <b>retries</b> safe failures with backoff. TanStack Query or SWR already give this.”</div>
+<div class="code"><pre>// The core idea in 15 lines
+const cache = new Map()      // key → { data, time }
+const inflight = new Map()   // key → Promise
+
+async function query(key, fetcher, { staleMs = 30_000 } = {}) {
+  const hit = cache.get(key)
+  if (hit &amp;&amp; Date.now() - hit.time &lt; staleMs) return hit.data         // fresh: no network
+  if (inflight.has(key)) return inflight.get(key)                       // dedupe concurrent calls
+  const p = fetcher()
+    .then(data =&gt; { cache.set(key, { data, time: Date.now() }); return data })
+    .finally(() =&gt; inflight.delete(key))
+  inflight.set(key, p)
+  return hit ? hit.data : p       // stale-while-revalidate: show old data, refresh behind it
+}</pre></div>
+<ul class="pts">
+  <li><b>Query keys</b> identify data (<code>["user", id]</code>); mutations <b>invalidate</b> related keys so screens refetch.</li>
+  <li><b>Revalidate triggers:</b> window focus, reconnect, interval, after a mutation.</li>
+  <li><b>Pagination and infinite scroll:</b> cursor-based, keep pages in the cache, prefetch the next page.</li>
+  <li><b>API versioning and inconsistent shapes:</b> put an <b>adapter</b> at the edge that maps every response to one internal type, validate with a schema (Zod), and keep components unaware of the wire format.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">HTTP caching headers</span><span class="src">asked in 2 loops</span></h3>
+<div class="tw"><table>
+<tr><th>Header</th><th>Meaning</th></tr>
+<tr><td><code>Cache-Control: max-age=N</code></td><td>reuse for N seconds with no request</td></tr>
+<tr><td><code>immutable</code></td><td>never revalidate, for hashed filenames</td></tr>
+<tr><td><code>no-cache</code></td><td>may store, but <b>must revalidate</b> before using (not “do not cache”)</td></tr>
+<tr><td><code>no-store</code></td><td>never store: sensitive data</td></tr>
+<tr><td><code>ETag</code> / <code>If-None-Match</code></td><td>conditional request; server answers <b>304 Not Modified</b> with no body</td></tr>
+<tr><td><code>stale-while-revalidate=N</code></td><td>serve the stale copy now, refresh in the background</td></tr>
+<tr><td><code>private</code> / <code>public</code></td><td>browser only vs shared CDN caches</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">WebSockets vs Server-Sent Events vs polling</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I choose by <b>direction and frequency</b>. Server to client only, like notifications or a live feed: SSE. Two-way and low latency, like chat or multiplayer: WebSocket. Infrequent or simple: polling.”</div>
+<div class="tw"><table>
+<tr><th></th><th>Polling</th><th>Long polling</th><th>SSE</th><th>WebSocket</th></tr>
+<tr><td>Direction</td><td>client asks</td><td>client asks, server holds</td><td>server → client</td><td>both ways</td></tr>
+<tr><td>Transport</td><td>plain HTTP</td><td>plain HTTP</td><td>HTTP stream</td><td>upgraded TCP connection</td></tr>
+<tr><td>Auto-reconnect</td><td>n/a</td><td>manual</td><td>built in (<code>EventSource</code>, <code>Last-Event-ID</code>)</td><td>manual</td></tr>
+<tr><td>Proxies / load balancers</td><td>easy</td><td>easy</td><td>easy</td><td>needs sticky sessions or pub/sub fan-out</td></tr>
+<tr><td>Cost at scale</td><td>wasteful requests</td><td>many open requests</td><td>one connection</td><td>one stateful connection per user</td></tr>
+</table></div>
+<div class="code"><pre>function connect(url, onMsg) {
+  let tries = 0
+  const open = () =&gt; {
+    const ws = new WebSocket(url)
+    ws.onopen    = () =&gt; { tries = 0 }
+    ws.onmessage = e =&gt; onMsg(JSON.parse(e.data))
+    ws.onclose   = () =&gt; {                                  // reconnect with backoff + jitter
+      const wait = Math.min(30000, 500 * 2 ** tries++) * (0.5 + Math.random() / 2)
+      setTimeout(open, wait)
+    }
+  }
+  open()
+}</pre></div>
+<div class="add"><span class="tag">interview edge</span>For chat, also say: <b>reconnect and resync</b> (send the last message id so the server replays what you missed), <b>heartbeat/ping</b> to detect dead connections, <b>de-duplicate</b> by message id, show optimistic messages as “sending”, and keep typing indicators ephemeral (throttle them, never persist).</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>One fetching layer: cache, dedupe, SWR, retry</li>
+<li><code>no-cache</code> ≠ do not cache</li>
+<li>SSE one-way, WebSocket two-way</li>
+<li>Reconnect with backoff, then resync</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="sheet" id="pg-offline" data-part="Part B: Performance" data-title="Offline-first, Progressive Web Apps and sync conflicts">
+
+<h3 class="t"><span class="ttl">Architecting a PWA with offline support</span><span class="src">senior architecture question</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A PWA has three parts: a <b>web app manifest</b> (installable), a <b>service worker</b> that intercepts network requests and serves from cache, and <b>local storage</b> (IndexedDB) for data. Offline writes go into an <b>outbox</b> that syncs when the connection returns.”</div>
+<div class="tw"><table>
+<tr><th>Service-worker strategy</th><th>How it works</th><th>Use for</th></tr>
+<tr><td>Cache first</td><td>cache, fall back to network</td><td>versioned static assets, fonts</td></tr>
+<tr><td>Network first</td><td>network, fall back to cache</td><td>HTML, frequently changing data</td></tr>
+<tr><td>Stale-while-revalidate</td><td>cache now, update behind</td><td>avatars, feeds, non-critical API data</td></tr>
+<tr><td>Network only / cache only</td><td>one source</td><td>payments / precached shell</td></tr>
+</table></div>
+<div class="code"><pre>// sw.js: precache the app shell, then answer requests
+self.addEventListener("install", e =&gt;
+  e.waitUntil(caches.open("shell-v3").then(c =&gt; c.addAll(["/", "/app.js", "/app.css"]))))
+
+self.addEventListener("fetch", e =&gt; {
+  if (e.request.method !== "GET") return
+  e.respondWith(
+    caches.match(e.request).then(hit =&gt;
+      hit || fetch(e.request).then(res =&gt; {
+        const copy = res.clone()                          // a response body can be read once
+        caches.open("runtime").then(c =&gt; c.put(e.request, copy))
+        return res
+      })))
+})</pre></div>
+<ul class="pts">
+  <li><b>Updates:</b> version the cache name, delete old caches in <code>activate</code>, and show “New version available, reload” instead of silently swapping under the user.</li>
+  <li><b>Background Sync</b> (<code>SyncManager</code>) replays queued requests, but support is Chromium only: also sync on the <code>online</code> event and on app start.</li>
+  <li>Do not cache authenticated API responses in shared caches, and clear caches on logout.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">The outbox pattern for offline writes</span><span class="src">asked in 2 loops</span></h3>
+<div class="code"><pre>// 1. Every write goes to IndexedDB first, with a client-generated id
+async function save(note) {
+  const op = { opId: crypto.randomUUID(), type: "UPDATE_NOTE", note, baseVersion: note.version }
+  await db.outbox.add(op)             // durable
+  applyLocally(note)                  // UI updates instantly
+  flush()
+}
+
+// 2. Replay in order when online; the server de-duplicates by opId (idempotent)
+async function flush() {
+  if (!navigator.onLine) return
+  for (const op of await db.outbox.orderBy("createdAt").toArray()) {
+    const res = await fetch("/api/ops", { method: "POST",
+      headers: { "Idempotency-Key": op.opId }, body: JSON.stringify(op) })
+    if (res.status === 409) { await handleConflict(op, await res.json()); continue }
+    if (!res.ok) break                  // keep it, retry later
+    await db.outbox.delete(op.opId)
+  }
+}
+addEventListener("online", flush)</pre></div>
+
+<h3 class="t"><span class="ttl">Resolving conflicts when offline edits sync</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“First <b>detect</b> the conflict with a version number or <code>ETag</code> (<code>If-Match</code>, answer 409 when stale). Then <b>resolve</b> it with a policy chosen per data type, not one global rule.”</div>
+<div class="tw"><table>
+<tr><th>Strategy</th><th>How</th><th>Good for / risk</th></tr>
+<tr><td>Last write wins</td><td>newest timestamp overwrites</td><td>simple settings; silently loses edits, clock skew (use server time)</td></tr>
+<tr><td>Field-level merge</td><td>merge changed fields, flag only the same field</td><td>forms and records; usually the best default</td></tr>
+<tr><td>Three-way merge</td><td>diff against the common ancestor version</td><td>text and documents</td></tr>
+<tr><td>Ask the user</td><td>show both versions, let them choose</td><td>rare but important data</td></tr>
+<tr><td>CRDTs (Yjs, Automerge)</td><td>data structures that merge automatically and converge</td><td>collaborative text, offline-first; heavier</td></tr>
+<tr><td>Operational Transform</td><td>server transforms concurrent operations</td><td>Google-Docs-style editing; complex, server-centric</td></tr>
+</table></div>
+<div class="add"><span class="tag">interview edge</span>Mention <b>idempotency keys</b> (replaying the outbox must not double-apply), <b>ordering</b> (apply ops in order per entity), and that the server is the final authority. Counters and sets are naturally mergeable; “set the title” is not.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Manifest + service worker + IndexedDB</li>
+<li>Outbox + idempotency key for offline writes</li>
+<li>Detect with versions, resolve per data type</li>
+<li>Background Sync is Chromium only</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 7 ============ -->
+<section class="sheet" id="pg-xss" data-part="Part C: Security" data-title="XSS: how it happens and how to stop it">
+
+<h3 class="t"><span class="ttl">What cross-site scripting is</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“XSS is when an attacker gets <b>their JavaScript to run in my page’s origin</b>. It can then read cookies that are not HttpOnly, read <code>localStorage</code>, call my API as the user, and rewrite the page. The root cause is treating untrusted data as code or HTML.”</div>
+<div class="tw"><table>
+<tr><th>Type</th><th>Where the payload lives</th><th>Example</th></tr>
+<tr><td>Stored</td><td>database: comment, profile name</td><td>a comment containing <code>&lt;img onerror=…&gt;</code> runs for every viewer</td></tr>
+<tr><td>Reflected</td><td>the request: a query string echoed in the response</td><td>a malicious link with <code>?q=&lt;script&gt;</code></td></tr>
+<tr><td>DOM-based</td><td>client code writes untrusted data into the DOM</td><td><code>el.innerHTML = location.hash</code></td></tr>
+</table></div>
+<div class="code"><pre>// Dangerous sinks
+el.innerHTML = userInput                   // parses HTML
+document.write(userInput)
+eval(userInput); new Function(userInput)
+&lt;a href={userUrl}&gt;                          // userUrl = "javascript:steal()"
+&lt;div dangerouslySetInnerHTML={{ __html: userHtml }} /&gt;
+
+// Safe
+el.textContent = userInput                 // text only, never parsed as HTML
+{userInput}                                // React escapes text by default</pre></div>
+
+<h3 class="t"><span class="ttl">Defence in depth</span><span class="src">the answer to “how do you protect against XSS?”</span></h3>
+<ul class="pts">
+  <li><b>1 · Output encoding by default.</b> Frameworks like React escape interpolated text. Do not bypass them with <code>dangerouslySetInnerHTML</code>, <code>innerHTML</code>, <code>v-html</code>.</li>
+  <li><b>2 · Sanitise when you must render HTML</b> (rich text, markdown): <code>DOMPurify</code> with a strict allow-list, on output, ideally also on the server.</li>
+  <li><b>3 · Validate URLs:</b> allow only <code>http:</code>/<code>https:</code>/<code>mailto:</code> for user-supplied links; add <code>rel="noopener noreferrer"</code> to <code>target="_blank"</code>.</li>
+  <li><b>4 · Content Security Policy:</b> a response header that limits where scripts can come from, so an injected script is blocked even if it gets in.</li>
+  <li><b>5 · Cookies:</b> <code>HttpOnly</code> so injected script cannot read the session cookie.</li>
+  <li><b>6 · Trusted Types</b> (Chromium) force every dangerous sink to go through a sanitising policy.</li>
+  <li><b>7 · Third-party scripts and dependencies</b> run with full power: pin versions, use Subresource Integrity, audit, minimise.</li>
+</ul>
+<div class="code"><pre>Content-Security-Policy:
+  default-src 'self';
+  script-src 'self' 'nonce-r4nd0m' 'strict-dynamic';   /* only scripts carrying this per-response nonce */
+  object-src 'none';
+  base-uri 'none';
+  frame-ancestors 'none'                               /* also blocks clickjacking */
+
+import DOMPurify from "dompurify"
+&lt;div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} /&gt;</pre></div>
+<div class="add"><span class="tag">interview edge</span>Two React-specific gaps: <b>server-rendered state</b> embedded as <code>JSON.stringify</code> in a <code>&lt;script&gt;</code> tag must escape <code>&lt;</code> (otherwise <code>&lt;/script&gt;</code> in data breaks out), and <b><code>javascript:</code> URLs in <code>href</code></b> are not escaped by React. Avoid <code>'unsafe-inline'</code> in CSP: it defeats most of the protection.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Untrusted data must never become code or HTML</li>
+<li><code>textContent</code> good, <code>innerHTML</code> bad</li>
+<li>Sanitise with DOMPurify, add CSP, HttpOnly cookies</li>
+<li>Check <code>href</code> protocols</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 8 ============ -->
+<section class="sheet" id="pg-auth-sec" data-part="Part C: Security" data-title="CSRF, CORS, token storage and secrets in the bundle">
+
+<h3 class="t"><span class="ttl">Where should you store the auth token?</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<code>localStorage</code> is readable by any script on the page, so one XSS steals the token. An <b><code>HttpOnly; Secure; SameSite</code> cookie</b> cannot be read by JavaScript, but it is sent automatically, which opens CSRF, so I pair it with SameSite and CSRF protection.”</div>
+<div class="tw"><table>
+<tr><th>Where</th><th>XSS can steal it?</th><th>CSRF risk?</th><th>Verdict</th></tr>
+<tr><td><code>localStorage</code> / <code>sessionStorage</code></td><td><b>yes</b></td><td>no (sent manually)</td><td>avoid for long-lived tokens</td></tr>
+<tr><td>JS memory (variable)</td><td>only while XSS is active; gone on refresh</td><td>no</td><td>good for a short-lived access token</td></tr>
+<tr><td><code>HttpOnly</code> cookie</td><td>cannot read it, but can still make requests as the user</td><td><b>yes</b>, needs defences</td><td>good, especially for the refresh token</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Common pattern:</b> short-lived access token (about 5–15 min) kept in memory, long-lived <b>refresh token in an HttpOnly, Secure, SameSite cookie</b> scoped to the refresh endpoint, with <b>refresh-token rotation</b> and reuse detection.</li>
+  <li><b>BFF (backend for frontend):</b> the browser only holds a session cookie; a server-side layer holds the real tokens and calls APIs. No token ever reaches JavaScript.</li>
+  <li>Honest note: no storage option survives a full XSS, so XSS prevention matters more than the storage choice.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">CSRF: what it is and the defences</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“CSRF tricks a logged-in user’s browser into sending a request to my site from another site. The browser attaches my cookies automatically, so the server sees a valid session. It only matters when authentication is carried by something the browser sends on its own, like cookies.”</div>
+<ul class="pts">
+  <li><b>SameSite cookies:</b> <code>Lax</code> (browser default) stops cookies on cross-site POST, <code>Strict</code> on all cross-site requests. First line of defence.</li>
+  <li><b>CSRF token</b> (synchroniser or double-submit): a random value the page must echo in a header or body; an attacker site cannot read it.</li>
+  <li><b>Check <code>Origin</code>/<code>Referer</code></b> on state-changing requests.</li>
+  <li><b>Never change state with GET.</b> Require a custom header or JSON content type, which forces a CORS preflight.</li>
+  <li>Bearer tokens in the <code>Authorization</code> header are not sent automatically, so classic CSRF does not apply (but XSS exposure does).</li>
+</ul>
+<div class="code"><pre>Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900
+
+fetch("/api/transfer", {
+  method: "POST",
+  credentials: "include",
+  headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+  body: JSON.stringify({ to, amount }),
+})</pre></div>
+
+<h3 class="t"><span class="ttl">CORS: what it does and does not do</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“CORS is a browser rule that <b>relaxes</b> the same-origin policy. The server states which other origins may read its responses. It protects <em>users’ browsers</em>; it does not protect my server from curl, Postman or a malicious script, so it is not authentication.”</div>
+<ul class="pts">
+  <li><b>Same origin</b> = same scheme + host + port.</li>
+  <li><b>Simple requests</b> (GET/POST with basic headers) are sent, and the browser then decides whether the page may read the response. <b>Other requests</b> (PUT/DELETE, JSON content type, custom headers like <code>Authorization</code>) trigger a <b>preflight</b> <code>OPTIONS</code> first.</li>
+  <li>With cookies you need <code>credentials: "include"</code> on the client, <code>Access-Control-Allow-Credentials: true</code> and a <b>specific</b> <code>Access-Control-Allow-Origin</code>, never <code>*</code>.</li>
+  <li>Cache preflights with <code>Access-Control-Max-Age</code>. Do not reflect any <code>Origin</code> back blindly: use an allow-list.</li>
+  <li>In development, avoid CORS pain with a dev-server proxy so the browser sees one origin.</li>
+</ul>
+<div class="code"><pre>// Preflight response the API must send
+Access-Control-Allow-Origin: https://app.example.com
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Allow-Credentials: true
+Access-Control-Max-Age: 600</pre></div>
+
+<h3 class="t"><span class="ttl">Environment config without leaking secrets</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<b>Anything that reaches the browser bundle is public.</b> Secrets live on the server; the frontend calls my API, which holds the key. Only non-secret values (API base URL, public keys, feature flags) go into frontend config.”</div>
+<ul class="pts">
+  <li>Bundlers expose only prefixed variables (<code>VITE_*</code>, <code>NEXT_PUBLIC_*</code>). Never prefix a secret. Search the built output for keys in CI (secret scanning).</li>
+  <li><b>Build once, deploy many:</b> avoid baking per-environment values into the bundle. Load a runtime <code>/config.json</code> or injected <code>window.__CONFIG__</code> so the same artifact runs in dev, staging and prod.</li>
+  <li>Third-party keys that must be public (maps, analytics) get <b>restricted</b> by domain and quota.</li>
+  <li><code>.env</code> files stay out of git; secrets come from a secret manager or CI variables.</li>
+</ul>
+<div class="old"><span class="tag">⚠ anti-pattern</span><code>const stripe = new Stripe(import.meta.env.VITE_STRIPE_SECRET)</code>: a secret key compiled into every user’s browser. Payment-capturing calls belong on the server.</div>
+
+<h3 class="t"><span class="ttl">Other frontend security checklist</span><span class="src">one-liners</span></h3>
+<ul class="pts">
+  <li><b>Clickjacking:</b> <code>Content-Security-Policy: frame-ancestors 'none'</code> (or <code>X-Frame-Options</code>).</li>
+  <li><b>Dependencies:</b> <code>npm audit</code>, lockfile, Dependabot/Renovate, review install scripts; supply-chain attacks are real.</li>
+  <li><b>HTTPS everywhere</b> with HSTS; <code>Secure</code> cookies; no mixed content.</li>
+  <li><b>Open redirects:</b> validate <code>?next=</code> targets against an allow-list.</li>
+  <li><b>postMessage:</b> always check <code>event.origin</code>.</li>
+  <li>Never trust the client: role checks and price calculations are re-done on the server.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Access token in memory, refresh in HttpOnly cookie</li>
+<li>Cookies → CSRF: SameSite + token</li>
+<li>CORS is not auth; no <code>*</code> with credentials</li>
+<li>Bundle = public. Secrets stay on the server</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 9 ============ -->
+<section class="sheet" id="pg-a11y-x" data-part="Part D: Quality and reach" data-title="Accessibility, cross-browser and responsive architecture">
+
+<h3 class="t"><span class="ttl">How do you make sure the app is accessible (WCAG)?</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Accessibility is built in, not bolted on. Start with <b>semantic HTML</b>, make everything work from the <b>keyboard</b>, manage <b>focus</b>, keep sufficient <b>contrast</b>, and use ARIA only to fill gaps semantic elements cannot. Then test with automated tools <em>and</em> a screen reader.”</div>
+<ul class="pts">
+  <li><b>Semantic first:</b> <code>&lt;button&gt;</code> for actions, <code>&lt;a href&gt;</code> for navigation, landmarks (<code>header</code>, <code>nav</code>, <code>main</code>), one <code>h1</code>, ordered headings, <code>&lt;label for&gt;</code> on every input. “First rule of ARIA: do not use ARIA if a native element does it.”</li>
+  <li><b>Keyboard:</b> everything reachable with Tab, activated with Enter/Space, visible focus ring (never <code>outline: none</code> without a replacement), logical tab order, no keyboard traps, skip-to-content link.</li>
+  <li><b>Focus management:</b> when a modal opens, move focus into it, trap Tab inside, close on Escape, and return focus to the trigger. After a route change, move focus to the new page heading.</li>
+  <li><b>Announce changes:</b> <code>aria-live="polite"</code> for toasts and results; <code>role="alert"</code> for errors; <code>aria-expanded</code>, <code>aria-controls</code>, <code>aria-current</code> on widgets.</li>
+  <li><b>Visual:</b> text contrast 4.5:1 (3:1 for large text), do not rely on colour alone, respect <code>prefers-reduced-motion</code>, allow 200% zoom without breaking, touch targets at least 24 to 44 px.</li>
+  <li><b>Images and media:</b> meaningful <code>alt</code> (empty <code>alt=""</code> for decoration), captions for video.</li>
+</ul>
+<div class="code"><pre>&lt;button aria-expanded={open} aria-controls="faq-1" onClick={() =&gt; setOpen(o =&gt; !o)}&gt;
+  What is your refund policy?
+&lt;/button&gt;
+&lt;div id="faq-1" role="region" hidden={!open}&gt;…&lt;/div&gt;
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }</pre></div>
+<div class="add"><span class="tag">interview edge</span>Testing pyramid for a11y: <b>eslint-plugin-jsx-a11y</b> while coding, <b>axe</b> (jest-axe / Playwright axe) in CI (catches about a third of issues), <b>manual keyboard pass</b>, then <b>screen reader</b> spot checks (NVDA, VoiceOver). WCAG levels: A, AA (the usual legal target), AAA; principles: Perceivable, Operable, Understandable, Robust.</div>
+
+<h3 class="t"><span class="ttl">Consistent rendering across browsers and devices</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I decide which browsers I support from analytics, write standard code, let tooling handle differences, and use <b>feature detection and progressive enhancement</b> instead of browser sniffing.”</div>
+<ul class="pts">
+  <li><b>Define support:</b> a <code>browserslist</code> file drives Babel, PostCSS and Autoprefixer, so transpiling and vendor prefixes match your targets.</li>
+  <li><b>CSS:</b> a reset or normalise stylesheet, <code>box-sizing: border-box</code>, <code>@supports</code> for newer features, sensible fallbacks (e.g. flex layout, then grid enhancement), <code>dvh</code> units for mobile browser bars.</li>
+  <li><b>JS:</b> feature-detect (<code>if ("IntersectionObserver" in window)</code>), polyfill only what the target needs, never user-agent sniff.</li>
+  <li><b>Test:</b> cross-browser E2E (Playwright runs Chromium, Firefox, WebKit), real devices or a cloud lab (BrowserStack), plus visual regression.</li>
+  <li><b>Known trouble spots:</b> Safari date inputs and 100vh, form control styling, scroll behaviour, flexbox <code>gap</code> in old versions, <code>:has()</code> and container query support.</li>
+</ul>
+<div class="code"><pre>.card-grid { display: flex; flex-wrap: wrap; gap: 16px }        /* works everywhere */
+@supports (display: grid) {
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) }
+}</pre></div>
+
+<h3 class="t"><span class="ttl">A responsive architecture: mobile, tablet, desktop, touch and mouse</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li><b>Mobile-first CSS:</b> base styles for small screens, <code>min-width</code> media queries add layout. Fewer overrides, less shipped CSS for phones.</li>
+  <li><b>Fluid by default:</b> <code>%</code>, <code>fr</code>, <code>clamp()</code> for type and spacing, <code>minmax()</code> grids. Breakpoints only where the content breaks, not per device name.</li>
+  <li><b>Container queries</b> make a component respond to its <em>container</em>, not the viewport: reusable cards and widgets in any layout.</li>
+  <li><b>Input method, not screen size:</b> <code>@media (pointer: coarse)</code> for bigger touch targets, <code>@media (hover: hover)</code> so hover menus are never the only way to reach something.</li>
+  <li><b>Responsive images</b> (<code>srcset</code>/<code>sizes</code>), a correct viewport meta, and tested landscape plus zoomed layouts.</li>
+  <li><b>Adapt behaviour, not just layout:</b> collapsible nav, a bottom sheet instead of a modal on phones, but keep one component with props, not two forks.</li>
+</ul>
+<div class="code"><pre>.nav { display: none }                                /* mobile: hamburger shows instead */
+.menu-btn { display: block; min-height: 44px; min-width: 44px }
+
+@media (min-width: 768px) {
+  .nav { display: flex; gap: 24px }
+  .menu-btn { display: none }
+}
+@media (hover: hover) { .nav a:hover { text-decoration: underline } }
+
+.card-wrap { container-type: inline-size }
+@container (min-width: 400px) { .card { display: grid; grid-template-columns: 120px 1fr } }</pre></div>
+
+<h3 class="t"><span class="ttl">Web Components vs React components</span><span class="src">asked in 1 loop</span></h3>
+<div class="tw"><table>
+<tr><th></th><th>Web Components</th><th>React components</th></tr>
+<tr><td>What</td><td>browser standard: Custom Elements + Shadow DOM + templates</td><td>library abstraction over rendering</td></tr>
+<tr><td>Works in</td><td>any framework or none</td><td>React apps</td></tr>
+<tr><td>Styling</td><td>Shadow DOM encapsulates CSS</td><td>CSS Modules, CSS-in-JS, utility classes</td></tr>
+<tr><td>Data flow</td><td>attributes, properties, events; no built-in reactive state</td><td>props, state, hooks, re-render model</td></tr>
+<tr><td>Best for</td><td>design-system primitives shared across stacks, micro-frontend boundaries</td><td>app UI with rich state</td></tr>
+</table></div>
+<div class="code"><pre>class UserBadge extends HTMLElement {
+  static observedAttributes = ["name"]
+  connectedCallback() { this.attachShadow({ mode: "open" }); this.render() }
+  attributeChangedCallback() { this.render() }
+  render() { if (this.shadowRoot) this.shadowRoot.innerHTML = `&lt;b&gt;${this.getAttribute("name")}&lt;/b&gt;` }
+}
+customElements.define("user-badge", UserBadge)</pre></div>
+<p class="warn">⚠ The template string above puts an attribute into HTML: in real code use <code>textContent</code> to avoid XSS (see page 7).</p>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Semantic HTML → keyboard → focus → contrast</li>
+<li>Feature detection, never UA sniffing</li>
+<li>Mobile-first, container queries, <code>pointer: coarse</code></li>
+<li>Web Components = framework-agnostic standard</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 10 ============ -->
+<section class="sheet" id="pg-release" data-part="Part E: Senior architecture" data-title="Shipping safely: CI/CD, feature flags, A/B tests, monitoring">
+
+<h3 class="t"><span class="ttl">A reliable CI/CD pipeline for several frontend environments</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Build <b>one immutable artifact</b> per commit and promote that same artifact through dev, staging and production, with environment differences supplied at runtime. Each stage adds a gate, and any release can be rolled back in minutes.”</div>
+<div class="tw"><table>
+<tr><th>Stage</th><th>Checks</th><th>Fails the build when</th></tr>
+<tr><td>Pull request</td><td>lint, type-check, unit tests, build, <b>preview deploy</b> per PR</td><td>any red; bundle size over budget; a11y violation</td></tr>
+<tr><td>Merge to main</td><td>integration + E2E (Playwright), Lighthouse CI, visual regression</td><td>critical flow broken; vitals regress</td></tr>
+<tr><td>Staging</td><td>smoke tests against real backends, same artifact</td><td>smoke test fails</td></tr>
+<tr><td>Production</td><td><b>canary</b> or blue/green, watch error rate and vitals</td><td>error budget burn → <b>auto rollback</b></td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Caching in CI</b> (dependencies, build cache, affected-only tests in a monorepo) keeps feedback under 10 minutes.</li>
+  <li><b>Upload source maps</b> to the error tracker, but do not serve them publicly.</li>
+  <li><b>Rollback = redeploy the previous artifact</b> (or flip the CDN pointer). Keep old hashed assets online for a while so open tabs do not hit 404 chunks.</li>
+  <li>Pin dependencies with a lockfile, scan for vulnerable packages, protect main with required reviews.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Feature flags and gradual releases</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A feature flag separates <b>deploying</b> code from <b>releasing</b> it. Code ships dark; I turn it on for staff, then 1%, 10%, 100%, and a kill switch turns it off instantly with no redeploy.”</div>
+<div class="code"><pre>// Deterministic percentage rollout: same user always gets the same answer
+function inRollout(userId, flag, percent) {
+  return hash(`${flag}:${userId}`) % 100 &lt; percent
+}
+
+const flags = await fetch("/api/flags").then(r =&gt; r.json())   // evaluated on the server per user
+{flags.newCheckout ? &lt;NewCheckout /&gt; : &lt;OldCheckout /&gt;}</pre></div>
+<ul class="pts">
+  <li>Use a service (LaunchDarkly, Unleash, GrowthBook, Statsig) or a simple server endpoint; <b>evaluate on the server</b> and send only the result, so rules and other users’ data never reach the browser.</li>
+  <li>With SSR, evaluate the flag on the server too, or you flash the wrong variant and cause hydration mismatches.</li>
+  <li>Flags are <b>temporary debt</b>: track an owner and an expiry, and delete the dead branch after full rollout.</li>
+  <li>Types: release flags (short-lived), ops kill switches (long-lived), experiment flags, permission flags.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">An A/B testing framework</span><span class="src">asked in 1 loop</span></h3>
+<ul class="pts">
+  <li><b>Assignment:</b> hash of <code>userId + experimentId</code> → bucket, so a user always sees the same variant. Anonymous users: a persistent cookie id.</li>
+  <li><b>Exposure event</b> logged only when the user actually <em>sees</em> the variant, with experiment id, variant and user id. Without it the analysis is biased.</li>
+  <li><b>No flicker:</b> assign on the server or at the edge, not after the page renders.</li>
+  <li><b>Metrics:</b> one primary metric, plus guardrails (error rate, latency, revenue). Decide the sample size and duration <em>before</em> starting; do not stop at the first green number.</li>
+  <li><b>Isolation:</b> mutually exclusive experiments on the same surface; the same flag system serves both.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>Name the statistical traps: peeking early, multiple comparisons, and the novelty effect. “Statistical significance” depends on the pre-set sample size, not on how impressive the dashboard looks today.</div>
+
+<h3 class="t"><span class="ttl">Monitoring errors and performance in production</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Three signals: <b>errors</b> (Sentry-style tracking with source maps and release tags), <b>performance</b> (real-user Core Web Vitals), and <b>behaviour</b> (logs and traces tied by a request id through to the backend). Then alerts on rates, not single events.”</div>
+<div class="code"><pre>window.addEventListener("error", e =&gt; report({ type: "error", msg: e.message, stack: e.error?.stack }))
+window.addEventListener("unhandledrejection", e =&gt; report({ type: "promise", reason: String(e.reason) }))
+
+function report(payload) {
+  navigator.sendBeacon("/log", JSON.stringify({ ...payload, release: __RELEASE__, url: location.href }))
+}</pre></div>
+<ul class="pts">
+  <li><b>Tag every event</b> with release version, browser, route and user id (hashed). Group by stack so one bug is one issue.</li>
+  <li><b>Alert</b> on error-rate spikes after a deploy and on p75 vitals regressions, with a link to the release.</li>
+  <li><b>Sample</b> and scrub PII; keep payloads small. Add <b>breadcrumbs</b> (last clicks and requests) for reproduction.</li>
+  <li>React: wrap routes in error boundaries that report, and show a friendly fallback.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Build once, promote the same artifact</li>
+<li>Flags decouple deploy from release</li>
+<li>Sticky assignment + exposure logging</li>
+<li>Release tag + source maps + alerts</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 11 ============ -->
+<section class="sheet" id="pg-scale" data-part="Part E: Senior architecture" data-title="Large-scale frontend architecture: micro-frontends, monorepos, design systems">
+
+<h3 class="t"><span class="ttl">Micro-frontends: when and how</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Micro-frontends split one large UI into independently built and deployed pieces owned by different teams, composed in the browser or at the edge. They solve an <b>organisational</b> problem (many teams, release independence), not a technical one, and they cost runtime and consistency.”</div>
+<div class="tw"><table>
+<tr><th>Composition</th><th>How</th><th>Trade-off</th></tr>
+<tr><td>Module Federation</td><td>a shell loads remote bundles at runtime and shares dependencies</td><td>flexible; version-sharing mistakes break at runtime</td></tr>
+<tr><td>iframes</td><td>each app in its own frame</td><td>strongest isolation; poor UX, routing, sizing, a11y</td></tr>
+<tr><td>Web Components</td><td>each team exposes custom elements</td><td>framework-agnostic; styling and state sharing need care</td></tr>
+<tr><td>Server / edge composition</td><td>fragments stitched into HTML (SSI, edge)</td><td>fast first paint; infra complexity</td></tr>
+<tr><td>Build-time packages</td><td>teams publish npm packages</td><td>simple, but a deploy of one needs a rebuild of all</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Shell</b> owns routing, auth, layout and shared contracts; each micro-frontend owns one route or domain.</li>
+  <li><b>Communication:</b> prefer URL, props and a small typed event bus. Avoid shared global state; it recreates the monolith.</li>
+  <li><b>Shared dependencies:</b> share React as a singleton; agree on a design system; <b>version contracts</b> between shell and remotes.</li>
+  <li><b>Failure isolation:</b> an error boundary around each remote with a fallback; remote load timeouts.</li>
+  <li><b>When NOT to:</b> one team, small app. A well-structured monolith or monorepo is cheaper.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Monorepo: shared packages and dependency management</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li><b>Tooling:</b> pnpm or npm workspaces for linking, <b>Turborepo / Nx</b> for task graphs, <b>remote caching</b> and “affected-only” builds and tests.</li>
+  <li><b>Structure:</b> <code>apps/*</code> (deployables) and <code>packages/*</code> (ui, config, utils, types). Packages never import from apps; apps import packages.</li>
+  <li><b>Boundaries:</b> lint rules or Nx tags that forbid illegal imports, to stop a tangle.</li>
+  <li><b>Versions:</b> a single version policy for React and TypeScript across the repo; Changesets for versioning published packages; strict peer dependencies, no phantom (undeclared) dependencies.</li>
+  <li><b>Pain points:</b> CI time (fix with caching and affected builds), a bad shared package breaking everyone (fix with tests and gradual rollout), ownership (CODEOWNERS).</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Building and maintaining a shared design system</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A design system is a product with users, who are other developers. Layers: <b>design tokens</b> (colour, spacing, type) → <b>primitives</b> (button, input) → <b>patterns</b> (form, data table) → documentation. I treat it with versioning, tests and a contribution process.”</div>
+<ul class="pts">
+  <li><b>Tokens</b> as a single source of truth (JSON → CSS variables, also for native). Theming and dark mode become a token swap.</li>
+  <li><b>Accessible by default:</b> build on headless primitives (Radix, React Aria) and bake keyboard and focus behaviour in once.</li>
+  <li><b>Docs and playground:</b> Storybook with usage guidance and do/don’t examples.</li>
+  <li><b>Quality gates:</b> unit tests, a11y tests, <b>visual regression</b> (Chromatic, Playwright screenshots) on every change.</li>
+  <li><b>Versioning:</b> semver; deprecate before removing; ship <b>codemods</b> for breaking changes so teams migrate cheaply.</li>
+  <li><b>Governance:</b> a small core team, a clear contribution path, office hours, and a changelog. Adoption is measured: otherwise teams fork.</li>
+  <li>Tree-shakeable, per-component exports, so consumers pay only for what they import.</li>
+</ul>
+<div class="code"><pre>:root       { --color-bg: #fff;    --color-text: #111; --space-2: 8px; --radius: 8px }
+[data-theme="dark"] { --color-bg: #0b0b0f; --color-text: #eee }
+
+.btn { background: var(--color-primary); padding: var(--space-2) calc(var(--space-2) * 2);
+       border-radius: var(--radius) }</pre></div>
+
+<h3 class="t"><span class="ttl">How do you choose between Redux Toolkit, Zustand and Context at scale?</span><span class="src">asked in 2 loops</span></h3>
+<p>Ask what is being shared and who owns it: server data → TanStack Query; rarely-changing values → Context; shared client state in a small or medium app → Zustand; many teams, complex flows, and a need for strict conventions, middleware and devtools → Redux Toolkit. The full comparison is on page 21 of the React notebook. In an architecture answer add: <b>module boundaries</b> (each domain owns its slice), <b>no cross-domain store reads</b>, and <b>events or selectors</b> between domains.</p>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Micro-frontends solve team scale, not tech</li>
+<li>Monorepo: caching + affected builds + boundaries</li>
+<li>Design system = tokens, primitives, docs, tests, semver</li>
+<li>Codemods make breaking changes cheap</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 12 ============ -->
+<section class="sheet" id="pg-lead" data-part="Part E: Senior architecture" data-title="Migrations, tech debt, standards and mentoring">
+
+<h3 class="t"><span class="ttl">Migrating a legacy frontend without disrupting users</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I never rewrite big-bang. I use the <b>strangler-fig pattern</b>: put a routing layer in front, move one route or feature at a time to the new stack, keep both running, and retire the old code as its traffic drops to zero. Each step ships, is measurable, and can be rolled back.”</div>
+<div class="tw"><table>
+<tr><th>Step</th><th>What I do</th></tr>
+<tr><td>1 · Understand</td><td>inventory routes, dependencies, traffic and pain; pick the first slice that is <b>valuable but low-risk</b></td></tr>
+<tr><td>2 · Safety net</td><td>characterisation tests and E2E on current behaviour <em>before</em> touching it; monitoring and baselines</td></tr>
+<tr><td>3 · Coexist</td><td>reverse proxy or shell routes by path; shared auth/session; shared design tokens so the two look identical</td></tr>
+<tr><td>4 · Migrate by slice</td><td>behind a <b>feature flag</b>, roll out to 1% → 100%, compare errors and vitals, keep the old path as a fallback</td></tr>
+<tr><td>5 · Retire</td><td>delete old code and flags; update docs; celebrate by removing, not adding</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Why not rewrite:</b> months with no shipped value, lost undocumented behaviour, and the old system keeps changing underneath.</li>
+  <li>Put an <b>anti-corruption/adapter layer</b> between old data shapes and the new UI so the new code is not shaped by legacy quirks.</li>
+  <li>Communicate: a visible plan, a status page of “% migrated”, and a rule that new features go in the new stack only.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Migrating a large JavaScript codebase to TypeScript</span><span class="src">asked in 2 loops</span></h3>
+<div class="code"><pre>// tsconfig.json: start permissive, tighten over time
+{ "compilerOptions": { "allowJs": true, "checkJs": false, "noEmit": true,
+    "strict": false, "skipLibCheck": true } }
+// then turn on "strict" per folder (a second tsconfig that "extends" and includes one directory),
+// or use "// @ts-check" / "// @ts-expect-error" to move file by file</pre></div>
+<ul class="pts">
+  <li><b>Incremental:</b> <code>allowJs</code>, rename <code>.js</code> → <code>.ts(x)</code> file by file, <b>leaf modules first</b> (utils, types, API client), then components.</li>
+  <li><b>Types at the boundaries first:</b> API responses and shared domain models give the most safety for the least work. Validate untrusted data with Zod at runtime.</li>
+  <li><b>Guard the direction:</b> a lint rule bans new <code>.js</code> files and growing <code>any</code> counts; CI type-check blocks regressions.</li>
+  <li><b>Avoid the traps:</b> do not sprinkle <code>any</code> to silence errors (use <code>unknown</code> and narrow), do not stop converting at 60%, and do not mix a TS migration with a behaviour change in the same PR.</li>
+  <li>Measure: % of files typed, <code>any</code> count, and bugs caught.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Identifying, prioritising and reducing technical debt</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Debt is a trade-off, not a sin, but it accrues interest. I find it from data (slow builds, flaky tests, hot files with many bugs, onboarding pain), rank by <b>cost of keeping it versus cost of fixing it</b>, tie it to a business outcome, and fund it continuously.”</div>
+<div class="tw"><table>
+<tr><th>Signal</th><th>Where it shows</th></tr>
+<tr><td>Change failure and bug density</td><td>files that are edited constantly and break often (git history + issue tracker)</td></tr>
+<tr><td>Cycle time</td><td>features take much longer in one area</td></tr>
+<tr><td>Build, test and CI time; flaky tests</td><td>developers wait or ignore red</td></tr>
+<tr><td>Outdated or vulnerable dependencies</td><td>audit output, blocked upgrades</td></tr>
+<tr><td>Onboarding questions</td><td>“do not touch that file”</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Prioritise</b> on a simple impact × effort grid; do high-impact, low-effort first; schedule big items as milestones with a clear “done”.</li>
+  <li><b>Fund it:</b> a standing slice of each sprint (for example 15–20%) plus the boy-scout rule (leave touched code cleaner), and bundle refactors with the feature that touches the area.</li>
+  <li><b>Make it visible:</b> a debt register with owner and rationale, ADRs for decisions, and metrics that show the improvement (build time, defects, lead time).</li>
+  <li><b>Prevent new debt:</b> definition of done, lint and type rules, review checklists.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Engineering standards and code review across teams</span><span class="src">asked in 2 loops</span></h3>
+<ul class="pts">
+  <li><b>Automate what is automatable:</b> Prettier, ESLint, type-check, commit hooks and CI so reviews are about design, not style.</li>
+  <li><b>Write it down:</b> a short engineering handbook, project templates, and <b>ADRs</b> (architecture decision records: context, options, decision, consequences).</li>
+  <li><b>Review culture:</b> small PRs, a response-time target, comments explain <em>why</em>, label severity (blocking vs nit), praise good work, and ask questions before asserting.</li>
+  <li><b>Shared ownership:</b> CODEOWNERS, a frontend guild or RFC process for cross-cutting changes, and regular architecture reviews.</li>
+  <li><b>Measure lightly:</b> review turnaround, PR size, escaped defects; never use them to rank individuals.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Mentoring and a technical decision-making process</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“My job as a senior is to <b>multiply</b> the team: teach how to think, not hand out answers; delegate with context and room to fail safely; and make decisions visible so people understand the reasoning and can disagree productively.”</div>
+<ul class="pts">
+  <li><b>Mentoring:</b> pairing and live debugging, review comments that teach, growth goals per person, stretch tasks with a safety net, regular 1:1s, and <b>feedback that is specific and kind</b>.</li>
+  <li><b>Decisions:</b> frame the problem, list options with trade-offs, write a short RFC/ADR, <b>time-box the discussion</b>, use “disagree and commit”, and record the outcome so it is not re-litigated.</li>
+  <li><b>Two-way vs one-way doors:</b> decide reversible choices quickly; spend time only on expensive-to-reverse ones.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>Back every leadership answer with <b>one concrete story</b> (situation, action, result, number) and what you would do differently. Behavioural answers with no specifics read as theory.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Strangler fig, not big-bang rewrite</li>
+<li>TypeScript: <code>allowJs</code>, leaf-first, strict per folder</li>
+<li>Debt: cost of keeping vs cost of fixing</li>
+<li>ADRs + automation + small PRs</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 13 ============ -->
+<section class="sheet" id="pg-check" data-part="Part F: Wrap-up" data-title="Quick check and cheat sheet">
+
+<h3 class="t"><span class="ttl">Quick check</span><span class="src">answers folded away</span></h3>
+<details><summary>1. Which CSS properties are cheapest to animate, and why?</summary><p><code>transform</code> and <code>opacity</code>: they can be handled by the compositor on the GPU, skipping layout and paint.</p></details>
+<details><summary>2. <code>async</code> vs <code>defer</code> scripts?</summary><p>Both download in parallel. <code>async</code> runs as soon as ready (order not kept, pauses parsing). <code>defer</code> runs after parsing, in order.</p></details>
+<details><summary>3. Name the Core Web Vitals and their “good” thresholds.</summary><p>LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1, at the 75th percentile of real users.</p></details>
+<details><summary>4. Why does a promise chain starve rendering?</summary><p>Microtasks are drained completely after each task and before the browser renders, so an endless chain keeps the main thread busy.</p></details>
+<details><summary>5. What does <code>Cache-Control: no-cache</code> do?</summary><p>The response may be stored but must be revalidated before reuse. <code>no-store</code> is the one that forbids storing.</p></details>
+<details><summary>6. Where do you store an access token and a refresh token?</summary><p>Access token short-lived in memory; refresh token in an HttpOnly, Secure, SameSite cookie with rotation. Or use a BFF so JS never sees tokens.</p></details>
+<details><summary>7. Does CORS protect your API from attackers?</summary><p>No. It only controls which origins may read responses in a browser. Authentication and authorisation on the server are what protect the API.</p></details>
+<details><summary>8. How do you stop XSS in React?</summary><p>Rely on default escaping, avoid <code>dangerouslySetInnerHTML</code> (or sanitise with DOMPurify), validate link protocols, add a strict CSP and HttpOnly cookies.</p></details>
+<details><summary>9. SSE or WebSocket for a notification feed?</summary><p>SSE: one-way server to client, auto-reconnect, plain HTTP. WebSocket only if the client also sends frequent low-latency messages.</p></details>
+<details><summary>10. How do you resolve offline edit conflicts?</summary><p>Detect with versions/ETags (409), then merge per data type: field-level merge, three-way text merge, ask the user, or CRDTs. Replay writes with idempotency keys.</p></details>
+<details><summary>11. Why is the strangler-fig approach safer than a rewrite?</summary><p>It ships value incrementally, keeps the old system as fallback, is measurable per slice and can be rolled back.</p></details>
+<details><summary>12. Your first move when a page “feels slow”?</summary><p>Measure: field data to find the worst metric, a lab trace to find whether network, main-thread JS, or rendering is responsible, then fix the biggest cost.</p></details>
+
+<h3 class="t"><span class="ttl">Cheat sheet</span><span class="src">one screen</span></h3>
+<div class="tw"><table>
+<tr><th>Topic</th><th>One line to remember</th></tr>
+<tr><td>Pipeline</td><td>DOM + CSSOM → render tree → layout → paint → composite</td></tr>
+<tr><td>Vitals</td><td>LCP 2.5 s · INP 200 ms · CLS 0.1</td></tr>
+<tr><td>Load</td><td>split by route, tree-shake, size budget, preload the LCP image only</td></tr>
+<tr><td>Runtime</td><td>profile first; batch per frame; chunk or worker for long tasks</td></tr>
+<tr><td>Caching</td><td>hashed assets immutable; HTML revalidated; SWR for data</td></tr>
+<tr><td>Real time</td><td>SSE one-way · WebSocket two-way · reconnect + resync</td></tr>
+<tr><td>Offline</td><td>service worker + IndexedDB outbox + idempotency key</td></tr>
+<tr><td>XSS</td><td>never trust data as HTML; sanitise; CSP; HttpOnly</td></tr>
+<tr><td>CSRF / CORS</td><td>SameSite + token; CORS is not auth</td></tr>
+<tr><td>Secrets</td><td>the bundle is public; secrets stay on the server</td></tr>
+<tr><td>A11y</td><td>semantic → keyboard → focus → contrast → test with a screen reader</td></tr>
+<tr><td>Release</td><td>one artifact, flags, canary, monitor, rollback</td></tr>
+<tr><td>Scale</td><td>micro-frontends for teams; monorepo with caching; design tokens</td></tr>
+<tr><td>Leadership</td><td>ADRs, small PRs, automate style, debt as cost vs fix, story + number</td></tr>
+</table></div>
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Measure first, then fix</li>
+<li>Say what happens when it fails</li>
+<li>Name the trade-off</li>
+</ul></div>
+</section>
+
+
+<script>
+(function () {
+  var sheets = [].slice.call(document.querySelectorAll('.sheet[data-title]'));
+  var total = sheets.length;
+  var toc = document.getElementById('toc');
+  var partsOrder = [], partsMap = {};
+
+  sheets.forEach(function (s, i) {
+    var n = i + 1;
+
+    var head = document.createElement('div');
+    head.className = 'sh';
+    head.innerHTML = '<span class="pg">Page ' + n + '</span><h2>' + s.getAttribute('data-title') + '</h2>';
+    s.insertBefore(head, s.firstChild);
+
+    var prev = sheets[i - 1], next = sheets[i + 1];
+    var ft = document.createElement('div');
+    ft.className = 'ft';
+    ft.innerHTML =
+      '<a ' + (prev ? 'href="#' + prev.id + '"' : 'class="off" aria-hidden="true"') + '>← previous</a>' +
+      '<span class="mid">Page ' + n + ' of ' + total + '</span>' +
+      '<a ' + (next ? 'href="#' + next.id + '"' : 'href="#contents"') + '>' + (next ? 'next →' : 'back to contents ↑') + '</a>';
+    s.appendChild(ft);
+
+    var part = s.getAttribute('data-part');
+    if (!partsMap[part]) { partsMap[part] = []; partsOrder.push(part); }
+    partsMap[part].push({ n: n, id: s.id, title: s.getAttribute('data-title') });
+  });
+
+  partsOrder.forEach(function (p) {
+    var d = document.createElement('div');
+    d.className = 'part';
+    var html = '<h4>' + p + '</h4><ol>';
+    partsMap[p].forEach(function (x) {
+      html += '<li><span>' + x.n + '.</span><a href="#' + x.id + '">' + x.title + '</a></li>';
+    });
+    d.innerHTML = html + '</ol>';
+    toc.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

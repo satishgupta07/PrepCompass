@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Database and SQL Study Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--paper:#fbf8ee;--rule:#cfe0f3;--ink:#1f3d8f;--red:#c0392b;--green:#17743a;--yellow:#fff176;--pink:#ffc0dc;--desk:#d8cdb4;--code:#fffdf4;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(12px + env(safe-area-inset-top,0px));-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:'Caveat','Comic Sans MS','Segoe Print','Bradley Hand',cursive;font-size:22px;line-height:32px;padding:calc(18px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+a{color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.68em;background:rgba(31,61,143,.09);padding:1px 5px;border-radius:4px 7px 5px 8px;color:#16306e;word-break:break-word}
+.sheet{position:relative;max-width:880px;margin:0 auto 46px;padding:20px 30px 18px 96px;background-color:var(--paper);background-image:linear-gradient(to bottom,transparent 31px,var(--rule) 31px,var(--rule) 32px);background-size:100% 32px;background-position:0 14px;border-radius:7px 16px 9px 20px/14px 7px 18px 9px;box-shadow:0 2px 3px rgba(60,40,10,.18),0 12px 28px rgba(60,40,10,.22)}
+.sheet::before{content:"";position:absolute;top:0;bottom:0;left:74px;width:2px;background:#e36b6b;opacity:.8;box-shadow:3px 0 0 rgba(227,107,107,.3);pointer-events:none;z-index:0}
+.sheet::after{content:"";position:absolute;left:20px;top:0;bottom:0;width:30px;pointer-events:none;z-index:0;background-image:radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px);background-size:30px 30px;background-repeat:no-repeat;background-position:0 12%,0 50%,0 88%}
+.sheet>*{position:relative;z-index:1}
+.sh{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:4px double var(--red);padding-bottom:4px;margin-bottom:18px}
+.sh .pg{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;background:var(--red);color:#fff;padding:0 12px;border-radius:14px 4px 12px 5px;transform:rotate(-2deg);line-height:28px}
+.sh h2{margin:0;font-size:42px;line-height:44px;color:var(--red);font-weight:700;transform:rotate(-.6deg)}
+.t{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:30px 0 8px;font-size:32px;line-height:36px;color:var(--red);font-weight:700;counter-increment:tp}
+.sheet{counter-reset:tp}
+.t .ttl{display:flex;align-items:center;gap:10px;transform:rotate(-.5deg)}
+.t .ttl::before{content:counter(tp);display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;border:2.5px solid var(--red);border-radius:52% 48% 55% 45%/48% 55% 45% 52%;font-size:23px;line-height:1;transform:rotate(-6deg)}
+.t .src{font-family:'Patrick Hand','Caveat',cursive;font-size:16px;font-weight:400;line-height:20px;color:#4a5f9c;border:1.5px dashed #8aa0d6;padding:2px 10px;border-radius:12px 4px 10px 5px;transform:rotate(1.2deg)}
+.st{font-size:27px;line-height:32px;color:var(--red);font-weight:700;margin:20px 0 4px;transform:rotate(-.4deg)}
+p{margin:6px 0}
+.plain{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.5);padding:10px 16px 10px 74px;margin:12px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px;transform:rotate(-.3deg)}
+.plain b{font-family:'Patrick Hand','Caveat',cursive;font-weight:400;font-size:19px;color:#2457c5;display:block;line-height:24px}
+.plain .bulb{position:absolute;left:14px;top:12px;width:46px;height:52px}
+.pts{list-style:none;margin:8px 0;padding:0}
+.pts li{position:relative;padding-left:34px;margin:2px 0}
+.pts li::before{content:"\279C";position:absolute;left:6px;top:0;color:var(--red);font-size:22px}
+.pts li:nth-child(3n+1){transform:rotate(-.4deg)}.pts li:nth-child(3n+2){transform:rotate(.35deg)}.pts li:nth-child(3n){transform:rotate(-.15deg)}
+mark{color:inherit;padding:0 4px;border-radius:3px 9px 4px 10px}
+mark.y{background:linear-gradient(104deg,transparent 1%,var(--yellow) 3%,#fff59d 96%,transparent 99%)}
+mark.p{background:linear-gradient(100deg,transparent 1%,var(--pink) 3%,#ffd3e6 96%,transparent 99%)}
+.code{position:relative;background:var(--code);border:2.2px dashed #85744f;padding:14px 16px 12px;margin:22px 0 8px;border-radius:12px 3px 14px 4px/4px 14px 3px 12px;box-shadow:2px 3px 0 rgba(120,100,60,.2);transform:rotate(.15deg)}
+.code::before{content:"";position:absolute;top:-13px;left:26px;width:92px;height:24px;background:rgba(255,222,120,.72);transform:rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.code .cap{position:absolute;top:-12px;right:18px;font-family:'Patrick Hand','Caveat',cursive;font-size:15px;line-height:20px;background:#fff;border:1.5px solid #85744f;padding:0 8px;border-radius:9px 3px 8px 3px;color:#5b4b2c;transform:rotate(2deg)}
+.code pre{margin:0;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.55;color:#1c2b4a;tab-size:2;-webkit-overflow-scrolling:touch}
+.sees{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;line-height:26px;color:#0f5a2c;margin:6px 0 12px;padding-left:12px;border-left:4px solid #6bbf86}
+.warn{color:var(--red);margin:4px 0 4px 6px;padding-left:2px;transform:rotate(-.3deg)}
+.tw{overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;min-width:460px;background:rgba(255,255,255,.55)}
+th,td{border:1.8px solid var(--ink);padding:4px 10px;text-align:left;vertical-align:top}
+th{background:rgba(255,241,118,.6);color:var(--red);font-weight:400}
+td code{font-size:.78em}
+.add,.old,.flag{position:relative;margin:20px 0 10px;padding:16px 16px 10px;border-radius:14px 4px 16px 5px/5px 16px 4px 14px}
+.add{border:2.5px solid var(--green);background:rgba(190,236,203,.55);color:#0f5a2c}
+.add code{color:#0b4a22;background:rgba(23,116,58,.12)}
+.add .code{border-color:#3d8a58}
+.add a{color:#0f5a2c}
+.old{border:2.2px dashed var(--red);background:rgba(255,226,222,.55);color:#8c2a1f}
+.flag{border:2.5px solid var(--red);background:rgba(255,204,214,.5);color:#8c1f2f}
+.tag{position:absolute;top:-15px;left:16px;font-family:'Patrick Hand','Caveat',cursive;font-size:17px;line-height:24px;padding:0 12px;color:#fff;border-radius:12px 3px 12px 4px;transform:rotate(-2deg);box-shadow:1px 2px 0 rgba(0,0,0,.2)}
+.add .tag{background:var(--green)}.old .tag,.flag .tag{background:var(--red)}
+.ver{display:inline-block;font-family:'Patrick Hand','Caveat',cursive;font-size:14px;line-height:20px;padding:0 8px;border:1.5px solid currentColor;border-radius:10px 3px 9px 3px;vertical-align:middle;margin:0 2px;transform:rotate(-2deg)}
+.sticky{position:relative;width:min(100%,430px);margin:30px 0 8px auto;padding:20px 20px 12px;background:#fff59a;box-shadow:2px 6px 10px rgba(80,60,0,.28);transform:rotate(1.4deg);border-radius:3px 3px 26px 3px/3px 3px 14px 3px;color:#5b3d00}
+.sticky::before{content:"";position:absolute;top:-12px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(255,255,255,.6);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sticky h4{margin:0 0 4px;font-size:30px;line-height:32px;color:var(--red)}
+.sticky ul{list-style:none;margin:0;padding:0}
+.sticky li{position:relative;padding-left:28px;line-height:28px}
+.sticky li::before{content:"\279C";position:absolute;left:4px;color:var(--red)}
+.diagram{margin:14px 0;overflow-x:auto}
+.diagram svg{display:block;min-width:520px;width:100%;height:auto;max-width:760px;margin:0 auto}
+.diagram svg text{font-family:'Caveat','Comic Sans MS',cursive;fill:#1f3d8f;font-size:19px}
+.diagram .cap2{text-align:center;font-family:'Patrick Hand','Caveat',cursive;font-size:16px;color:#4a5f9c;line-height:22px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:26px;padding-top:6px;border-top:2px dashed var(--ink);font-family:'Patrick Hand','Caveat',cursive;font-size:18px}
+.ft .mid{color:#4a5f9c}
+.ft a.off{visibility:hidden}
+.fab{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--red);color:#fff;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;padding:6px 16px;border-radius:20px 6px 18px 7px;text-decoration:none;box-shadow:2px 4px 8px rgba(0,0,0,.3);transform:rotate(-2deg)}
+details{margin:8px 0;border:2px dashed #3b6fd4;border-radius:12px 4px 12px 5px;background:rgba(255,255,255,.6);padding:4px 12px}
+details summary{cursor:pointer;color:var(--red);font-weight:700}
+details[open] summary{margin-bottom:4px}
+/* cover */
+.cover{padding-top:44px;padding-bottom:30px}
+.cover .ring{position:absolute;right:46px;top:54px;width:150px;height:150px;border-radius:50%;border:9px solid rgba(120,72,30,.2);border-right-color:rgba(120,72,30,.07);border-bottom-color:rgba(120,72,30,.28);box-shadow:inset 0 0 12px rgba(120,72,30,.12);transform:rotate(-24deg);z-index:0;pointer-events:none}
+.cover h1{font-size:68px;line-height:70px;margin:8px 0 0;color:var(--red);transform:rotate(-1.4deg);font-weight:700}
+.cover .sub{font-size:28px;margin:10px 0 18px;transform:rotate(-.5deg)}
+.how{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.45);padding:10px 16px 12px;margin:18px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px}
+.how h3,.legend h3,.toc h3{margin:0 0 2px;color:var(--red);font-size:30px}
+.legend{margin:16px 0}
+.legend ul{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.chip{display:inline-block;min-width:22px;height:20px;vertical-align:-3px;margin-right:8px;border-radius:4px 8px 5px 9px;border:2px solid var(--ink)}
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin-top:8px}
+.toc .part{break-inside:avoid;margin-bottom:10px}
+.toc h4{margin:6px 0 2px;color:var(--red);font-size:25px;line-height:28px;border-bottom:2px dashed var(--red)}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{line-height:28px}
+.toc li a{color:var(--ink);text-decoration:none;border-bottom:2px dotted #8aa0d6}
+.toc li a:hover{background:var(--yellow)}
+.toc li span{display:inline-block;min-width:34px;color:var(--red);font-weight:700}
+@media(max-width:700px){
+body{font-size:20px;line-height:30px}
+.sheet{padding:14px 14px 14px 50px;background-size:100% 30px;margin-bottom:34px}
+.sheet::before{left:36px}
+.sheet::after{left:5px;width:22px;background-size:22px 22px;background-image:radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px)}
+.sh h2{font-size:32px;line-height:36px}
+.t{font-size:27px;line-height:31px}
+.plain{padding:10px 12px 10px 12px}.plain .bulb{position:static;display:block;width:34px;height:38px;margin-bottom:2px}
+.cover h1{font-size:46px;line-height:50px}.cover .sub{font-size:23px;line-height:28px}.cover .ring{width:90px;height:90px;right:12px;top:10px}
+.toc{grid-template-columns:1fr}.legend ul{grid-template-columns:1fr}
+.sticky{margin-right:auto}
+}
+@media print{
+body{background:#fff;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.fab{display:none}
+.sheet{box-shadow:none;margin:0;max-width:none;break-after:page;page-break-after:always;border-radius:0}
+.sheet:last-of-type{break-after:auto;page-break-after:auto}
+.code,.add,.old,.flag,.sticky,.plain,.diagram,table{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="bulb" viewBox="0 0 48 54">
+<path d="M24 8c-8 0-13 6-13 12 0 5 3 7 5 10 1 2 1 4 1 5h14c0-1 0-3 1-5 2-3 5-5 5-10 0-6-5-12-13-12z" fill="#fff59a" stroke="#1f3d8f" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M18 40h12M20 45h8M22 49h4" fill="none" stroke="#1f3d8f" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M24 1v4M7 7l3 3M41 7l-3 3M2 22h4M42 22h4" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-linecap="round"/>
+</symbol>
+<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#c0392b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#1f3d8f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+</svg>
+
+<a class="fab" href="#contents">↑ contents</a>
+
+<!-- ============ COVER ============ -->
+<section class="sheet cover" id="top">
+  <div class="ring"></div>
+  <h1>Database &amp; SQL: my handwritten study notebook</h1>
+  <p class="sub">Built from two references, the <em>CodeHelp DBMS lecture notes</em> and the <em>Apna College SQL notes</em>, merged topic by topic, with the errors fixed and the interview topics they skip filled in</p>
+  <p>Examples use <mark class="y">MySQL 8</mark> syntax, with a note wherever <mark class="y">PostgreSQL</mark> differs. It covers the theory (ER model, keys, normalisation, transactions, indexing, scaling) and the SQL (joins, subqueries, window functions, the classic interview queries).</p>
+
+  <div class="how">
+    <h3>How to use these notes</h3>
+    <ul class="pts">
+      <li>Read <mark class="y">page by page</mark>. SQL pages build on one sample schema (customers, orders, products, employees) defined on page 4.</li>
+      <li>Start every topic with the dashed blue <b>In plain words</b> box, then go to the code. <b>Type every query</b> into a real database (MySQL or PostgreSQL, or an online sandbox).</li>
+      <li>Do the interview problems on page 15 <b>before</b> reading the answers.</li>
+      <li>Do the <b>Quick check</b> on the last page, answers are folded away.</li>
+      <li>Use the floating <b>↑ contents</b> button to jump back here.</li>
+    </ul>
+  </div>
+
+  <div class="legend">
+    <h3>Colour legend</h3>
+    <ul>
+      <li><span class="chip" style="background:#fff;border-color:#1f3d8f"></span>Blue ink = the references’ content</li>
+      <li><span class="chip" style="background:#fff;border-color:#c0392b"></span>Red = headings, warnings, ⚠ gotchas</li>
+      <li><span class="chip" style="background:rgba(190,236,203,.9);border-color:#17743a"></span>Green box = <b>+ added</b> by me (gap-fill, interview edge)</li>
+      <li><span class="chip" style="background:rgba(255,226,222,.9);border-color:#c0392b;border-style:dashed"></span>Red dashed = <b>⚠ older or risky pattern</b></li>
+      <li><span class="chip" style="background:rgba(255,204,214,.9);border-color:#c0392b"></span>Pink box = <b>⚑ error</b> in the reference, corrected</li>
+      <li><span class="chip" style="background:var(--yellow)"></span><span class="chip" style="background:var(--pink)"></span>Highlighter = key terms</li>
+    </ul>
+  </div>
+
+  <div class="toc-wrap" id="contents">
+    <h3 style="margin:18px 0 0;color:var(--red);font-size:36px">Contents</h3>
+    <div class="toc" id="toc"></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="sheet" id="pg-dbms" data-part="Part A: Database foundations" data-title="Data, DBMS and the three-schema architecture">
+
+<h3 class="t"><span class="ttl">Data, information, database, DBMS</span><span class="src">LEC-1</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b><b>Data</b> is raw facts (numbers, names, readings) with no meaning on its own. <b>Information</b> is data that has been processed and put in context so you can decide something. A <b>database</b> is an organised collection of related data, and a <b>DBMS</b> is the software that stores, protects and retrieves it for many users and programs at once.</div>
+<div class="tw"><table>
+<tr><th></th><th>Data</th><th>Information</th></tr>
+<tr><td>Form</td><td>raw, unorganised facts</td><td>processed, organised, in context</td></tr>
+<tr><td>Meaning</td><td>none by itself</td><td>supports decisions</td></tr>
+<tr><td>Example</td><td>a list of 4,000 birth dates</td><td>“there are 100 senior citizens, the sex ratio is 1.1”</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Quantitative</b> data is numerical (price, weight). <b>Qualitative</b> data is descriptive (name, colour).</li>
+  <li><b>DBMS</b> examples: MySQL, PostgreSQL, Oracle, SQL Server, MongoDB. An <b>RDBMS</b> is a DBMS built on tables (relations) of rows and columns.</li>
+  <li><b>SQL is a language, not a database.</b> MySQL is an RDBMS that understands SQL.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Why a DBMS and not plain files?</span><span class="src">LEC-1 · the answer to “why use a DBMS?”</span></h3>
+<div class="tw"><table>
+<tr><th>File-system problem</th><th>What a DBMS gives you</th></tr>
+<tr><td>Redundancy and inconsistency (same data copied in many files)</td><td>one controlled copy, normalisation</td></tr>
+<tr><td>Hard to query (write a new program for each question)</td><td>a query language (SQL)</td></tr>
+<tr><td>Data isolation (scattered formats)</td><td>one schema, one format</td></tr>
+<tr><td>Integrity problems (rules buried in code)</td><td>constraints enforced by the database</td></tr>
+<tr><td>Atomicity problems (a crash leaves half an update)</td><td>transactions: all or nothing</td></tr>
+<tr><td>Concurrent-access anomalies (two users overwrite each other)</td><td>locking and isolation</td></tr>
+<tr><td>Security problems (all-or-nothing file access)</td><td>users, roles, privileges</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Three-schema architecture and data independence</span><span class="src">LEC-2</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>The DBMS hides complexity behind three levels of abstraction so many users can see the <em>same</em> stored data in the way that suits them, and so the storage can change without breaking applications.</div>
+<div class="tw"><table>
+<tr><th>Level</th><th>Also called</th><th>Describes</th><th>Who uses it</th></tr>
+<tr><td><b>External</b></td><td>view level</td><td>the part of the data one user group sees (sub-schemas, views); also a security layer</td><td>end users, applications</td></tr>
+<tr><td><b>Conceptual</b></td><td>logical level</td><td><em>what</em> data is stored and the relationships and constraints</td><td>DBAs, designers</td></tr>
+<tr><td><b>Internal</b></td><td>physical level</td><td><em>how</em> it is stored: files, indexes, compression, encryption</td><td>the DBMS itself</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Physical data independence:</b> changing how data is stored does not change the logical schema or the applications.</li>
+  <li><b>Logical data independence:</b> changing the logical schema (for example adding a column) does not break the external views or programs.</li>
+  <li><b>Schema</b> = the structure (changes rarely), like variable declarations. <b>Instance</b> = the data at one moment (changes constantly), like the variable values.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Languages, the DBA and application architecture</span><span class="src">LEC-2</span></h3>
+<ul class="pts">
+  <li><b>DDL</b> defines the schema; <b>DML</b> reads and changes data. In practice SQL contains both. Apps talk to the database through drivers/APIs (ODBC, JDBC, or <code>mysql2</code>/<code>pg</code> in Node).</li>
+  <li><b>DBA</b>: schema definition, storage and access methods, authorisation, backups, patches and upgrades.</li>
+</ul>
+<div class="tw"><table>
+<tr><th>Architecture</th><th>Shape</th><th>Notes</th></tr>
+<tr><td>1-tier</td><td>client, server and DB on one machine</td><td>local tools, development</td></tr>
+<tr><td>2-tier</td><td>application talks to the DB directly (ODBC/JDBC)</td><td>simple; the client holds credentials and logic</td></tr>
+<tr><td>3-tier</td><td>client → application server → database</td><td>the web standard: more scalable, secure and consistent, because the business logic sits in the middle and clients never touch the DB</td></tr>
+</table></div>
+<div class="add"><span class="tag">+ added</span>Interview line for 3-tier: “the browser never gets database credentials. The app server validates, authorises and runs <b>parameterised</b> queries, so the database is not exposed and the business rules live in one place.” That is also exactly this app’s shape: browser → Next.js server → MongoDB.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Data → processed → information</li>
+<li>DBMS fixes the 7 file-system problems</li>
+<li>External / conceptual / internal = view / what / how</li>
+<li>3-tier keeps the DB behind an app server</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="sheet" id="pg-er" data-part="Part A: Database foundations" data-title="The ER model and turning it into tables">
+
+<h3 class="t"><span class="ttl">Entities, attributes and relationships</span><span class="src">LEC-3</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>The <b>ER (entity-relationship) model</b> is a drawing of the data before you build it: the things you track (<b>entities</b>), their properties (<b>attributes</b>) and how they connect (<b>relationships</b>). The ER diagram is the blueprint for the tables.</div>
+<div class="tw"><table>
+<tr><th>Concept</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>Entity / entity set</td><td>a distinguishable thing / all of one type</td><td>one student / the Student set</td></tr>
+<tr><td><b>Strong</b> entity</td><td>has its own key</td><td>Loan</td></tr>
+<tr><td><b>Weak</b> entity</td><td>no key of its own; depends on an owner; <b>total participation</b>; key = owner key + <em>partial discriminator</em></td><td>Payment (instalment no. only unique within a loan)</td></tr>
+<tr><td>Simple / composite attribute</td><td>cannot be split / can be split</td><td>roll no. / name → first, middle, last</td></tr>
+<tr><td>Single / multi-valued</td><td>one value / several values</td><td>student id / phone numbers</td></tr>
+<tr><td>Derived attribute</td><td>computed from others</td><td>age from date of birth</td></tr>
+<tr><td>NULL</td><td>“not applicable” <em>or</em> “unknown”</td><td>no middle name / salary not known yet</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Degree, cardinality and participation</span><span class="src">LEC-3</span></h3>
+<div class="tw"><table>
+<tr><th>Constraint</th><th>Values</th><th>Example</th></tr>
+<tr><td><b>Degree</b> (entities in a relationship)</td><td>unary, binary (most common), ternary</td><td>employee manages employee / student takes course / employee works-on branch and job</td></tr>
+<tr><td><b>Cardinality</b></td><td>1:1, 1:N, N:1, M:N</td><td>citizen–Aadhaar card / citizen–vehicles / many courses–one professor / students–courses</td></tr>
+<tr><td><b>Participation</b> (minimum cardinality)</td><td>partial (some entities take part), total (every entity must)</td><td>every loan must belong to a customer (loan: total, customer: partial)</td></tr>
+</table></div>
+<div class="diagram"><svg viewBox="0 0 760 140" role="img" aria-label="ER notation">
+<g fill="none" stroke="#1f3d8f" stroke-width="2.2">
+<rect x="20" y="50" width="130" height="44"/><rect x="560" y="50" width="130" height="44"/>
+<path d="M360 36l56 36-56 36-56-36z"/><ellipse cx="85" cy="18" rx="62" ry="14"/><path d="M85 32v18"/>
+</g>
+<g fill="none" stroke="#c0392b" stroke-width="2.2"><path d="M150 72h154"/><path d="M416 72h144"/></g>
+<text x="85" y="78" text-anchor="middle">Customer</text><text x="625" y="78" text-anchor="middle">Loan</text><text x="360" y="77" text-anchor="middle">borrows</text>
+<text x="85" y="24" text-anchor="middle">cust_id</text>
+<text x="230" y="62" text-anchor="middle" style="fill:#c0392b">1</text><text x="490" y="62" text-anchor="middle" style="fill:#c0392b">N</text>
+<text x="380" y="132" text-anchor="middle" style="font-size:17px">rectangle = entity · diamond = relationship · oval = attribute (underlined = key) · double line = total participation</text>
+</svg><div class="cap2">A tiny ER diagram: one customer borrows many loans.</div></div>
+
+<h3 class="t"><span class="ttl">Extended ER: specialisation, generalisation, aggregation</span><span class="src">LEC-4</span></h3>
+<div class="tw"><table>
+<tr><th>Feature</th><th>Direction</th><th>Idea</th><th>Example</th></tr>
+<tr><td>Specialisation</td><td>top-down</td><td>split an entity set into sub-sets with their own attributes (“is-a”)</td><td>Person → Customer, Student, Employee</td></tr>
+<tr><td>Generalisation</td><td>bottom-up</td><td>merge entity sets with common attributes into one super-class, to avoid repeating them</td><td>Car, Jeep, Bus → Vehicle</td></tr>
+<tr><td>Attribute inheritance</td><td>both</td><td>sub-classes inherit the super-class attributes</td><td>Customer inherits Person’s name</td></tr>
+<tr><td>Participation inheritance</td><td>both</td><td>if the parent takes part in a relationship, so do its children</td><td></td></tr>
+<tr><td>Aggregation</td><td>—</td><td>treat a relationship as a higher-level entity so it can take part in another relationship</td><td>(employee works-on project) is monitored by manager</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">ER diagram → relational tables</span><span class="src">LEC-8</span></h3>
+<div class="tw"><table>
+<tr><th>ER item</th><th>Becomes</th></tr>
+<tr><td>Strong entity</td><td>a table; the entity key is the primary key; attributes are columns</td></tr>
+<tr><td>Weak entity</td><td>a table with the owner’s key as a <b>foreign key</b>; primary key = <b>(owner key + partial discriminator)</b></td></tr>
+<tr><td>Composite attribute</td><td>one column per component (<code>street</code>, <code>city</code>…); no column for the parent</td></tr>
+<tr><td>Multi-valued attribute</td><td>a <b>new table</b>: <code>(entity key FK, value)</code>, primary key is both together</td></tr>
+<tr><td>Derived attribute</td><td>not stored (compute it)</td></tr>
+<tr><td>1:N relationship</td><td>put the foreign key on the <b>“many” side</b></td></tr>
+<tr><td>1:1 relationship</td><td>foreign key on either side (<code>UNIQUE</code>), or merge the tables</td></tr>
+<tr><td><b>M:N</b> relationship</td><td>a <b>junction (bridge) table</b> holding both foreign keys (plus relationship attributes); primary key = both together</td></tr>
+<tr><td>Generalisation, method 1</td><td>a table for the super-class and one per sub-class holding the super-class key as PK/FK (<code>account</code>, <code>savings_account</code>, <code>current_account</code>)</td></tr>
+<tr><td>Generalisation, method 2</td><td>no super-class table; each sub-class table repeats the common columns. Only safe when the generalisation is <b>disjoint and complete</b>; with overlap, values are stored twice, and accounts of neither kind cannot be stored</td></tr>
+<tr><td>Aggregation</td><td>a table for the relationship holding the keys of the entities involved plus any descriptive attribute</td></tr>
+</table></div>
+<div class="code"><pre>-- M:N: students enrol in courses, with a grade on the relationship
+CREATE TABLE enrolment (
+  student_id INT NOT NULL,
+  course_id  INT NOT NULL,
+  grade      CHAR(2),
+  PRIMARY KEY (student_id, course_id),
+  FOREIGN KEY (student_id) REFERENCES student(id),
+  FOREIGN KEY (course_id)  REFERENCES course(id)
+);</pre></div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Entity / attribute / relationship; weak entity = FK + discriminator</li>
+<li>Cardinality (1:1, 1:N, M:N) + participation</li>
+<li>M:N and multi-valued → their own table</li>
+<li>FK goes on the “many” side</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="sheet" id="pg-relational" data-part="Part A: Database foundations" data-title="The relational model: keys and integrity constraints">
+
+<h3 class="t"><span class="ttl">Tables, tuples, degree and cardinality</span><span class="src">LEC-7</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>The relational model stores data as <b>relations</b> (tables). A row is a <b>tuple</b>, a column is an <b>attribute</b> with a permitted set of values called its <b>domain</b>. The table’s name and columns are the <b>relation schema</b>.</div>
+<ul class="pts">
+  <li><b>Degree</b> = number of columns. <b>Cardinality</b> = number of rows. (Not the same “cardinality” as the ER relationship ratio.)</li>
+  <li><b>Properties of a table:</b> unique name; unique column names; atomic values (no lists in a cell); no two identical rows; row and column order mean nothing; integrity constraints are enforced.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">The keys</span><span class="src">LEC-7</span></h3>
+<div class="tw"><table>
+<tr><th>Key</th><th>Meaning</th><th>Example in <code>student(id, email, phone, name)</code></th></tr>
+<tr><td><b>Super key</b></td><td>any set of attributes that uniquely identifies a row</td><td>(id), (email), (id, name), (id, email, phone)…</td></tr>
+<tr><td><b>Candidate key</b></td><td>a <em>minimal</em> super key: remove any attribute and it stops being unique; never NULL</td><td>(id), (email)</td></tr>
+<tr><td><b>Primary key</b></td><td>the candidate key you chose; unique, not null, one per table</td><td>(id)</td></tr>
+<tr><td><b>Alternate key</b></td><td>candidate keys not chosen</td><td>(email)</td></tr>
+<tr><td><b>Foreign key</b></td><td>a column(s) that references another table’s key. The table holding the FK is the <b>child</b> (referencing); the other is the <b>parent</b> (referenced). May be NULL</td><td><code>orders.customer_id → customers.id</code></td></tr>
+<tr><td><b>Composite key</b></td><td>a key made of two or more columns</td><td>(student_id, course_id)</td></tr>
+<tr><td><b>Surrogate key</b></td><td>a synthetic key with no business meaning, generated by the DB</td><td>auto-increment <code>id</code>, UUID</td></tr>
+</table></div>
+<div class="add"><span class="tag">+ added</span><b>Natural vs surrogate key:</b> natural keys (an email, a national id) carry meaning, can change, and can be long. Surrogate keys are small, stable and never change, so most designs use a surrogate primary key and add a <code>UNIQUE</code> constraint on the natural key. A column can be a primary key <em>and</em> a foreign key at once (a 1:1 extension table).</div>
+
+<h3 class="t"><span class="ttl">Integrity constraints</span><span class="src">LEC-7</span></h3>
+<div class="tw"><table>
+<tr><th>Constraint</th><th>Rule</th></tr>
+<tr><td><b>Domain</b></td><td>every value must fit the column’s type and range (<code>CHECK</code>, <code>ENUM</code>, data type)</td></tr>
+<tr><td><b>Entity</b></td><td>every table has a primary key and it is never NULL</td></tr>
+<tr><td><b>Referential</b></td><td>a foreign key value must exist in the parent table, or be NULL</td></tr>
+<tr><td><b>Key</b> constraints</td><td><code>PRIMARY KEY</code>, <code>UNIQUE</code>, <code>NOT NULL</code>, <code>DEFAULT</code>, <code>CHECK</code>, <code>FOREIGN KEY</code></td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>PRIMARY KEY</b> = <code>UNIQUE</code> + <code>NOT NULL</code>, one per table. <b>UNIQUE</b> allows NULL, and a table can have many. (MySQL, PostgreSQL and Oracle allow several NULLs in a unique column; SQL Server allows only one.)</li>
+  <li>Constraints are enforced by the database, so they hold no matter which application writes the data.</li>
+</ul>
+<div class="flag"><span class="tag">⚑ corrected</span>The reference says a <b>compound key</b> is “a PK formed using 2 FKs”. Terms vary by textbook; <b>composite key</b> (two or more columns) is the standard word. A key made of two foreign keys is exactly the primary key of a junction table. Also, the “six key constraints” list mixes true keys with ordinary column constraints, so remember them as <i>column and table constraints</i>.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Super ⊃ candidate ⊃ primary; the rest are alternate</li>
+<li>FK may be NULL; it must otherwise match a parent key</li>
+<li>PK = UNIQUE + NOT NULL</li>
+<li>Degree = columns, cardinality = rows</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="sheet" id="pg-sql-basics" data-part="Part B: SQL" data-title="SQL basics: data types, command families, creating tables">
+
+<h3 class="t"><span class="ttl">What SQL is, and the five command families</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>SQL (Structured Query Language) is the language for talking to a relational database. Keywords are not case sensitive (<code>select</code> = <code>SELECT</code>), but table and column names may be, depending on the operating system and database. It is used for CRUD: create, read, update, delete.</div>
+<div class="tw"><table>
+<tr><th>Family</th><th>Purpose</th><th>Commands</th></tr>
+<tr><td><b>DDL</b> Data Definition</td><td>define and change structure</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>, <code>TRUNCATE</code>, <code>RENAME</code></td></tr>
+<tr><td><b>DQL / DRL</b> Query</td><td>read data</td><td><code>SELECT</code></td></tr>
+<tr><td><b>DML</b> Manipulation</td><td>change data</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td></tr>
+<tr><td><b>DCL</b> Control</td><td>permissions</td><td><code>GRANT</code>, <code>REVOKE</code></td></tr>
+<tr><td><b>TCL</b> Transaction Control</td><td>group changes into a unit</td><td><code>START TRANSACTION</code> (<code>BEGIN</code>), <code>COMMIT</code>, <code>ROLLBACK</code>, <code>SAVEPOINT</code></td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Choosing data types (MySQL)</span><span class="src">LEC-9 · Apna College, corrected</span></h3>
+<div class="tw"><table>
+<tr><th>Need</th><th>Use</th><th>Notes</th></tr>
+<tr><td>Whole numbers</td><td><code>TINYINT</code> (1 byte), <code>SMALLINT</code>, <code>INT</code> (4 bytes, ±2.1 billion), <code>BIGINT</code> (8 bytes)</td><td><code>UNSIGNED</code> doubles the positive range. Use <code>BIGINT</code> for ids that may pass 2 billion</td></tr>
+<tr><td>Money, exact decimals</td><td><code>DECIMAL(p, s)</code></td><td>exact. <b>Never</b> use <code>FLOAT</code>/<code>DOUBLE</code> for money</td></tr>
+<tr><td>Approximate decimals</td><td><code>FLOAT</code>, <code>DOUBLE</code></td><td>binary floating point: <code>0.1 + 0.2 ≠ 0.3</code></td></tr>
+<tr><td>Short text</td><td><code>VARCHAR(n)</code></td><td>variable length, stores only what you use. Prefer to <code>CHAR</code></td></tr>
+<tr><td>Fixed-length text</td><td><code>CHAR(n)</code>, n ≤ 255</td><td>country codes, hashes of fixed size</td></tr>
+<tr><td>Long text / binary</td><td><code>TEXT</code>, <code>MEDIUMTEXT</code>, <code>LONGTEXT</code>, <code>BLOB</code></td><td>avoid in hot tables; store big files in object storage</td></tr>
+<tr><td>Dates</td><td><code>DATE</code>, <code>TIME</code>, <code>DATETIME</code>, <code>TIMESTAMP</code>, <code>YEAR</code></td><td><code>TIMESTAMP</code> is stored in UTC and has a 2038 upper limit; <code>DATETIME</code> has no time-zone conversion</td></tr>
+<tr><td>Flags, sets</td><td><code>BOOLEAN</code> (= <code>TINYINT(1)</code>), <code>ENUM</code>, <code>SET</code>, <code>BIT(n)</code></td><td>prefer a lookup table over <code>ENUM</code> if values change</td></tr>
+<tr><td>Documents</td><td><code>JSON</code></td><td>for genuinely flexible fields only</td></tr>
+</table></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The references list <b><code>VARCHAR</code> as 0 to 255</b>: that is the old limit; in MySQL <code>VARCHAR</code> can be up to 65,535 bytes (shared with the rest of the row), while <code>CHAR</code> is 0–255. They say <b><code>FLOAT</code>/<code>DOUBLE</code> have “23 / 24–53 digits”</b>: that is binary <em>bits</em> of precision, roughly 7 and 15 decimal digits. <b><code>DECIMAL</code> is not “double stored as a string”</b>: it is exact fixed-point arithmetic. <b><code>TIMESTAMP</code> “YYYYMMDDHHMMSS”</b> is the old compact form; the value is shown as <code>YYYY-MM-DD HH:MM:SS</code>. And it is <code>START TRANSACTION</code>, not “START TRANSACTIONS”.</div>
+
+<h3 class="t"><span class="ttl">Databases and tables: DDL</span><span class="src">LEC-9</span></h3>
+<div class="code"><pre>CREATE DATABASE IF NOT EXISTS shop;
+USE shop;                       -- choose the database for later commands
+SHOW DATABASES;  SHOW TABLES;
+DROP DATABASE IF EXISTS shop;   -- deletes everything inside
+
+CREATE TABLE customers (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(100) NOT NULL,
+  email      VARCHAR(255) NOT NULL UNIQUE,
+  age        INT,
+  country    VARCHAR(50)  DEFAULT 'India',
+  created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT age_check CHECK (age IS NULL OR age &gt; 12)
+);
+
+CREATE TABLE orders (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  placed_on   DATE NOT NULL,
+  total       DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES customers(id)
+);</pre></div>
+<p class="sees">▶ This page’s <code>customers</code> and <code>orders</code> (plus <code>products</code> and <code>employees(id, name, salary, dept_id, manager_id)</code>) are the schema used in every later example.</p>
+
+<h3 class="t"><span class="ttl">Changing a table: ALTER</span><span class="src">LEC-9</span></h3>
+<div class="code"><pre>ALTER TABLE customers ADD phone VARCHAR(20);                 -- add a column
+ALTER TABLE customers MODIFY name VARCHAR(150) NOT NULL;     -- change a column's type
+ALTER TABLE customers CHANGE COLUMN phone mobile VARCHAR(20);-- rename + retype (MySQL)
+ALTER TABLE customers RENAME COLUMN mobile TO phone;         -- rename only (MySQL 8, PostgreSQL)
+ALTER TABLE customers DROP COLUMN phone;
+ALTER TABLE customers RENAME TO clients;                     -- rename the table
+
+CREATE INDEX idx_orders_customer ON orders (customer_id);
+DROP INDEX idx_orders_customer ON orders;                    -- MySQL needs the table
+ALTER TABLE orders DROP FOREIGN KEY orders_ibfk_1;           -- MySQL: DROP FOREIGN KEY, not DROP CONSTRAINT</pre></div>
+
+<h3 class="t"><span class="ttl">DELETE vs TRUNCATE vs DROP</span><span class="src">a favourite question</span></h3>
+<div class="tw"><table>
+<tr><th></th><th><code>DELETE</code></th><th><code>TRUNCATE</code></th><th><code>DROP</code></th></tr>
+<tr><td>Family</td><td>DML</td><td>DDL</td><td>DDL</td></tr>
+<tr><td>Removes</td><td>chosen rows (<code>WHERE</code>) or all</td><td>all rows, table stays</td><td>rows <b>and</b> the table</td></tr>
+<tr><td><code>WHERE</code></td><td>yes</td><td>no</td><td>no</td></tr>
+<tr><td>Speed</td><td>slow: row by row, logged</td><td>fast: deallocates pages</td><td>fast</td></tr>
+<tr><td>Triggers fire</td><td>yes</td><td>no</td><td>no</td></tr>
+<tr><td>Auto-increment</td><td>keeps counting</td><td>resets</td><td>gone</td></tr>
+<tr><td>Rollback</td><td>yes, inside a transaction</td><td>MySQL: no (implicit commit). PostgreSQL: yes</td><td>MySQL: no. PostgreSQL: yes</td></tr>
+</table></div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>DDL · DQL · DML · DCL · TCL</li>
+<li><code>DECIMAL</code> for money, never <code>FLOAT</code></li>
+<li><code>VARCHAR</code> over <code>CHAR</code> unless fixed length</li>
+<li>DELETE rows · TRUNCATE all rows · DROP the table</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="sheet" id="pg-select" data-part="Part B: SQL" data-title="Querying: SELECT, filters, grouping and NULL">
+
+<h3 class="t"><span class="ttl">SELECT, WHERE and the operators</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b><code>SELECT</code> picks the columns, <code>FROM</code> names the table, <code>WHERE</code> keeps only the rows that match. Everything else (grouping, sorting, limiting) refines that result.</div>
+<div class="code"><pre>SELECT name, age FROM customers;                  -- chosen columns
+SELECT * FROM customers WHERE country = 'India';  -- all columns, filtered rows
+SELECT DISTINCT country FROM customers;           -- remove duplicate rows
+SELECT name AS customer_name FROM customers;      -- alias
+
+-- comparison: =  &gt;  &lt;  &gt;=  &lt;=  &lt;&gt; (or !=)
+SELECT * FROM customers WHERE age &gt;= 18 AND country = 'India';
+SELECT * FROM customers WHERE country IN ('India', 'Japan');           -- shorthand for OR
+SELECT * FROM orders    WHERE total BETWEEN 100 AND 500;               -- inclusive both ends
+SELECT * FROM customers WHERE email IS NULL;                           -- NULL needs IS NULL
+SELECT * FROM customers WHERE name LIKE 'A%';                          -- starts with A
+SELECT * FROM customers WHERE name LIKE '_r%';                         -- 'r' is the 2nd letter
+SELECT * FROM customers WHERE NOT (country = 'India');</pre></div>
+<ul class="pts">
+  <li><b>LIKE wildcards:</b> <code>%</code> = any number of characters (zero or more), <code>_</code> = exactly one. <code>'%or%'</code> contains “or”; <code>'a%o'</code> starts with a and ends with o.</li>
+  <li><b><code>AND</code> binds tighter than <code>OR</code>.</b> Use brackets: <code>A OR B AND C</code> means <code>A OR (B AND C)</code>.</li>
+  <li><b>SELECT without FROM:</b> <code>SELECT 55 + 11;</code>, <code>SELECT NOW();</code>. (Oracle needs the dummy table <code>DUAL</code>; MySQL accepts it optionally.)</li>
+</ul>
+
+<h3 class="t"><span class="ttl">ORDER BY, LIMIT and pagination</span><span class="src">Apna College</span></h3>
+<div class="code"><pre>SELECT name, age FROM customers ORDER BY age DESC, name ASC;   -- first by age, ties by name
+SELECT * FROM orders ORDER BY total DESC LIMIT 5;              -- top 5
+SELECT * FROM orders ORDER BY id LIMIT 10 OFFSET 20;           -- page 3 of 10 (slow for deep pages)
+SELECT name, salary * 12 AS yearly FROM employees ORDER BY yearly;   -- ORDER BY may use the alias</pre></div>
+<ul class="pts">
+  <li>Default sort is ascending. Without <code>ORDER BY</code> the row order is <b>not guaranteed</b>.</li>
+  <li><b>NULLs:</b> MySQL sorts them as the smallest value (first in ASC); PostgreSQL treats them as the largest and supports <code>NULLS FIRST / NULLS LAST</code> (MySQL does not).</li>
+  <li><b>Deep pages:</b> <code>OFFSET 1000000</code> still reads and discards a million rows. Use <b>keyset pagination</b> (<code>WHERE id &gt; :last_id ORDER BY id LIMIT 20</code>).</li>
+</ul>
+
+<h3 class="t"><span class="ttl">GROUP BY, aggregates and HAVING</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b><code>GROUP BY</code> puts rows into buckets by a column, then an <b>aggregate</b> (<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code>) summarises each bucket. <code>HAVING</code> filters <em>buckets</em>; <code>WHERE</code> filters <em>rows</em> before they are grouped.</div>
+<div class="code"><pre>SELECT country, COUNT(*) AS customers, AVG(age) AS avg_age
+FROM customers
+WHERE age IS NOT NULL            -- row filter, runs BEFORE grouping
+GROUP BY country
+HAVING COUNT(*) &gt; 50            -- group filter, runs AFTER grouping
+ORDER BY customers DESC;</pre></div>
+<div class="tw"><table>
+<tr><th></th><th><code>WHERE</code></th><th><code>HAVING</code></th></tr>
+<tr><td>Filters</td><td>individual rows</td><td>groups</td></tr>
+<tr><td>Runs</td><td>before <code>GROUP BY</code></td><td>after <code>GROUP BY</code></td></tr>
+<tr><td>Can use aggregates</td><td>no</td><td>yes</td></tr>
+<tr><td>Also works in</td><td><code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>essentially <code>SELECT</code> with grouping</td></tr>
+</table></div>
+<ul class="pts">
+  <li>Every non-aggregated column in <code>SELECT</code> must appear in <code>GROUP BY</code> (strict mode / <code>ONLY_FULL_GROUP_BY</code>, PostgreSQL always).</li>
+  <li><code>GROUP BY</code> with no aggregate behaves like <code>DISTINCT</code>.</li>
+  <li><b><code>COUNT(*)</code></b> counts rows; <b><code>COUNT(col)</code></b> counts non-NULL values; <b><code>COUNT(DISTINCT col)</code></b> counts distinct non-NULL values. Aggregates other than <code>COUNT(*)</code> ignore NULLs.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">The real order a query runs in</span><span class="src">the reference gets this wrong</span></h3>
+<div class="flag"><span class="tag">⚑ corrected</span>The DBMS lecture says “order of execution is from RIGHT to LEFT”. That is not a rule. The <b>logical processing order</b> is below, and it explains most “why does this error?” questions.</div>
+<div class="tw"><table>
+<tr><th>#</th><th>Step</th><th>Consequence</th></tr>
+<tr><td>1</td><td><code>FROM</code> / <code>JOIN</code></td><td>tables are combined first</td></tr>
+<tr><td>2</td><td><code>WHERE</code></td><td>can’t use aggregates or <b>SELECT aliases</b> (they don’t exist yet)</td></tr>
+<tr><td>3</td><td><code>GROUP BY</code></td><td></td></tr>
+<tr><td>4</td><td><code>HAVING</code></td><td>can use aggregates</td></tr>
+<tr><td>5</td><td>window functions</td><td>run on the grouped result</td></tr>
+<tr><td>6</td><td><code>SELECT</code> (and aliases)</td><td>this is where aliases are born</td></tr>
+<tr><td>7</td><td><code>DISTINCT</code></td><td></td></tr>
+<tr><td>8</td><td><code>ORDER BY</code></td><td>can use aliases</td></tr>
+<tr><td>9</td><td><code>LIMIT</code> / <code>OFFSET</code></td><td></td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">NULL: three-valued logic</span><span class="src">the source of many bugs</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>NULL means “unknown or missing”, not zero and not an empty string. Any comparison with NULL gives <b>UNKNOWN</b>, and <code>WHERE</code> keeps only rows that are TRUE.</div>
+<div class="code"><pre>SELECT NULL = NULL;            -- NULL (unknown), not TRUE
+SELECT * FROM customers WHERE age = NULL;     -- returns nothing, ever
+SELECT * FROM customers WHERE age IS NULL;    -- correct
+SELECT 5 + NULL;               -- NULL
+SELECT COALESCE(age, 0) FROM customers;       -- replace NULL with a default
+SELECT NULLIF(a, 0);           -- returns NULL when a = 0 (avoid divide by zero)
+
+-- The NOT IN trap: if the subquery returns any NULL, NOT IN returns NO rows
+SELECT * FROM customers WHERE id NOT IN (SELECT customer_id FROM orders);     -- risky
+SELECT * FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);   -- safe</pre></div>
+<div class="add"><span class="tag">+ added</span><code>NULL</code> in a <code>UNIQUE</code> column, in <code>GROUP BY</code> (all NULLs form one group), in <code>DISTINCT</code> (treated as equal) and in <code>ORDER BY</code> all behave differently from <code>=</code>. Interviewers love “what does <code>COUNT(col)</code> return when everything is NULL?” (0).</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>WHERE filters rows, HAVING filters groups</li>
+<li>FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT</li>
+<li><code>= NULL</code> never works: <code>IS NULL</code></li>
+<li><code>NOT IN</code> + NULL = no rows</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="sheet" id="pg-joins" data-part="Part B: SQL" data-title="Joins and set operations">
+
+<h3 class="t"><span class="ttl">The join types</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>A join stitches rows of two tables together wherever a condition matches, normally <code>foreign key = primary key</code>. The join <em>type</em> decides what happens to rows that find no partner.</div>
+<div class="tw"><table>
+<tr><th>Join</th><th>Keeps</th><th>Unmatched rows</th></tr>
+<tr><td><b><code>INNER JOIN</code></b></td><td>only rows that match in both tables</td><td>dropped</td></tr>
+<tr><td><b><code>LEFT JOIN</code></b></td><td>all rows of the left table, plus matches</td><td>left rows kept; right columns are NULL</td></tr>
+<tr><td><b><code>RIGHT JOIN</code></b></td><td>all rows of the right table, plus matches</td><td>right rows kept; left columns are NULL</td></tr>
+<tr><td><b><code>FULL OUTER JOIN</code></b></td><td>all rows of both</td><td>kept on both sides with NULLs. <b>Not in MySQL</b>: emulate</td></tr>
+<tr><td><b><code>CROSS JOIN</code></b></td><td>every combination (Cartesian product): 10 × 5 rows → 50</td><td>no condition</td></tr>
+<tr><td><b>Self join</b></td><td>a table joined to itself via two aliases</td><td>hierarchies, comparisons within one table</td></tr>
+</table></div>
+<div class="code"><pre>-- customers with their orders (only customers who have orders)
+SELECT c.name, o.id AS order_id, o.total
+FROM customers c
+INNER JOIN orders o ON o.customer_id = c.id;
+
+-- every customer, with or without orders
+SELECT c.name, o.id
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id;
+
+-- customers with NO orders (anti-join)
+SELECT c.name
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.id IS NULL;
+
+-- FULL OUTER JOIN emulated in MySQL
+SELECT * FROM a LEFT JOIN  b ON a.id = b.id
+UNION
+SELECT * FROM a RIGHT JOIN b ON a.id = b.id;
+
+-- self join: each employee with their manager
+SELECT e.name AS employee, m.name AS manager
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.id;       -- LEFT keeps the top boss (manager NULL)</pre></div>
+<ul class="pts">
+  <li>Use <b>aliases</b> (<code>c</code>, <code>o</code>) and qualify columns to avoid “ambiguous column” errors. <code>USING (id)</code> is a shorthand when the column has the same name on both sides.</li>
+  <li>The old comma style <code>FROM a, b WHERE a.id = b.a_id</code> is an inner join, but a forgotten <code>WHERE</code> silently makes a <b>cross join</b>. Prefer explicit <code>JOIN … ON</code>.</li>
+  <li>Joining three tables just chains the joins: <code>… JOIN orders … JOIN order_items …</code>.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Join traps interviewers test</span><span class="src">+ added</span></h3>
+<div class="add"><span class="tag">+ added</span>
+<ul class="pts">
+  <li><b>A filter on the right table in <code>WHERE</code> silently turns a <code>LEFT JOIN</code> into an inner join</b>, because NULL rows fail the test. Put it in <code>ON</code>: <code>LEFT JOIN orders o ON o.customer_id = c.id AND o.total &gt; 100</code>.</li>
+  <li><b>One-to-many multiplies rows.</b> Joining customers to orders returns one row per order, so <code>SUM(c.credit)</code> over the join counts a customer’s credit many times. Aggregate in a subquery first, or use <code>COUNT(DISTINCT c.id)</code>.</li>
+  <li><b>Joining on a nullable column</b>: <code>NULL = NULL</code> is not true, so such rows never match.</li>
+  <li><b>Performance:</b> join columns need an index (the foreign key side especially). Foreign keys in InnoDB are indexed automatically; in PostgreSQL they are not.</li>
+</ul></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The SQL notes’ <b>LEFT JOIN example shows a “NULL / Monitor” row</b>. A left join from <code>Customers</code> can never show an order that has no customer: that row belongs to the <code>RIGHT</code> and <code>FULL</code> join results. The sample tables are also inconsistent between examples (order 103 changes from Headphones to Monitor). Trust the rules above, not those result tables.</div>
+
+<h3 class="t"><span class="ttl">Set operations</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>Joins glue tables <em>side by side</em> (more columns). Set operations stack the results of two <code>SELECT</code>s <em>on top of each other</em> (more rows). Both queries need the same number of columns, in the same order, with compatible types.</div>
+<div class="tw"><table>
+<tr><th>Operator</th><th>Result</th><th>Notes</th></tr>
+<tr><td><code>UNION</code></td><td>all rows from both, <b>duplicates removed</b></td><td>needs a sort or hash to de-duplicate</td></tr>
+<tr><td><code>UNION ALL</code></td><td>all rows from both, <b>duplicates kept</b></td><td>faster; use it when you know there are no duplicates</td></tr>
+<tr><td><code>INTERSECT</code></td><td>rows in both</td><td>MySQL 8.0.31+, PostgreSQL, SQL Server, Oracle</td></tr>
+<tr><td><code>EXCEPT</code> / <code>MINUS</code></td><td>rows in the first but not the second</td><td><code>EXCEPT</code>: PostgreSQL, SQL Server, MySQL 8.0.31+; <code>MINUS</code>: Oracle</td></tr>
+</table></div>
+<div class="code"><pre>SELECT name FROM customers
+UNION
+SELECT name FROM suppliers;
+
+-- emulating INTERSECT / EXCEPT on older MySQL
+SELECT DISTINCT c.name FROM customers c WHERE EXISTS (SELECT 1 FROM suppliers s WHERE s.name = c.name);       -- INTERSECT
+SELECT DISTINCT c.name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM suppliers s WHERE s.name = c.name);   -- EXCEPT</pre></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The notes say set operations “always give distinct rows”. That is true for <code>UNION</code>, <code>INTERSECT</code> and <code>EXCEPT</code> by default, but <b><code>UNION ALL</code> does not</b>. They also say INTERSECT and MINUS must be “emulated” and that set operations are “generally faster than joins”: both depend on the version and the query, so measure with <code>EXPLAIN</code> instead of assuming.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>INNER = matches · LEFT = all left · FULL = both</li>
+<li>Right-table filter belongs in <code>ON</code> for a LEFT JOIN</li>
+<li>Anti-join: LEFT JOIN … IS NULL, or NOT EXISTS</li>
+<li><code>UNION</code> dedupes, <code>UNION ALL</code> doesn’t</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 7 ============ -->
+<section class="sheet" id="pg-subq" data-part="Part B: SQL" data-title="Subqueries, CTEs, views and stored code">
+
+<h3 class="t"><span class="ttl">Subqueries</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>A subquery is a <code>SELECT</code> inside another query, whose result feeds the outer query. It breaks a hard question into steps.</div>
+<div class="code"><pre>-- WHERE: customers who ordered something over 500
+SELECT name FROM customers
+WHERE id IN (SELECT customer_id FROM orders WHERE total &gt; 500);
+
+-- scalar subquery: employees paid above the average
+SELECT name, salary FROM employees
+WHERE salary &gt; (SELECT AVG(salary) FROM employees);
+
+-- FROM (derived table): highest rating among Indian movies
+SELECT MAX(rating) FROM (SELECT * FROM movie WHERE country = 'India') AS temp;   -- derived table needs an alias
+
+-- SELECT: a value computed per row
+SELECT c.name, (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.id) AS order_count
+FROM customers c;</pre></div>
+<ul class="pts">
+  <li><b>Correlated subquery:</b> the inner query refers to the outer row, so it conceptually runs <b>once per outer row</b>. A normal subquery runs once.</li>
+  <li><b><code>EXISTS</code></b> stops at the first match and returns true/false; <b><code>IN</code></b> compares against a whole list. <code>EXISTS</code> is safer with NULLs (see <code>NOT IN</code> trap) and is often faster for “is there any related row?”.</li>
+  <li><code>ANY</code> / <code>ALL</code>: <code>salary &gt; ALL (SELECT salary FROM interns)</code>.</li>
+</ul>
+<div class="code"><pre>-- correlated: employees earning more than the average of THEIR department
+SELECT e.name, e.salary
+FROM employees e
+WHERE e.salary &gt; (SELECT AVG(salary) FROM employees WHERE dept_id = e.dept_id);</pre></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The SQL notes’ subquery example is <b>invalid</b>: it selects <code>Quantity</code> from <code>Products</code> and multiplies by <code>Price</code>, but <code>Quantity</code> lives in <code>Orders</code>; the table needs a join first. And the table “joins faster, subqueries slower” is a myth: the optimiser often rewrites one into the other. Choose for <b>clarity</b>, then check <code>EXPLAIN</code>.</div>
+
+<h3 class="t"><span class="ttl">CTEs: WITH</span><span class="src">+ added, expected in interviews</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>A <b>common table expression</b> gives a subquery a name, defined at the top, so the query reads top to bottom instead of inside out. MySQL 8+ and PostgreSQL support it.</div>
+<div class="code"><pre>WITH big_spenders AS (
+  SELECT customer_id, SUM(total) AS spent
+  FROM orders
+  GROUP BY customer_id
+  HAVING SUM(total) &gt; 1000
+)
+SELECT c.name, b.spent
+FROM big_spenders b
+JOIN customers c ON c.id = b.customer_id
+ORDER BY b.spent DESC;
+
+-- recursive CTE: walk an org chart from the top boss down
+WITH RECURSIVE chain AS (
+  SELECT id, name, manager_id, 1 AS level FROM employees WHERE manager_id IS NULL
+  UNION ALL
+  SELECT e.id, e.name, e.manager_id, c.level + 1
+  FROM employees e JOIN chain c ON e.manager_id = c.id
+)
+SELECT * FROM chain ORDER BY level;</pre></div>
+
+<h3 class="t"><span class="ttl">Views</span><span class="src">LEC-9</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>A <b>view</b> is a saved query that behaves like a virtual table. It stores no data of its own: each time you read it, the underlying query runs on the base tables.</div>
+<div class="code"><pre>CREATE VIEW trainer_contacts AS
+SELECT c.course_name, c.trainer, t.email
+FROM courses c JOIN contact t ON c.id = t.id;
+
+SELECT * FROM trainer_contacts;
+CREATE OR REPLACE VIEW trainer_contacts AS SELECT …;   -- or ALTER VIEW
+DROP VIEW IF EXISTS trainer_contacts;</pre></div>
+<ul class="pts">
+  <li><b>Why:</b> hide complexity, give each user group only the columns they may see (security), keep one definition of a tricky join.</li>
+  <li>Simple views (one table, no aggregates) are <b>updatable</b>; joins, <code>GROUP BY</code> and <code>DISTINCT</code> make them read-only.</li>
+  <li><b>Materialized view</b> (PostgreSQL, Oracle): stores the result and must be refreshed, so reads are fast but can be stale. MySQL has none built in.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Stored procedures, functions, triggers</span><span class="src">+ added</span></h3>
+<div class="tw"><table>
+<tr><th>Object</th><th>What it is</th><th>Use and caution</th></tr>
+<tr><td>Stored procedure</td><td>named, reusable block of SQL stored in the DB; called with <code>CALL</code>; may change data</td><td>batch jobs, multi-step operations; business logic hidden in the DB is hard to version and test</td></tr>
+<tr><td>Function</td><td>returns a value and can be used inside a <code>SELECT</code></td><td>small reusable calculations; a function call per row can kill performance and prevent index use</td></tr>
+<tr><td>Trigger</td><td>code that fires automatically <code>BEFORE</code>/<code>AFTER</code> an <code>INSERT</code>, <code>UPDATE</code> or <code>DELETE</code></td><td>audit logs, derived data; invisible side effects make debugging hard, so use sparingly</td></tr>
+</table></div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Subquery in WHERE, FROM (alias!) or SELECT</li>
+<li>Correlated = once per outer row</li>
+<li><code>EXISTS</code> over <code>NOT IN</code> with NULLs</li>
+<li>CTE = named subquery; view = saved query, no data</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 8 ============ -->
+<section class="sheet" id="pg-window" data-part="Part B: SQL" data-title="Window functions">
+
+<h3 class="t"><span class="ttl">What a window function is</span><span class="src">+ added, in every senior SQL screen</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>An aggregate with <code>GROUP BY</code> collapses many rows into one. A <b>window function</b> does the calculation over a set of related rows but <b>keeps every row</b>. <code>OVER (...)</code> says which rows belong to each row’s “window” and in what order.</div>
+<div class="code"><pre>function() OVER (
+  PARTITION BY col     -- split rows into groups (like GROUP BY, but rows stay)
+  ORDER BY col         -- order inside each group
+  ROWS BETWEEN … AND … -- optional frame: which rows around the current one
+)
+
+SELECT name, dept_id, salary,
+       AVG(salary) OVER (PARTITION BY dept_id) AS dept_avg,        -- every row also sees its dept average
+       salary - AVG(salary) OVER (PARTITION BY dept_id) AS vs_avg
+FROM employees;</pre></div>
+
+<h3 class="t"><span class="ttl">Ranking functions</span><span class="src">the three that differ on ties</span></h3>
+<div class="tw"><table>
+<tr><th>Salary</th><th><code>ROW_NUMBER()</code></th><th><code>RANK()</code></th><th><code>DENSE_RANK()</code></th></tr>
+<tr><td>9000</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>9000</td><td>2</td><td>1</td><td>1</td></tr>
+<tr><td>7000</td><td>3</td><td>3 (skips 2)</td><td>2 (no gap)</td></tr>
+<tr><td>5000</td><td>4</td><td>4</td><td>3</td></tr>
+</table></div>
+<ul class="pts">
+  <li><code>ROW_NUMBER</code> is unique even for ties (arbitrary tie order unless you add a tie-breaker); <code>RANK</code> leaves gaps after ties; <code>DENSE_RANK</code> does not.</li>
+  <li><code>NTILE(4)</code> splits rows into 4 equal buckets (quartiles).</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Value and running functions</span><span class="src">LAG, LEAD, running totals</span></h3>
+<div class="code"><pre>-- previous and next order amount per customer, and change since the last order
+SELECT customer_id, placed_on, total,
+       LAG(total)  OVER (PARTITION BY customer_id ORDER BY placed_on) AS prev_total,
+       LEAD(total) OVER (PARTITION BY customer_id ORDER BY placed_on) AS next_total,
+       total - LAG(total) OVER (PARTITION BY customer_id ORDER BY placed_on) AS change
+FROM orders;
+
+-- running total and 3-row moving average
+SELECT placed_on, total,
+       SUM(total) OVER (ORDER BY placed_on, id)                              AS running_total,
+       AVG(total) OVER (ORDER BY placed_on, id ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg_3
+FROM orders;
+
+-- first and last value in a group
+SELECT *, FIRST_VALUE(total) OVER (PARTITION BY customer_id ORDER BY placed_on) AS first_order_total
+FROM orders;</pre></div>
+<div class="add"><span class="tag">+ added</span><b>Frames:</b> with <code>ORDER BY</code> and no frame, the default is <code>RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code>, which treats <em>tied</em> <code>ORDER BY</code> values as one group. That is why running totals over a non-unique date jump by the whole day. Add a unique tie-breaker (<code>, id</code>) or use <code>ROWS</code> for row-by-row behaviour.</div>
+
+<h3 class="t"><span class="ttl">Top N per group</span><span class="src">the classic window question</span></h3>
+<div class="code"><pre>-- top 3 earners in each department (ties share a rank)
+SELECT *
+FROM (
+  SELECT e.*, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk
+  FROM employees e
+) t
+WHERE rnk &lt;= 3;</pre></div>
+<ul class="pts">
+  <li>You cannot filter on a window function in the same query’s <code>WHERE</code> (windows run after <code>WHERE</code>, <code>GROUP BY</code> and <code>HAVING</code>), so wrap it in a subquery or CTE as above. PostgreSQL also offers <code>DISTINCT ON</code> for “first row per group”.</li>
+  <li>Use <code>ROW_NUMBER</code> to “pick exactly one row per group”, <code>DENSE_RANK</code> to “include ties”.</li>
+  <li>Needs MySQL 8.0+ (not available in 5.7).</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Window = aggregate that keeps the rows</li>
+<li>PARTITION BY groups, ORDER BY orders</li>
+<li>ROW_NUMBER unique · RANK gaps · DENSE_RANK no gaps</li>
+<li>Filter on a window result via subquery/CTE</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 9 ============ -->
+<section class="sheet" id="pg-dml" data-part="Part B: SQL" data-title="Changing data safely: DML, referential actions, security">
+
+<h3 class="t"><span class="ttl">INSERT, UPDATE, DELETE</span><span class="src">LEC-9 · Apna College</span></h3>
+<div class="code"><pre>INSERT INTO customers (name, email, age) VALUES ('Asha', 'asha@x.com', 28), ('Ben', 'ben@x.com', 31);   -- several rows at once
+INSERT INTO archive SELECT * FROM customers WHERE created_at &lt; '2020-01-01';                            -- insert from a query
+
+UPDATE customers SET age = 29, country = 'IN' WHERE id = 1;     -- ALWAYS use a WHERE
+UPDATE student SET standard = standard + 1;                     -- no WHERE = every row (here intended)
+
+DELETE FROM customers WHERE id = 1;
+DELETE FROM customers;                                          -- every row, table stays (slow, logged)</pre></div>
+<div class="old"><span class="tag">⚠ safe habits</span>Run the <code>WHERE</code> as a <code>SELECT</code> first and check the row count; do destructive changes inside a <b>transaction</b> (<code>START TRANSACTION; … ; check; COMMIT or ROLLBACK</code>); MySQL’s <code>--safe-updates</code> mode refuses an <code>UPDATE</code>/<code>DELETE</code> without a key in the <code>WHERE</code>.</div>
+
+<h3 class="t"><span class="ttl">Upsert</span><span class="src">LEC-9 REPLACE, corrected</span></h3>
+<div class="code"><pre>-- MySQL
+INSERT INTO stock (sku, qty) VALUES ('A1', 5)
+ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty);
+
+-- PostgreSQL (and SQLite)
+INSERT INTO stock (sku, qty) VALUES ('A1', 5)
+ON CONFLICT (sku) DO UPDATE SET qty = stock.qty + EXCLUDED.qty;
+
+-- MySQL REPLACE INTO: insert, or DELETE the old row and INSERT a new one
+REPLACE INTO student (id, class) VALUES (4, 3);</pre></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The notes present <code>REPLACE</code> as a kind of <code>UPDATE</code>. It is actually <b>delete-then-insert</b>: columns you do not list are reset to defaults, auto-increment values and triggers are affected, and child rows can be removed by <code>ON DELETE CASCADE</code>. Prefer <code>INSERT … ON DUPLICATE KEY UPDATE</code> (or <code>ON CONFLICT</code>).</div>
+
+<h3 class="t"><span class="ttl">Referential actions: what happens to child rows</span><span class="src">LEC-9</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>If you delete or change a parent row that child rows point to, the foreign key must decide what to do with the children.</div>
+<div class="code"><pre>CREATE TABLE orders (
+  id          INT PRIMARY KEY,
+  customer_id INT,
+  FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ON DELETE CASCADE        -- delete the customer, delete their orders too
+    ON UPDATE CASCADE        -- change the customer id, update orders to match
+);
+-- other choices:  ON DELETE SET NULL (needs a nullable column) | RESTRICT / NO ACTION (refuse, the default)</pre></div>
+<div class="tw"><table>
+<tr><th>Action</th><th>Effect</th><th>Use when</th></tr>
+<tr><td><code>RESTRICT</code> / <code>NO ACTION</code></td><td>refuse to delete or change the parent</td><td>default; safest</td></tr>
+<tr><td><code>CASCADE</code></td><td>propagate to children</td><td>children are meaningless without the parent (order lines)</td></tr>
+<tr><td><code>SET NULL</code></td><td>children keep existing, link cleared</td><td>the link is optional</td></tr>
+<tr><td><code>SET DEFAULT</code></td><td>child column set to its default</td><td>rare (and not supported by InnoDB)</td></tr>
+</table></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The syntax is <code>ON DELETE SET NULL</code>, not “ON DELETE NULL”. Be careful with cascades: one delete can silently remove thousands of rows. Many teams prefer <b>soft deletes</b> (<code>deleted_at</code> column) for important data.</div>
+
+<h3 class="t"><span class="ttl">Permissions and SQL injection</span><span class="src">DCL · + added</span></h3>
+<div class="code"><pre>CREATE USER 'analyst'@'%' IDENTIFIED BY '…';
+GRANT SELECT ON shop.* TO 'analyst'@'%';            -- read only
+GRANT SELECT, INSERT, UPDATE ON shop.orders TO 'app'@'10.0.%';
+REVOKE INSERT ON shop.orders FROM 'app'@'10.0.%';</pre></div>
+<ul class="pts">
+  <li><b>Least privilege:</b> the app’s user gets only what it needs; never connect as root; separate users for the app, migrations and reporting.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>SQL injection</b>If you paste user input into the SQL string, an attacker can change the query. Send the SQL and the values <b>separately</b> (parameterised / prepared statements), so input is never parsed as SQL.</div>
+<div class="code"><pre>// Vulnerable: email = "' OR '1'='1"  →  returns every user
+const rows = await db.query(`SELECT * FROM users WHERE email = '${email}'`)
+
+// Safe: placeholders, values sent separately
+const [rows] = await pool.execute("SELECT * FROM users WHERE email = ?", [email])   // mysql2
+const { rows } = await pg.query("SELECT * FROM users WHERE email = $1", [email])     // node-postgres</pre></div>
+<div class="add"><span class="tag">+ added</span>Placeholders only work for <em>values</em>, not for table or column names or <code>ORDER BY</code> direction. For those, check against an <b>allow-list</b>. Also: never store plain-text passwords (hash with bcrypt/argon2), and encrypt data in transit (TLS) and at rest.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Every UPDATE/DELETE needs a WHERE; test with SELECT first</li>
+<li>Upsert: <code>ON DUPLICATE KEY UPDATE</code> / <code>ON CONFLICT</code></li>
+<li>RESTRICT · CASCADE · SET NULL</li>
+<li>Parameterise queries; least privilege</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 10 ============ -->
+<section class="sheet" id="pg-normal" data-part="Part C: Design and performance" data-title="Functional dependencies and normalisation">
+
+<h3 class="t"><span class="ttl">Functional dependencies</span><span class="src">LEC-11</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>A <b>functional dependency</b> <code>X → Y</code> means: if you know X, there is exactly one possible Y. <code>student_id → name</code>. X is the <b>determinant</b>, Y the <b>dependent</b>. Normalisation is the process of arranging columns so every dependency is on a key, which removes redundancy.</div>
+<ul class="pts">
+  <li><b>Trivial</b> FD: Y is a subset of X (<code>(id, name) → name</code>). <b>Non-trivial</b>: Y is not inside X.</li>
+  <li><b>Armstrong’s axioms:</b> <i>Reflexivity</i> (if Y ⊆ X then X → Y), <i>Augmentation</i> (X → Y gives XZ → YZ), <i>Transitivity</i> (X → Y and Y → Z give X → Z).</li>
+  <li><b>Prime attribute</b> = part of some candidate key. <b>Non-prime</b> = not part of any.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Why: the three anomalies</span><span class="src">LEC-11</span></h3>
+<div class="tw"><table>
+<tr><th>Anomaly</th><th>Problem caused by redundant data</th><th>Example in one big <code>enrolment(student, course, instructor, phone)</code> table</th></tr>
+<tr><td><b>Insert</b></td><td>can’t record one fact without another</td><td>can’t add a new course until a student enrols</td></tr>
+<tr><td><b>Delete</b></td><td>deleting one fact loses another</td><td>the last student drops a course, and the instructor’s phone disappears</td></tr>
+<tr><td><b>Update</b></td><td>one fact stored in many rows; miss one and data disagrees</td><td>an instructor’s phone changes, and must be fixed in 200 rows</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">The normal forms</span><span class="src">LEC-11</span></h3>
+<div class="tw"><table>
+<tr><th>Form</th><th>Rule</th><th>Violation looks like</th></tr>
+<tr><td><b>1NF</b></td><td>every cell is <b>atomic</b>; no repeating groups or multi-valued columns; a key exists</td><td><code>phones = '111, 222'</code>, or <code>phone1, phone2, phone3</code></td></tr>
+<tr><td><b>2NF</b></td><td>1NF + no <b>partial dependency</b>: every non-key column depends on the <em>whole</em> composite key</td><td>key is (order_id, product_id) but <code>product_name</code> depends on <code>product_id</code> alone</td></tr>
+<tr><td><b>3NF</b></td><td>2NF + no <b>transitive dependency</b>: non-key columns depend only on the key, not on other non-key columns</td><td><code>emp_id → dept_id → dept_name</code> stored together</td></tr>
+<tr><td><b>BCNF</b></td><td>3NF + for every non-trivial FD <code>X → Y</code>, X is a <b>super key</b></td><td>a non-key column determines part of a key</td></tr>
+</table></div>
+<div class="add"><span class="tag">+ added</span><b>Memory line:</b> “every non-key attribute must depend on <b>the key</b> (1NF), <b>the whole key</b> (2NF), <b>and nothing but the key</b> (3NF), so help me Codd.” BCNF closes the last loophole: only a super key may determine anything.</div>
+
+<h3 class="t"><span class="ttl">A worked example</span><span class="src">+ added</span></h3>
+<div class="code"><pre>-- Un-normalised: order lines in one table, key (order_id, product_id)
+order_lines(order_id, product_id, qty, product_name, unit_price, customer_id, customer_name, customer_city)
+
+-- Problems:
+--  product_name, unit_price depend only on product_id      → partial dependency (breaks 2NF)
+--  customer_name, customer_city depend on customer_id,
+--  and customer_id depends on order_id                     → transitive dependency (breaks 3NF)
+
+-- Normalised to 3NF
+customers   (customer_id PK, customer_name, customer_city)
+products    (product_id  PK, product_name, unit_price)
+orders      (order_id    PK, customer_id FK → customers)
+order_items (order_id FK, product_id FK, qty, PRIMARY KEY (order_id, product_id))</pre></div>
+<ul class="pts">
+  <li><b>Careful:</b> a product’s price <em>at the time of sale</em> must be copied into <code>order_items</code> (<code>price_at_purchase</code>), or editing the product would rewrite history. That is deliberate duplication of a <em>different</em> fact.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Normalisation costs, denormalisation, and when to stop</span><span class="src">+ added</span></h3>
+<div class="tw"><table>
+<tr><th></th><th>Normalised</th><th>Denormalised</th></tr>
+<tr><td>Redundancy and anomalies</td><td>minimal</td><td>some, managed by you</td></tr>
+<tr><td>Writes</td><td>cheap and consistent</td><td>must update copies</td></tr>
+<tr><td>Reads</td><td>more joins</td><td>fewer joins, faster</td></tr>
+<tr><td>Typical use</td><td>OLTP (the transactional app)</td><td>reporting, analytics (star schema), read-heavy hot paths, NoSQL documents</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Rule:</b> design to 3NF first, then denormalise <b>deliberately</b> with measured reasons (a stored <code>order_total</code>, a cached <code>comment_count</code>), and keep it consistent in one place (a transaction, trigger or job).</li>
+  <li>Normalisation breaks tables into smaller linked ones, which is the opposite of the denormalised, query-shaped design recommended for MongoDB.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>1NF atomic · 2NF whole key · 3NF nothing but the key · BCNF only super keys</li>
+<li>Anomalies: insert, delete, update</li>
+<li>Normalise first, denormalise on evidence</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 11 ============ -->
+<section class="sheet" id="pg-index" data-part="Part C: Design and performance" data-title="Indexing, EXPLAIN and query performance">
+
+<h3 class="t"><span class="ttl">What an index is</span><span class="src">LEC-14</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>An index is a separate, <b>sorted</b> data structure that maps a search key to the location of the row, like the index at the back of a book. Without it the database reads the whole table (a <b>full scan</b>); with it, it jumps straight to the match.</div>
+<ul class="pts">
+  <li><b>Search key</b> = the indexed column(s). <b>Data reference</b> = pointer to the row (or the primary key).</li>
+  <li>Indexing is optional and secondary to the data. It speeds up <code>WHERE</code>, <code>JOIN</code>, <code>ORDER BY</code> and <code>GROUP BY</code>, and costs space and write time.</li>
+  <li><b>Advantages:</b> faster reads and less I/O. <b>Limits:</b> extra storage; every <code>INSERT</code>, <code>UPDATE</code> and <code>DELETE</code> must also update every index.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">How it works: the B+ tree</span><span class="src">+ added</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>Most relational indexes are <b>B+ trees</b>: a balanced, shallow tree where internal nodes route the search and the sorted <b>leaf nodes</b> (linked together) hold the keys. A lookup takes O(log n) page reads, usually 3 to 4 even for hundreds of millions of rows, and a range scan just walks the linked leaves.</div>
+<div class="diagram"><svg viewBox="0 0 760 170" role="img" aria-label="B+ tree">
+<g fill="none" stroke="#1f3d8f" stroke-width="2.2">
+<rect x="310" y="12" width="140" height="34" rx="6"/>
+<rect x="90" y="80" width="150" height="34" rx="6"/><rect x="305" y="80" width="150" height="34" rx="6"/><rect x="520" y="80" width="150" height="34" rx="6"/>
+<rect x="70" y="140" width="190" height="26" rx="5"/><rect x="285" y="140" width="190" height="26" rx="5"/><rect x="500" y="140" width="190" height="26" rx="5"/>
+</g>
+<g fill="none" stroke="#c0392b" stroke-width="2.2" marker-end="url(#ah)"><path d="M340 46L190 80"/><path d="M380 46v34"/><path d="M420 46L570 80"/><path d="M165 114v26"/><path d="M380 114v26"/><path d="M595 114v26"/></g>
+<g fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="5 4"><path d="M260 153h25"/><path d="M475 153h25"/></g>
+<text x="380" y="35" text-anchor="middle">50 | 100</text><text x="165" y="103" text-anchor="middle">10 | 30</text><text x="380" y="103" text-anchor="middle">60 | 80</text><text x="595" y="103" text-anchor="middle">110 | 150</text>
+<text x="165" y="159" text-anchor="middle">leaf: rows 1–49 →</text><text x="380" y="159" text-anchor="middle">leaf: rows 50–99 →</text><text x="595" y="159" text-anchor="middle">leaf: rows 100+</text>
+</svg><div class="cap2">Root → internal → linked leaves. Equality and range queries both stay fast.</div></div>
+
+<h3 class="t"><span class="ttl">Index kinds and the old textbook words</span><span class="src">LEC-14, mapped to MySQL / PostgreSQL</span></h3>
+<div class="tw"><table>
+<tr><th>Textbook term</th><th>Meaning</th><th>In practice</th></tr>
+<tr><td><b>Primary / clustering index</b></td><td>the data file is physically ordered by the index key</td><td><b>InnoDB:</b> the table <em>is</em> the primary key B+ tree (a clustered index). PostgreSQL heaps are unordered; <code>CLUSTER</code> is a one-time reorder</td></tr>
+<tr><td><b>Secondary / non-clustering index</b></td><td>an extra index on any other column; one entry per row</td><td>every other index. In InnoDB its leaves store the <b>primary key</b>, so a lookup is two tree walks</td></tr>
+<tr><td><b>Dense index</b></td><td>an entry for every row/key</td><td>secondary indexes</td></tr>
+<tr><td><b>Sparse index</b></td><td>an entry per data block</td><td>conceptual; clustered indexes behave this way</td></tr>
+<tr><td>Multilevel index</td><td>an index on the index, to avoid a long binary search</td><td>exactly what a B+ tree is</td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Type</th><th>Use</th></tr>
+<tr><td>Unique</td><td>enforce uniqueness (email); primary keys are unique indexes</td></tr>
+<tr><td><b>Composite</b> <code>(a, b, c)</code></td><td>queries filtering on a, then b, then c</td></tr>
+<tr><td>Covering</td><td>the index holds every column the query needs, so the table is never touched (<code>Using index</code>)</td></tr>
+<tr><td>Prefix</td><td>index the first N characters of a long string</td></tr>
+<tr><td>Full-text</td><td>word search (<code>MATCH … AGAINST</code>, <code>tsvector</code>)</td></tr>
+<tr><td>Hash</td><td>equality only, no ranges (memory tables, PostgreSQL hash indexes)</td></tr>
+<tr><td>Partial / functional (PostgreSQL, MySQL 8)</td><td>index only some rows, or an expression like <code>LOWER(email)</code></td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Composite indexes: the leftmost-prefix rule</span><span class="src">+ added</span></h3>
+<div class="code"><pre>CREATE INDEX idx_orders ON orders (customer_id, placed_on, status);
+
+-- Uses the index:
+WHERE customer_id = 7
+WHERE customer_id = 7 AND placed_on &gt;= '2025-01-01'
+WHERE customer_id = 7 ORDER BY placed_on           -- the index even provides the sort
+
+-- Cannot use it efficiently (skips the leading column):
+WHERE placed_on &gt;= '2025-01-01'
+WHERE status = 'paid'
+
+-- Rule of thumb for column order: equality columns first, then range / sort columns</pre></div>
+
+<h3 class="t"><span class="ttl">Why an index is not used</span><span class="src">+ added</span></h3>
+<ul class="pts">
+  <li><b>A function on the column:</b> <code>WHERE YEAR(placed_on) = 2025</code> → use a range <code>placed_on &gt;= '2025-01-01' AND placed_on &lt; '2026-01-01'</code>.</li>
+  <li><b>Leading wildcard:</b> <code>LIKE '%son'</code> can’t use a B-tree; <code>LIKE 'son%'</code> can.</li>
+  <li><b>Type mismatch:</b> comparing a string column to a number forces conversion of every row.</li>
+  <li><b>Low selectivity:</b> an index on a boolean or a status with 3 values rarely helps; the optimiser prefers a scan when many rows match.</li>
+  <li><b><code>OR</code> across different columns</b>, <code>!=</code>, and the left-prefix being skipped.</li>
+  <li>Stale statistics (<code>ANALYZE TABLE</code>) can mislead the optimiser.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Reading EXPLAIN</span><span class="src">+ added</span></h3>
+<div class="code"><pre>EXPLAIN SELECT * FROM orders WHERE customer_id = 7 ORDER BY placed_on;
+-- MySQL columns to read:
+--   type   : ALL (full scan, bad) &lt; index &lt; range &lt; ref &lt; eq_ref &lt; const (best)
+--   key    : the index actually chosen (NULL = none)
+--   rows   : estimated rows examined
+--   Extra  : "Using index" (covering, good) | "Using filesort" / "Using temporary" (extra work)
+
+EXPLAIN ANALYZE SELECT …;     -- runs the query and shows REAL times (PostgreSQL; MySQL 8.0.18+)
+-- PostgreSQL: "Seq Scan" = full scan, "Index Scan" / "Index Only Scan" = good</pre></div>
+<div class="add"><span class="tag">+ added</span><b>Interview routine for a slow query:</b> (1) find it (slow-query log, <code>pg_stat_statements</code>); (2) <code>EXPLAIN</code> it; (3) look for a full scan or a big “rows examined vs rows returned” gap; (4) add or reshape an index, or rewrite the query; (5) re-measure. Also check for the <b>N+1 problem</b>: one query for a list, then one more query per item. Fix with a join or a single <code>WHERE id IN (…)</code>.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Index = sorted B+ tree; O(log n) lookup</li>
+<li>Reads faster, writes and space slower</li>
+<li>Composite: leftmost prefix, equality before range</li>
+<li>No functions on indexed columns; <code>EXPLAIN</code> first</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 12 ============ -->
+<section class="sheet" id="pg-txn" data-part="Part C: Design and performance" data-title="Transactions, ACID, isolation, locking and recovery">
+
+<h3 class="t"><span class="ttl">Transactions and ACID</span><span class="src">LEC-12</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>A <b>transaction</b> is a logical unit of work made of one or more statements that must succeed or fail <b>together</b>. Transferring money is the standard example: debit one account and credit another, never just one.</div>
+<div class="code"><pre>START TRANSACTION;                       -- BEGIN in PostgreSQL
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+SAVEPOINT after_debit;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+-- something goes wrong?
+ROLLBACK TO after_debit;                 -- undo only the part after the savepoint
+COMMIT;                                  -- make everything permanent   (or ROLLBACK; to undo it all)</pre></div>
+<div class="tw"><table>
+<tr><th>Property</th><th>Meaning</th><th>Provided by</th></tr>
+<tr><td><b>A</b>tomicity</td><td>all operations happen, or none do</td><td>undo log / rollback</td></tr>
+<tr><td><b>C</b>onsistency</td><td>the database moves from one valid state to another; constraints hold before and after</td><td>constraints + the application’s logic</td></tr>
+<tr><td><b>I</b>solation</td><td>concurrent transactions behave as if they ran one after another</td><td>locks, MVCC, isolation levels</td></tr>
+<tr><td><b>D</b>urability</td><td>once committed, it survives a crash</td><td>write-ahead log flushed to disk</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Autocommit:</b> MySQL runs each statement as its own transaction unless you start one explicitly.</li>
+  <li><b>Transaction states:</b> <i>active</i> → <i>partially committed</i> → <i>committed</i> → <i>terminated</i>; or <i>active/partially committed</i> → <i>failed</i> → <i>aborted</i> (rolled back) → <i>terminated</i>. You cannot roll back from the committed state.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Concurrency problems and isolation levels</span><span class="src">+ added, the question the PDFs skip</span></h3>
+<div class="tw"><table>
+<tr><th>Anomaly</th><th>What happens</th></tr>
+<tr><td><b>Dirty read</b></td><td>you read another transaction’s <em>uncommitted</em> change, which then rolls back</td></tr>
+<tr><td><b>Non-repeatable read</b></td><td>you read a row twice in one transaction and get different values, because someone committed an update in between</td></tr>
+<tr><td><b>Phantom read</b></td><td>you run the same range query twice and get different <em>rows</em>, because someone inserted or deleted matching rows</td></tr>
+<tr><td><b>Lost update</b></td><td>two transactions read the same value and both write back, so one change is overwritten</td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Isolation level</th><th>Dirty read</th><th>Non-repeatable</th><th>Phantom</th><th>Default in</th></tr>
+<tr><td><code>READ UNCOMMITTED</code></td><td>possible</td><td>possible</td><td>possible</td><td>—</td></tr>
+<tr><td><code>READ COMMITTED</code></td><td>prevented</td><td>possible</td><td>possible</td><td>PostgreSQL, Oracle, SQL Server</td></tr>
+<tr><td><code>REPEATABLE READ</code></td><td>prevented</td><td>prevented</td><td>possible per the standard (InnoDB mostly prevents it)</td><td><b>MySQL InnoDB</b></td></tr>
+<tr><td><code>SERIALIZABLE</code></td><td>prevented</td><td>prevented</td><td>prevented</td><td>—</td></tr>
+</table></div>
+<div class="code"><pre>SET TRANSACTION ISOLATION LEVEL READ COMMITTED;       -- applies to the next transaction
+
+-- Avoid a lost update: lock the row you are about to change
+START TRANSACTION;
+SELECT stock FROM products WHERE id = 5 FOR UPDATE;  -- other writers wait
+UPDATE products SET stock = stock - 1 WHERE id = 5;
+COMMIT;
+
+-- Or make the update itself atomic (no read needed):
+UPDATE products SET stock = stock - 1 WHERE id = 5 AND stock &gt; 0;   -- check affected rows = 1</pre></div>
+<div class="add"><span class="tag">+ added</span><b>Higher isolation = fewer anomalies but more locking, retries and lower throughput.</b> Most apps run at the default and use <code>SELECT … FOR UPDATE</code>, atomic <code>UPDATE … SET x = x + 1</code>, unique constraints, or a <b>version column</b> (optimistic locking: <code>UPDATE … SET …, version = version + 1 WHERE id = ? AND version = ?</code>, retry if 0 rows changed) for the few places that need more.</div>
+
+<h3 class="t"><span class="ttl">Locks, MVCC and deadlocks</span><span class="src">+ added</span></h3>
+<ul class="pts">
+  <li><b>Locks:</b> <i>shared</i> (read; many allowed) and <i>exclusive</i> (write; one only), at row or table level. Row locks allow concurrency; lock escalation and table locks hurt it.</li>
+  <li><b>MVCC (multi-version concurrency control):</b> InnoDB and PostgreSQL keep several versions of a row, so <b>readers do not block writers</b> and writers do not block readers.</li>
+  <li><b>Pessimistic vs optimistic:</b> lock first and assume conflict (<code>FOR UPDATE</code>) versus assume no conflict and detect it at write time (version column).</li>
+  <li><b>Deadlock:</b> T1 holds row A and waits for B while T2 holds B and waits for A. The database detects the cycle and aborts one transaction (an error you must <b>retry</b>). Prevent it with a consistent lock order, short transactions, and good indexes (fewer rows locked).</li>
+  <li><b>Starvation:</b> a transaction waits forever because others keep getting the lock.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">How atomicity and durability are implemented</span><span class="src">LEC-13</span></h3>
+<div class="tw"><table>
+<tr><th>Scheme</th><th>How it works</th><th>Verdict</th></tr>
+<tr><td><b>Shadow copy</b></td><td>copy the whole DB, change the copy, then atomically flip a <code>db-pointer</code> on disk to the new copy; abort = delete the copy. The commit point is the pointer write</td><td>one transaction at a time; copying everything is far too slow. Teaching model only</td></tr>
+<tr><td><b>Log-based: deferred modification</b></td><td>write all changes to the log, apply them to the DB only at commit; if it crashes before commit, ignore the log; after commit, <b>redo</b></td><td>simple; but all changes wait until the end</td></tr>
+<tr><td><b>Log-based: immediate modification</b></td><td>apply changes to the DB while active, logging the old and new value first; after a failure <b>undo</b> uncommitted changes (old value) and <b>redo</b> committed ones (new value)</td><td>what real systems do</td></tr>
+</table></div>
+<div class="add"><span class="tag">+ added</span>The real-world name is <b>write-ahead logging (WAL)</b>: the log record must reach stable storage <em>before</em> the data page changes, which gives both atomicity (undo) and durability (redo). On restart the database replays the log from the last <b>checkpoint</b>. This is why <code>COMMIT</code> returns quickly even though the data pages are written later.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>ACID: all-or-nothing, valid, isolated, durable</li>
+<li>Dirty · non-repeatable · phantom reads → 4 isolation levels</li>
+<li>MySQL default REPEATABLE READ; PostgreSQL READ COMMITTED</li>
+<li>Deadlock → DB aborts one, you retry</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 13 ============ -->
+<section class="sheet" id="pg-scale-db" data-part="Part D: Scale and distribution" data-title="Replication, partitioning, sharding and CAP">
+
+<h3 class="t"><span class="ttl">The scaling ladder</span><span class="src">LEC-19 · scaling patterns, tidied</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>You scale a database step by step, from the cheapest fix to the most complex, and only when the previous step stops being enough. Each step buys headroom and adds a new problem.</div>
+<div class="tw"><table>
+<tr><th>Step</th><th>What</th><th>Buys you</th><th>New problem</th></tr>
+<tr><td>1 · Optimise</td><td>indexes, query tuning, connection pooling, caching hot data (Redis)</td><td>often 10×</td><td>cache invalidation</td></tr>
+<tr><td>2 · Vertical scaling</td><td>bigger machine: more CPU, RAM, faster SSD</td><td>easy, no code change</td><td>cost grows steeply; one machine is still a single point of failure</td></tr>
+<tr><td>3 · Read replicas</td><td>one <b>primary</b> takes writes; replicas copy it and serve reads</td><td>scales read-heavy apps; failover candidate</td><td><b>replication lag</b>: a replica may serve stale data</td></tr>
+<tr><td>4 · Multi-primary</td><td>several nodes accept writes</td><td>more write capacity, regional writes</td><td>write <b>conflicts</b> to resolve</td></tr>
+<tr><td>5 · Functional partitioning</td><td>different services/tables on different databases (users DB, orders DB, location DB)</td><td>isolates load, teams</td><td>no cross-DB joins or transactions; the app joins results</td></tr>
+<tr><td>6 · Sharding</td><td>split one table’s rows across many servers by a shard key</td><td>near-unlimited write and storage scale</td><td>complexity (see below)</td></tr>
+<tr><td>7 · Multi-region</td><td>data centres on several continents with cross-region replication</td><td>low latency worldwide, disaster recovery</td><td>consistency vs latency trade-offs (CAP)</td></tr>
+</table></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The notes call read-replica routing “CQRS”. <b>Read/write splitting</b> across a primary and replicas is not CQRS; CQRS (command query responsibility segregation) separates the <em>models</em> for writes and reads, often with different stores. Also, “master-slave” is now written <b>primary-replica</b> (or leader-follower), and “clustering” in these notes just means <b>replication</b> of the same data on several servers.</div>
+
+<h3 class="t"><span class="ttl">Replication</span><span class="src">LEC-17, LEC-21</span></h3>
+<ul class="pts">
+  <li><b>What:</b> copy the same data to several servers. <b>Why:</b> availability (a server can fail), read scaling and disaster recovery. This is “useful redundancy”, different from the bad redundancy that normalisation removes.</li>
+  <li><b>Synchronous:</b> the primary waits for replicas before confirming a write, so there is no data loss but writes are slower. <b>Asynchronous:</b> it confirms immediately and replicas catch up, so it is fast but a failover can lose the last writes and reads can lag. <b>Semi-sync</b> waits for at least one replica.</li>
+  <li><b>Failover:</b> promote a replica when the primary dies (automatic with Orchestrator, Patroni, Atlas, RDS Multi-AZ). Beware <b>split brain</b>: two nodes both think they are primary.</li>
+  <li><b>Reading your own writes:</b> after a write, read from the primary (or stick the user to it for a few seconds), so they do not “lose” what they just saved.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Partitioning vs sharding</span><span class="src">LEC-18</span></h3>
+<div class="tw"><table>
+<tr><th></th><th>Table partitioning</th><th>Sharding</th></tr>
+<tr><td>Where</td><td>one database server splits a big table into partitions</td><td>rows spread over <b>many servers</b>, each a separate database</td></tr>
+<tr><td>Vertical vs horizontal</td><td>vertical = split columns; <b>horizontal = split rows</b> (same columns)</td><td>a form of horizontal partitioning</td></tr>
+<tr><td>Who routes queries</td><td>the database, transparently</td><td>a routing layer or the application</td></tr>
+<tr><td>Main benefit</td><td>manageability, pruning, easy archiving of old partitions</td><td>scale beyond one machine</td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Shard strategy</th><th>How</th><th>Trade-off</th></tr>
+<tr><td>Range</td><td>ids 1–1M on shard A, next million on B</td><td>easy range scans; <b>hot spot</b> on the newest range</td></tr>
+<tr><td>Hash</td><td><code>hash(key) mod N</code> (or <b>consistent hashing</b>)</td><td>even spread; range queries touch every shard; plain <code>mod N</code> reshuffles most data when N changes</td></tr>
+<tr><td>Directory / lookup</td><td>a table maps key → shard</td><td>flexible; the directory is a bottleneck and single point of failure</td></tr>
+<tr><td>Geo</td><td>by region or tenant</td><td>data locality and compliance; uneven sizes</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Choosing the shard key</b> is the big decision: high cardinality, even distribution, and used in most queries (user id, tenant id).</li>
+  <li><b>Costs:</b> cross-shard joins and transactions (needs sagas or two-phase commit), <b>scatter-gather</b> for queries without the key, rebalancing (<b>re-sharding</b>) when shards grow unevenly, globally unique ids, operational complexity.</li>
+  <li>Shard last. Most apps need steps 1 to 3 for a long time.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">CAP theorem and PACELC</span><span class="src">LEC-20, corrected</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>In a distributed database, when the network between nodes <b>breaks (a partition)</b>, you must choose: keep answering (<b>availability</b>, possibly stale) or refuse requests that could be wrong (<b>consistency</b>). Partitions will happen, so the real choice is C or A <em>during a partition</em>.</div>
+<div class="tw"><table>
+<tr><th>Letter</th><th>Meaning</th></tr>
+<tr><td><b>C</b>onsistency</td><td>every read sees the latest write (same data on all nodes)</td></tr>
+<tr><td><b>A</b>vailability</td><td>every request to a working node gets a response</td></tr>
+<tr><td><b>P</b>artition tolerance</td><td>the system keeps working when messages between nodes are lost</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>CP</b> (consistent, sacrifices availability during a partition): MongoDB (default settings), HBase, etcd, ZooKeeper. Good for banking and inventory.</li>
+  <li><b>AP</b> (available, eventually consistent): Cassandra, DynamoDB (eventually consistent reads), CouchDB. Good for feeds, carts, “likes”. <b>Eventual consistency</b> = replicas converge if no new writes arrive.</li>
+  <li><b>“CA”</b> only exists for a single node or a network that never partitions, which is why a single-node MySQL looks “CA”.</li>
+  <li><b>PACELC:</b> even when there is no partition (E), you trade <b>latency (L)</b> against <b>consistency (C)</b>: synchronous replication is more consistent but slower.</li>
+</ul>
+<div class="flag"><span class="tag">⚑ corrected</span>The notes treat CAP as a menu of three databases types (“CA databases like MySQL”). In practice partition tolerance is not optional, and systems are <b>tunable</b>: Cassandra’s quorum reads and writes, or MongoDB’s <code>w</code>/<code>readConcern</code> settings, move them along the C–A line.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Optimise → scale up → replicas → shard (last)</li>
+<li>Replicas: fast reads, but lag</li>
+<li>Shard key decides everything</li>
+<li>CAP = C or A during a partition</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 14 ============ -->
+<section class="sheet" id="pg-nosql" data-part="Part D: Scale and distribution" data-title="NoSQL and choosing a database">
+
+<h3 class="t"><span class="ttl">What NoSQL is, and where it came from</span><span class="src">LEC-15, LEC-16</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>“NoSQL” (read “not only SQL”) means non-relational databases that store data in forms other than tables, usually with a flexible schema and easy horizontal scaling. They grew up in the late 2000s when storage got cheap, data got messier, apps needed to iterate fast, and cloud scale-out became normal.</div>
+<ul class="pts">
+  <li><b>Advantages:</b> flexible schema; horizontal scaling by sharding and replica sets; built-in replication for high availability; fast reads and writes when data is shaped like the queries (“data accessed together is stored together”).</li>
+  <li><b>Disadvantages:</b> duplicated data and costlier updates; weaker or no joins; fewer consistency guarantees in some systems; different tools and query languages; no single type fits every need.</li>
+  <li><b>Use when:</b> agile development with changing schemas, semi-structured or huge data, scale-out requirements, real-time streaming, micro-services each owning a store.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">The four main data models</span><span class="src">LEC-15</span></h3>
+<div class="tw"><table>
+<tr><th>Model</th><th>Stores</th><th>Examples</th><th>Good for</th></tr>
+<tr><td><b>Key-value</b></td><td>a key → an opaque value, like a persistent map</td><td>Redis, DynamoDB, Memcached</td><td>sessions, caches, carts, preferences, constant-time lookup by key</td></tr>
+<tr><td><b>Document</b></td><td>JSON-like documents with nested fields in collections</td><td>MongoDB, CouchDB</td><td>product catalogues, user profiles, content, general apps; supports ACID transactions (multi-document in MongoDB 4.0+)</td></tr>
+<tr><td><b>Wide-column</b></td><td>rows with a flexible set of columns grouped in column families, partitioned by key</td><td>Cassandra, HBase, Bigtable</td><td>huge write volumes with predictable query patterns: time series, messaging, IoT</td></tr>
+<tr><td><b>Graph</b></td><td>nodes and relationships as first-class data</td><td>Neo4j, Amazon Neptune</td><td>social networks, recommendations, fraud rings, knowledge graphs</td></tr>
+</table></div>
+<div class="flag"><span class="tag">⚑ corrected</span>The notes list “column-oriented / C-store / wide-column” as one thing, with Cassandra, Redshift and Snowflake together. They are different: <b>wide-column</b> stores (Cassandra, HBase) are NoSQL row-key stores; <b>columnar</b> databases (Redshift, Snowflake, ClickHouse, BigQuery) store each column together on disk for fast analytics (OLAP), and are usually SQL. Also, the notes both say NoSQL “doesn’t support ACID in general” and that “MongoDB does”; the accurate statement is that it <b>varies by product</b> and by configuration.</div>
+
+<h3 class="t"><span class="ttl">SQL vs NoSQL</span><span class="src">LEC-15</span></h3>
+<div class="tw"><table>
+<tr><th></th><th>SQL (relational)</th><th>NoSQL</th></tr>
+<tr><td>Model</td><td>tables with fixed columns</td><td>documents, key-value, wide-column, graph</td></tr>
+<tr><td>Schema</td><td>fixed, enforced by the DB</td><td>flexible (validate in app or with a schema validator)</td></tr>
+<tr><td>Relationships</td><td>foreign keys and joins</td><td>embed related data, or reference it; joins are limited</td></tr>
+<tr><td>Consistency</td><td>ACID transactions are the norm</td><td>varies; often eventual, with tunable levels</td></tr>
+<tr><td>Scaling</td><td>vertical first, then replicas, then sharding with effort</td><td>designed for horizontal scale-out</td></tr>
+<tr><td>Queries</td><td>powerful ad-hoc SQL; joins, aggregates</td><td>fast for known access patterns; ad-hoc analytics is harder</td></tr>
+<tr><td>Best for</td><td>transactions, reporting, complex relationships (banking, ERP)</td><td>huge scale, flexible and fast-changing data, simple access patterns</td></tr>
+</table></div>
+<div class="add"><span class="tag">+ added</span><b>How to choose:</b> “I start from the <b>access patterns and consistency needs</b>, not from fashion. Money and inventory with relationships and reporting → relational. A cache or session store → key-value. A content-heavy app with changing fields → document. Massive append-only writes → wide-column. Relationship traversal → graph. Many real systems are <b>polyglot</b>: Postgres for the core, Redis for caching, Elasticsearch for search.” Note that modern PostgreSQL <code>JSONB</code> columns blur the line.</div>
+
+<h3 class="t"><span class="ttl">Other database families (the textbook list)</span><span class="src">LEC-16</span></h3>
+<div class="tw"><table>
+<tr><th>Type</th><th>Idea</th><th>Today</th></tr>
+<tr><td>Hierarchical</td><td>tree: each child has exactly one parent (IBM IMS)</td><td>file systems, XML, menus; inflexible for many-to-many</td></tr>
+<tr><td>Network</td><td>graph: a child may have many parents (IDS, IDMS)</td><td>legacy; the ancestor of graph databases</td></tr>
+<tr><td>Object-oriented</td><td>store objects with inheritance and identity (ObjectDB)</td><td>niche; ORMs and document stores took its role</td></tr>
+<tr><td>Relational</td><td>tables, SQL (since the 1970s)</td><td>still the default for structured data</td></tr>
+</table></div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Key-value · document · wide-column · graph</li>
+<li>Choose by access pattern and consistency</li>
+<li>Wide-column ≠ columnar analytics</li>
+<li>Polyglot persistence is normal</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 15 ============ -->
+<section class="sheet" id="pg-sql-problems" data-part="Part E: Interview practice" data-title="Classic SQL interview problems">
+
+<h3 class="t"><span class="ttl">Practise first, then read the answers</span><span class="src">tables: employees, customers, orders, users</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>In plain words</b>Interviewers reuse about a dozen patterns. For each, say your approach in a sentence before writing SQL: which tables, what grouping, which edge cases (ties, NULLs, empty results).</div>
+
+<h3 class="t"><span class="ttl">1 · Second highest salary (and the Nth)</span><span class="src">asked everywhere</span></h3>
+<div class="code"><pre>-- a) subquery on the maximum
+SELECT MAX(salary) FROM employees WHERE salary &lt; (SELECT MAX(salary) FROM employees);
+
+-- b) DENSE_RANK handles ties and any N
+SELECT salary FROM (
+  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS r FROM employees
+) t WHERE r = 2 LIMIT 1;
+
+-- c) LIMIT/OFFSET on distinct values; wrap it so you return NULL (not no rows) when it doesn't exist
+SELECT (SELECT DISTINCT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 1) AS second_highest;</pre></div>
+
+<h3 class="t"><span class="ttl">2 · Find, then delete, duplicates</span><span class="src">asked everywhere</span></h3>
+<div class="code"><pre>-- find
+SELECT email, COUNT(*) AS n FROM users GROUP BY email HAVING COUNT(*) &gt; 1;
+
+-- delete, keeping the lowest id per email (works in MySQL 8 and PostgreSQL)
+DELETE FROM users
+WHERE id IN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (PARTITION BY email ORDER BY id) AS rn FROM users
+  ) t WHERE rn &gt; 1
+);
+-- then prevent them:  ALTER TABLE users ADD UNIQUE (email);</pre></div>
+
+<h3 class="t"><span class="ttl">3 · Customers who never ordered</span><span class="src">anti-join</span></h3>
+<div class="code"><pre>SELECT c.id, c.name
+FROM customers c
+WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+-- or: LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL
+-- avoid NOT IN (subquery) when the column can be NULL</pre></div>
+
+<h3 class="t"><span class="ttl">4 · Employees who earn more than their manager</span><span class="src">self join</span></h3>
+<div class="code"><pre>SELECT e.name AS employee, e.salary, m.name AS manager, m.salary AS manager_salary
+FROM employees e
+JOIN employees m ON e.manager_id = m.id
+WHERE e.salary &gt; m.salary;</pre></div>
+
+<h3 class="t"><span class="ttl">5 · Top 3 salaries in each department</span><span class="src">top N per group</span></h3>
+<div class="code"><pre>SELECT dept_id, name, salary
+FROM (
+  SELECT e.*, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk
+  FROM employees e
+) t
+WHERE rnk &lt;= 3
+ORDER BY dept_id, salary DESC;</pre></div>
+
+<h3 class="t"><span class="ttl">6 · Departments with the highest average salary</span><span class="src">group + compare</span></h3>
+<div class="code"><pre>SELECT dept_id, AVG(salary) AS avg_sal
+FROM employees
+GROUP BY dept_id
+HAVING AVG(salary) = (SELECT MAX(a) FROM (SELECT AVG(salary) AS a FROM employees GROUP BY dept_id) x);</pre></div>
+
+<h3 class="t"><span class="ttl">7 · Running total and month-over-month change</span><span class="src">window functions</span></h3>
+<div class="code"><pre>WITH monthly AS (
+  SELECT DATE_FORMAT(placed_on, '%Y-%m') AS month, SUM(total) AS revenue   -- PostgreSQL: TO_CHAR(placed_on, 'YYYY-MM')
+  FROM orders
+  GROUP BY DATE_FORMAT(placed_on, '%Y-%m')
+)
+SELECT month, revenue,
+       SUM(revenue) OVER (ORDER BY month)                                   AS running_total,
+       revenue - LAG(revenue) OVER (ORDER BY month)                         AS change_vs_prev,
+       ROUND(100 * (revenue - LAG(revenue) OVER (ORDER BY month))
+                 / NULLIF(LAG(revenue) OVER (ORDER BY month), 0), 1)        AS pct_change
+FROM monthly;</pre></div>
+
+<h3 class="t"><span class="ttl">8 · Orders placed within 7 days of the previous order</span><span class="src">LAG pattern</span></h3>
+<div class="code"><pre>-- users whose next order came within 7 days of the previous one
+SELECT DISTINCT customer_id
+FROM (
+  SELECT customer_id, placed_on,
+         LAG(placed_on) OVER (PARTITION BY customer_id ORDER BY placed_on) AS prev_on
+  FROM orders
+) t
+WHERE DATEDIFF(placed_on, prev_on) &lt;= 7;       -- PostgreSQL: placed_on - prev_on &lt;= 7</pre></div>
+
+<h3 class="t"><span class="ttl">9 · Pivot rows to columns, conditional aggregation</span><span class="src">no PIVOT keyword needed</span></h3>
+<div class="code"><pre>SELECT customer_id,
+       SUM(CASE WHEN status = 'paid'      THEN total ELSE 0 END) AS paid_total,
+       SUM(CASE WHEN status = 'refunded'  THEN total ELSE 0 END) AS refunded_total,
+       COUNT(CASE WHEN status = 'pending' THEN 1 END)            AS pending_orders
+FROM orders
+GROUP BY customer_id;</pre></div>
+
+<h3 class="t"><span class="ttl">10 · Customers who bought every product (relational division)</span><span class="src">harder</span></h3>
+<div class="code"><pre>-- customers who ordered ALL products: count distinct products per customer and compare
+SELECT o.customer_id
+FROM orders o
+JOIN order_items i ON i.order_id = o.id
+GROUP BY o.customer_id
+HAVING COUNT(DISTINCT i.product_id) = (SELECT COUNT(*) FROM products);</pre></div>
+<div class="add"><span class="tag">+ added</span><b>Checklist before you say “done”:</b> ties (rank vs dense rank), NULLs (<code>COALESCE</code>, <code>NOT IN</code>), empty groups (<code>LEFT JOIN</code> + <code>COALESCE(…, 0)</code>), duplicate rows from a one-to-many join, integer division (<code>100.0 * a / b</code>), time zones, and whether you need an index on the join or filter column. Say the <b>complexity</b> idea too: “this is one pass with a sort”.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Top-N per group: <code>DENSE_RANK() OVER (PARTITION BY …)</code></li>
+<li>“Never / none”: anti-join or <code>NOT EXISTS</code></li>
+<li>Compare to neighbour: <code>LAG/LEAD</code></li>
+<li>Pivot: <code>SUM(CASE WHEN …)</code></li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 16 ============ -->
+<section class="sheet" id="pg-qa" data-part="Part E: Interview practice" data-title="Rapid-fire Q&amp;A, quick check and cheat sheet">
+
+<h3 class="t"><span class="ttl">Rapid-fire concept questions</span><span class="src">say the one-liner, then add the edge</span></h3>
+<div class="tw"><table>
+<tr><th>Question</th><th>One-line answer</th></tr>
+<tr><td>Primary key vs unique key?</td><td>Both enforce uniqueness. Primary: not null, one per table, the row identity. Unique: may be NULL, many per table.</td></tr>
+<tr><td>Clustered vs non-clustered index?</td><td>Clustered: the table’s rows are stored in index order (one per table; InnoDB’s primary key). Non-clustered: a separate structure with pointers to rows (many).</td></tr>
+<tr><td>WHERE vs HAVING?</td><td>WHERE filters rows before grouping; HAVING filters groups after, and can use aggregates.</td></tr>
+<tr><td>UNION vs UNION ALL?</td><td>UNION removes duplicates (extra work); UNION ALL keeps them and is faster.</td></tr>
+<tr><td>INNER vs LEFT join?</td><td>INNER keeps only matches; LEFT keeps every left row, filling NULLs for no match.</td></tr>
+<tr><td>IN vs EXISTS?</td><td>IN compares to a list; EXISTS checks for any matching row and stops early. EXISTS is safe with NULLs; NOT IN is not.</td></tr>
+<tr><td>COUNT(*) vs COUNT(col) vs COUNT(DISTINCT col)?</td><td>All rows / non-NULL values / distinct non-NULL values.</td></tr>
+<tr><td>CHAR vs VARCHAR?</td><td>CHAR is fixed length (padded); VARCHAR stores only what is used. VARCHAR in almost every case.</td></tr>
+<tr><td>View vs materialized view?</td><td>A view re-runs its query each time; a materialized view stores the result and must be refreshed.</td></tr>
+<tr><td>Procedure vs function vs trigger?</td><td>Procedure: called, may change data. Function: returns a value, usable in a SELECT. Trigger: fires automatically on a data change.</td></tr>
+<tr><td>What is normalisation? Why denormalise?</td><td>Splitting tables to remove redundancy and anomalies (1NF to BCNF). Denormalise to cut joins for read-heavy paths, accepting duplicates.</td></tr>
+<tr><td>What are ACID properties?</td><td>Atomicity, Consistency, Isolation, Durability: the guarantees of a transaction.</td></tr>
+<tr><td>Dirty read vs phantom read?</td><td>Dirty: reading uncommitted data. Phantom: the same range query returns new or missing rows.</td></tr>
+<tr><td>Optimistic vs pessimistic locking?</td><td>Optimistic: detect conflicts at write time with a version column. Pessimistic: lock rows up front (<code>FOR UPDATE</code>).</td></tr>
+<tr><td>What is an index’s downside?</td><td>Extra storage and slower inserts, updates and deletes, since every index must be maintained.</td></tr>
+<tr><td>How do you find and fix a slow query?</td><td>Slow-query log, <code>EXPLAIN</code>, check for full scans and rows examined, add or reshape an index or rewrite, re-measure.</td></tr>
+<tr><td>What is the N+1 query problem?</td><td>One query for a list, then one per item. Fix with a join or a batched <code>IN</code>, or ORM eager loading.</td></tr>
+<tr><td>Sharding vs replication vs partitioning?</td><td>Replication copies the same data (availability, reads). Partitioning splits a table. Sharding splits it across servers (write and storage scale).</td></tr>
+<tr><td>What is CAP?</td><td>During a network partition you choose consistency or availability; partition tolerance is not optional.</td></tr>
+<tr><td>Prevent SQL injection?</td><td>Parameterised queries, least-privilege DB users, allow-list identifiers, never build SQL from strings.</td></tr>
+<tr><td>Soft delete vs hard delete?</td><td>Soft: set <code>deleted_at</code> and filter it out (recoverable, but every query must filter and uniques get tricky). Hard: remove the row.</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Quick check</span><span class="src">answers folded away</span></h3>
+<details><summary>1. Which key is a minimal super key, and what happens to the candidate keys you don’t pick as primary?</summary><p>A <b>candidate key</b> is a minimal super key. The ones not chosen as primary are <b>alternate keys</b> (usually given a <code>UNIQUE</code> constraint).</p></details>
+<details><summary>2. A <code>LEFT JOIN</code> with <code>WHERE o.total &gt; 100</code> returns no customers without orders. Why?</summary><p>Unmatched rows have NULL <code>o.total</code>, which fails the <code>WHERE</code> test, turning the left join into an inner join. Move the condition into the <code>ON</code> clause.</p></details>
+<details><summary>3. <code>SELECT * FROM t WHERE x NOT IN (SELECT y FROM u)</code> returns nothing. What is probably wrong?</summary><p><code>u.y</code> contains a NULL, so every comparison is UNKNOWN. Use <code>NOT EXISTS</code> or filter the NULLs out.</p></details>
+<details><summary>4. What is the logical execution order of a SELECT?</summary><p>FROM/JOIN, WHERE, GROUP BY, HAVING, window functions, SELECT, DISTINCT, ORDER BY, LIMIT.</p></details>
+<details><summary>5. Which normal form removes partial dependencies? Transitive ones?</summary><p>2NF removes partial dependencies on part of a composite key; 3NF removes transitive dependencies between non-key columns.</p></details>
+<details><summary>6. Rows with salary 9000, 9000, 7000: what do <code>RANK</code> and <code>DENSE_RANK</code> give the 7000 row?</summary><p><code>RANK</code> = 3 (a gap after the tie); <code>DENSE_RANK</code> = 2.</p></details>
+<details><summary>7. Why does <code>WHERE YEAR(placed_on) = 2025</code> ignore the index on <code>placed_on</code>?</summary><p>A function on the column makes the value computed per row, so the sorted index can’t be searched. Use a range: <code>placed_on &gt;= '2025-01-01' AND placed_on &lt; '2026-01-01'</code>.</p></details>
+<details><summary>8. An index is on <code>(a, b, c)</code>. Which of <code>WHERE b = 1</code>, <code>WHERE a = 1 AND c = 2</code> can use it?</summary><p>Leftmost-prefix rule: <code>b = 1</code> alone cannot. <code>a = 1 AND c = 2</code> can use the index for <code>a</code> only (and filter <code>c</code> afterwards).</p></details>
+<details><summary>9. What does each ACID letter protect against?</summary><p>Atomicity: partial updates. Consistency: invalid states. Isolation: concurrent interference. Durability: loss after a crash.</p></details>
+<details><summary>10. Which isolation level is the default in MySQL InnoDB, and in PostgreSQL?</summary><p>MySQL InnoDB: REPEATABLE READ. PostgreSQL: READ COMMITTED.</p></details>
+<details><summary>11. Name two costs of sharding.</summary><p>Cross-shard joins and transactions are hard; re-sharding and hot shards; a routing layer; scatter-gather queries without the shard key.</p></details>
+<details><summary>12. What do you choose during a partition in a banking system, and in a social feed?</summary><p>Banking: consistency (CP), refusing some requests. Social feed: availability (AP) with eventual consistency.</p></details>
+
+<h3 class="t"><span class="ttl">Cheat sheet</span><span class="src">one screen</span></h3>
+<div class="tw"><table>
+<tr><th>Topic</th><th>One line to remember</th></tr>
+<tr><td>Keys</td><td>super ⊃ candidate ⊃ primary; FK may be NULL; M:N → junction table</td></tr>
+<tr><td>Command families</td><td>DDL define · DQL read · DML change · DCL permissions · TCL transactions</td></tr>
+<tr><td>Delete family</td><td>DELETE rows (rollback) · TRUNCATE all rows · DROP the table</td></tr>
+<tr><td>Query order</td><td>FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT</td></tr>
+<tr><td>NULL</td><td><code>IS NULL</code>, <code>COALESCE</code>, <code>NOT EXISTS</code> not <code>NOT IN</code></td></tr>
+<tr><td>Joins</td><td>INNER matches · LEFT all left · anti-join = LEFT + IS NULL</td></tr>
+<tr><td>Window</td><td>OVER (PARTITION BY … ORDER BY …); ROW_NUMBER / RANK / DENSE_RANK; LAG / LEAD</td></tr>
+<tr><td>Normal forms</td><td>1NF atomic · 2NF whole key · 3NF only the key · BCNF super keys</td></tr>
+<tr><td>Index</td><td>B+ tree; leftmost prefix; no functions on columns; EXPLAIN</td></tr>
+<tr><td>Transactions</td><td>ACID; dirty / non-repeatable / phantom; deadlock → retry</td></tr>
+<tr><td>Scaling</td><td>optimise → scale up → replicas → shard</td></tr>
+<tr><td>CAP</td><td>partition: choose C (CP) or A (AP)</td></tr>
+<tr><td>Security</td><td>parameterised queries, least privilege, hash passwords</td></tr>
+</table></div>
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Say the trade-off, not just the definition</li>
+<li>Check NULLs, ties and duplicates</li>
+<li>Measure with EXPLAIN before optimising</li>
+</ul></div>
+</section>
+
+
+<script>
+(function () {
+  var sheets = [].slice.call(document.querySelectorAll('.sheet[data-title]'));
+  var total = sheets.length;
+  var toc = document.getElementById('toc');
+  var partsOrder = [], partsMap = {};
+
+  sheets.forEach(function (s, i) {
+    var n = i + 1;
+
+    var head = document.createElement('div');
+    head.className = 'sh';
+    head.innerHTML = '<span class="pg">Page ' + n + '</span><h2>' + s.getAttribute('data-title') + '</h2>';
+    s.insertBefore(head, s.firstChild);
+
+    var prev = sheets[i - 1], next = sheets[i + 1];
+    var ft = document.createElement('div');
+    ft.className = 'ft';
+    ft.innerHTML =
+      '<a ' + (prev ? 'href="#' + prev.id + '"' : 'class="off" aria-hidden="true"') + '>← previous</a>' +
+      '<span class="mid">Page ' + n + ' of ' + total + '</span>' +
+      '<a ' + (next ? 'href="#' + next.id + '"' : 'href="#contents"') + '>' + (next ? 'next →' : 'back to contents ↑') + '</a>';
+    s.appendChild(ft);
+
+    var part = s.getAttribute('data-part');
+    if (!partsMap[part]) { partsMap[part] = []; partsOrder.push(part); }
+    partsMap[part].push({ n: n, id: s.id, title: s.getAttribute('data-title') });
+  });
+
+  partsOrder.forEach(function (p) {
+    var d = document.createElement('div');
+    d.className = 'part';
+    var html = '<h4>' + p + '</h4><ol>';
+    partsMap[p].forEach(function (x) {
+      html += '<li><span>' + x.n + '.</span><a href="#' + x.id + '">' + x.title + '</a></li>';
+    });
+    d.innerHTML = html + '</ol>';
+    toc.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

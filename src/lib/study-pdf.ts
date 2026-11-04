@@ -43,7 +43,7 @@ const CHROME_CANDIDATES = [
   "/usr/bin/chromium-browser",
 ];
 
-function findChrome(): string {
+export function findChrome(): string {
   const fromEnv = process.env.CHROME_PATH;
   if (fromEnv) {
     if (!existsSync(fromEnv)) throw new Error(`CHROME_PATH does not exist: ${fromEnv}`);
@@ -60,7 +60,7 @@ function findChrome(): string {
 let running = 0;
 const waiting: (() => void)[] = [];
 
-async function withRenderSlot<T>(task: () => Promise<T>): Promise<T> {
+export async function withRenderSlot<T>(task: () => Promise<T>): Promise<T> {
   if (running >= MAX_CONCURRENT_RENDERS) {
     await new Promise<void>((resolve) => waiting.push(resolve));
   }

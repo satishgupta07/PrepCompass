@@ -2822,8 +2822,527 @@ function Comments({ commentsPromise }) {
 <!-- ============ PAGE 24 (Namaste notes 6) ============ -->
 
 
+<!-- ============ INTERVIEW PREP 1 ============ -->
+<section class="sheet" id="pg-iv-render" data-part="Part F: Interview prep" data-title="Interview prep 1: rendering, re-renders and reconciliation">
+
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>How to use Part F</b>These pages are the questions that keep coming back in frontend and full-stack interviews, written the way you should <em>say</em> them. Cover the answer, speak it aloud, then check. Use the 4-beat shape on every question: <mark class="y">define → mechanism → tiny example → trade-off or edge</mark>. The theory lives on pages 1–18; these pages only add what an interviewer pushes on.</div>
+
+<h3 class="t"><span class="ttl">What causes a re-render, and how do you remove the useless ones?</span><span class="src">asked in almost every loop</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A component re-renders when its own <b>state</b> changes, when its <b>parent renders</b>, or when a <b>context</b> it reads changes. Props changing is not a trigger by itself: the parent rendering is. A render is just calling my function again; it only touches the DOM if the output differs.”</div>
+<div class="tw"><table>
+<tr><th>Trigger</th><th>Re-renders</th><th>Fix when it is wasteful</th></tr>
+<tr><td>own <code>setState</code> (new value)</td><td>that component + all its children</td><td>move state <em>down</em> to the part that needs it</td></tr>
+<tr><td>parent renders</td><td>every child, even with identical props</td><td><code>React.memo</code> + stable props</td></tr>
+<tr><td>context value changes</td><td>every consumer, bypassing <code>memo</code></td><td>split contexts, or use a store with selectors</td></tr>
+<tr><td>same value in <code>setState</code></td><td>bails out (<code>Object.is</code> equal)</td><td>nothing needed</td></tr>
+</table></div>
+<div class="code"><pre>// Problem: typing re-renders the slow list
+function Page() {
+  const [text, setText] = useState("")
+  return (&lt;&gt;
+    &lt;input value={text} onChange={e =&gt; setText(e.target.value)} /&gt;
+    &lt;SlowList /&gt;               {/* re-renders on every keystroke */}
+  &lt;/&gt;)
+}
+
+// Fix 1: push state down so the list is not its child
+function Search() {
+  const [text, setText] = useState("")
+  return &lt;input value={text} onChange={e =&gt; setText(e.target.value)} /&gt;
+}
+function Page() { return (&lt;&gt;&lt;Search /&gt;&lt;SlowList /&gt;&lt;/&gt;) }   // SlowList no longer re-renders
+
+// Fix 2: memoise the list and keep its props stable
+const SlowList = React.memo(function SlowList({ items }) { /* … */ })</pre></div>
+<ul class="pts">
+  <li><b>Find them first:</b> React DevTools Profiler → “Record why each component rendered”, or the “Highlight updates” overlay. Measure before you memoise.</li>
+  <li>Cheaper than memo: pass heavy parts as <code>children</code> (their element identity does not change when the wrapper re-renders).</li>
+  <li><b>Interview edge:</b> “A parent re-render re-renders children <em>by default</em>, which is cheap. I only intervene when the Profiler shows a real cost.” That one sentence shows judgement.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">What happens when state updates? Batching and the three setCount calls</span><span class="src">output-based question</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<code>setState</code> does not change the variable in the current render. It schedules a re-render. React <b>batches</b> every update from one event into a single render (automatic batching since React 18, also inside timeouts and promises). Each render sees a fixed snapshot of state.”</div>
+<div class="code"><pre>const [count, setCount] = useState(0)
+
+function onClick() {
+  setCount(count + 1)
+  setCount(count + 1)
+  setCount(count + 1)
+  console.log(count)        // 0  (snapshot of this render)
+}
+// result after the click: count === 1   (three copies of 0 + 1)
+
+function onClickFixed() {
+  setCount(c =&gt; c + 1)      // updater: receives the latest queued value
+  setCount(c =&gt; c + 1)
+  setCount(c =&gt; c + 1)
+}
+// result: count === 3</pre></div>
+<p class="sees">▶ Order of work: <b>trigger</b> (setState) → <b>render</b> (call components, pure, can be paused) → <b>commit</b> (apply DOM changes, run layout effects, then effects).</p>
+<div class="add"><span class="tag">interview edge</span>Use the functional form whenever the next value depends on the previous one, and always inside timers and async code (it avoids stale closures, see the next sheet). To read the DOM right after an update use <code>flushSync</code> (rare) or a layout effect, not the next line of the handler.</div>
+
+<h3 class="t"><span class="ttl">Virtual DOM, reconciliation and Fiber: what actually happens</span><span class="src">asked 8+ times across the list</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Rendering produces a tree of plain objects, the <b>virtual DOM</b>. <b>Reconciliation</b> diffs the new tree against the previous one using two heuristics: different element types means rebuild that subtree, and <code>key</code> tells React which list item is which. <b>Fiber</b> is the rewrite of the engine that stores this work as a linked list of units, so React can split rendering into small chunks, pause it, and prioritise urgent updates over slow ones.”</div>
+<ul class="pts">
+  <li>Diff is O(n), not O(n³), because of those two assumptions.</li>
+  <li><b>Why Fiber exists:</b> the old recursive renderer could not be interrupted, so a big update froze typing. Fiber made rendering <em>interruptible</em>, which unlocks <code>useTransition</code>, <code>Suspense</code> and time slicing.</li>
+  <li>Two phases: <b>render</b> (interruptible, must be pure) and <b>commit</b> (synchronous, touches the DOM). That is why render must have no side effects: it may run twice or be thrown away.</li>
+  <li>The virtual DOM is <em>not</em> “faster than the DOM”. It lets React batch and minimise real DOM writes while you describe UI declaratively.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Why is an array index a dangerous key?</span><span class="src">bug-with-example question</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“The key is the item’s identity. With an index as key, inserting or reordering shifts the indexes, so React hands item A’s <b>state and DOM</b> to item B.”</div>
+<div class="code"><pre>// Each row has an uncontrolled input. Delete the first row.
+items.map((item, i) =&gt; &lt;Row key={i} item={item} /&gt;)
+// before: [a(typed "x"), b, c]   after delete: [b, c]
+// key 0 now holds b, so b inherits a's typed "x"  → wrong value shown
+
+items.map(item =&gt; &lt;Row key={item.id} item={item} /&gt;)   // stable id: correct</pre></div>
+<div class="add"><span class="tag">interview edge</span>Index keys are fine only for a static list that is never reordered, filtered or edited. Never use <code>Math.random()</code> as a key: it remounts every row on every render. A key on any element also works as a <b>reset button</b>: change <code>key</code> and the component remounts with fresh state.</div>
+
+<h3 class="t"><span class="ttl">Controlled vs uncontrolled components</span><span class="src">asked 4 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“In a <b>controlled</b> input React state is the single source of truth: <code>value</code> + <code>onChange</code>. In an <b>uncontrolled</b> one the DOM keeps the value and I read it with a ref or <code>FormData</code> when I need it.”</div>
+<div class="tw"><table>
+<tr><th></th><th>Controlled</th><th>Uncontrolled</th></tr>
+<tr><td>Live validation, formatting, dependent fields</td><td>easy</td><td>awkward</td></tr>
+<tr><td>Re-renders per keystroke</td><td>yes</td><td>none</td></tr>
+<tr><td>Large forms, performance</td><td>can lag</td><td>best (React Hook Form uses refs)</td></tr>
+<tr><td>File input</td><td>cannot be controlled</td><td>the only way</td></tr>
+</table></div>
+<div class="code"><pre>// Uncontrolled with FormData: no state, no re-renders
+function Form({ onSave }) {
+  return (
+    &lt;form onSubmit={e =&gt; {
+      e.preventDefault()
+      onSave(Object.fromEntries(new FormData(e.currentTarget)))
+    }}&gt;
+      &lt;input name="email" defaultValue="" /&gt;
+      &lt;button&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+  )
+}</pre></div>
+<div class="add"><span class="tag">interview edge</span>Say the trade-off, not a winner: “controlled when the UI reacts to every change, uncontrolled when I only need the value on submit or the form is huge.” Switching an input from <code>undefined</code> to a defined <code>value</code> triggers the controlled/uncontrolled warning, so always initialise to <code>""</code>.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Re-render = own state, parent, context</li>
+<li>Batching: use <code>setX(prev =&gt; …)</code></li>
+<li>Fiber = interruptible rendering</li>
+<li>Stable id as key, never the index</li>
+</ul></div>
+</section>
+
+<!-- ============ INTERVIEW PREP 2 ============ -->
+<section class="sheet" id="pg-iv-hooks" data-part="Part F: Interview prep" data-title="Interview prep 2: effects, async, races and custom hooks">
+
+<h3 class="t"><span class="ttl">Stale closures and effects that loop forever</span><span class="src">output-based question</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Every render creates new functions that <b>close over that render’s state</b>. A timer or listener created in render 1 keeps seeing render 1’s values. That is a stale closure.”</div>
+<div class="code"><pre>function Counter() {
+  const [count, setCount] = useState(0)
+  useEffect(() =&gt; {
+    const id = setInterval(() =&gt; setCount(count + 1), 1000)   // count is always 0 here
+    return () =&gt; clearInterval(id)
+  }, [])                      // effect never re-runs, so the closure never refreshes
+  return &lt;p&gt;{count}&lt;/p&gt;        // stuck at 1
+}
+
+// Fixes (pick one)
+setCount(c =&gt; c + 1)           // 1. updater form: needs no outside value, deps can stay []
+// 2. list `count` in deps (re-creates the timer every tick)
+// 3. keep the latest value in a ref, or use useEffectEvent (React 19.2)</pre></div>
+<p class="sees">▶ <b>Infinite loop recipe:</b> an effect that sets state it also depends on, or lists an object/array/function created during render as a dependency (new identity every render).</p>
+<ul class="pts">
+  <li>Fix the loop by removing the unneeded dependency, stabilising it (<code>useMemo</code>/<code>useCallback</code>), depending on a primitive (<code>user.id</code>, not <code>user</code>), or computing during render instead of in an effect.</li>
+  <li><b>When should it NOT be an effect?</b> Derived values (compute in render) and responses to a click (put in the handler). Effects are for <em>synchronising with something outside React</em>: network, timers, subscriptions, the DOM.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">useEffect vs useLayoutEffect</span><span class="src">asked 3 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<code>useEffect</code> runs <b>after the browser paints</b>. <code>useLayoutEffect</code> runs <b>after the DOM updates but before paint</b>, synchronously, so I can measure and adjust without the user seeing a flicker.”</div>
+<div class="code"><pre>// Tooltip placement: measure, then position, before the user sees anything
+useLayoutEffect(() =&gt; {
+  const { height } = ref.current.getBoundingClientRect()
+  setTop(anchorTop - height)          // re-renders synchronously, before paint
+}, [anchorTop])</pre></div>
+<div class="add"><span class="tag">interview edge</span>Default to <code>useEffect</code>: a layout effect blocks painting, so slow work there hurts responsiveness. It does not run on the server, and warns during SSR, which is another reason to use it only for real measure-then-adjust cases.</div>
+
+<h3 class="t"><span class="ttl">Race conditions when the user types fast</span><span class="src">search-box scenario</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Responses can arrive out of order, so an old, slow request can overwrite a newer result. I cancel the previous request in the effect cleanup, or ignore its result, and I debounce the input to send fewer requests in the first place.”</div>
+<div class="code"><pre>useEffect(() =&gt; {
+  if (!query) { setResults([]); return }
+  const ctrl = new AbortController()
+  const t = setTimeout(async () =&gt; {                 // debounce 300 ms
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: ctrl.signal })
+      if (!res.ok) throw new Error(res.status)
+      setResults(await res.json())
+    } catch (e) {
+      if (e.name !== "AbortError") setError(e)        // aborting is expected, not an error
+    }
+  }, 300)
+  return () =&gt; { clearTimeout(t); ctrl.abort() }       // runs before the next effect and on unmount
+}, [query])</pre></div>
+<ul class="pts">
+  <li>Without <code>AbortController</code>, use an <code>ignore</code> flag set in cleanup: <code>if (!ignore) setResults(data)</code>.</li>
+  <li>Abort cancels the network request <em>client-side</em> only; the server may still process it.</li>
+  <li><b>Interview edge:</b> mention that TanStack Query / SWR handle cancellation, dedup and caching for you, but you should know the manual version.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">A reusable useFetch hook: loading, error, cancel, retry</span><span class="src">asked 4 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A custom hook is a function starting with <code>use</code> that composes other hooks and returns state plus actions. My fetch hook owns three states, cancels on unmount or URL change, retries transient failures with backoff, and exposes a <code>refetch</code>.”</div>
+<div class="code"><pre>function useFetch(url, { retries = 2 } = {}) {
+  const [state, setState] = useState({ data: null, error: null, loading: true })
+  const [nonce, setNonce] = useState(0)                 // bump to refetch
+  const refetch = useCallback(() =&gt; setNonce(n =&gt; n + 1), [])
+
+  useEffect(() =&gt; {
+    const ctrl = new AbortController()
+    setState(s =&gt; ({ ...s, loading: true, error: null }))
+
+    async function run() {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          const res = await fetch(url, { signal: ctrl.signal })
+          if (!res.ok) throw Object.assign(new Error("HTTP " + res.status), { status: res.status })
+          return setState({ data: await res.json(), error: null, loading: false })
+        } catch (e) {
+          if (e.name === "AbortError") return                       // cancelled: do nothing
+          const retryable = !e.status || e.status &gt;= 500           // never retry 4xx
+          if (!retryable || attempt &gt;= retries)
+            return setState({ data: null, error: e, loading: false })
+          await new Promise(r =&gt; setTimeout(r, 2 ** attempt * 500)) // 0.5 s, 1 s, …
+        }
+      }
+    }
+    run()
+    return () =&gt; ctrl.abort()
+  }, [url, retries, nonce])
+
+  return { ...state, refetch }
+}</pre></div>
+<div class="add"><span class="tag">interview edge</span>Call out what a real library adds: <b>cache</b> shared between components, <b>request deduplication</b>, stale-while-revalidate, retry with jitter, focus refetch. Then say “in production I would use TanStack Query, and this is how it works underneath.”</div>
+
+<h3 class="t"><span class="ttl">A useDebounce hook</span><span class="src">asked in 3 loops</span></h3>
+<div class="code"><pre>function useDebounce(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() =&gt; {
+    const id = setTimeout(() =&gt; setDebounced(value), delay)
+    return () =&gt; clearTimeout(id)          // a new keystroke cancels the pending update
+  }, [value, delay])
+  return debounced
+}
+
+const q = useDebounce(input, 300)           // effect that fetches depends on q, not input</pre></div>
+<p class="sees">▶ The effect cleanup <em>is</em> the debounce: each change clears the previous timer, so only a pause of 300 ms lets the value through. For a debounced <em>callback</em> use a ref so the timer survives re-renders.</p>
+
+<h3 class="t"><span class="ttl">useRef vs useState, createRef, and passing refs to a child</span><span class="src">asked 3 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Both persist across renders. <b>State</b> changes schedule a re-render. A <b>ref</b> is a mutable box, <code>{ current }</code>, that React never watches, so changing it does not re-render. I use refs for DOM nodes, timer ids and ‘latest value’ without UI impact.”</div>
+<ul class="pts">
+  <li><code>createRef()</code> makes a <em>new</em> object every call, so it is for class components. In function components use <code>useRef</code>, which returns the same object each render.</li>
+  <li><b>Passing a ref to a child:</b> in React 19 <code>ref</code> is a normal prop on function components. Before 19 you wrapped the child in <code>forwardRef</code>.</li>
+  <li>Expose a small API instead of the raw node with <code>useImperativeHandle</code>, e.g. <code>{ focus, reset }</code>.</li>
+  <li>Never read or write <code>ref.current</code> during render (except one-time lazy init): it makes rendering impure.</li>
+</ul>
+<div class="code"><pre>// React 19: ref is just a prop
+function FancyInput({ ref, ...props }) { return &lt;input ref={ref} {...props} /&gt; }
+
+function Parent() {
+  const inputRef = useRef(null)
+  return (&lt;&gt;
+    &lt;FancyInput ref={inputRef} /&gt;
+    &lt;button onClick={() =&gt; inputRef.current.focus()}&gt;Focus&lt;/button&gt;
+  &lt;/&gt;)
+}</pre></div>
+
+<h3 class="t"><span class="ttl">useTransition and useDeferredValue</span><span class="src">asked 3 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Both mark an update as <b>non-urgent</b> so typing and clicks stay responsive while a heavy render happens in the background, and React can interrupt it. <code>useTransition</code> wraps the <em>setter</em> I control; <code>useDeferredValue</code> defers a <em>value</em> I only receive.”</div>
+<div class="code"><pre>// Setter is mine: useTransition
+const [isPending, startTransition] = useTransition()
+function onChange(e) {
+  setText(e.target.value)                          // urgent: input stays instant
+  startTransition(() =&gt; setFilter(e.target.value))   // slow list updates when there is time
+}
+
+// Value arrives from props: useDeferredValue
+const deferredQuery = useDeferredValue(query)
+const list = useMemo(() =&gt; filterBig(items, deferredQuery), [items, deferredQuery])
+const stale = query !== deferredQuery               // show a dimmed list while catching up</pre></div>
+<div class="add"><span class="tag">interview edge</span>This is <em>not</em> debouncing: no fixed delay and no dropped updates, and the render can be interrupted. It does not reduce the work or the network calls. Debounce those, transition the render.</div>
+
+<h3 class="t"><span class="ttl">A component that subscribes to an external source and cleans up</span><span class="src">asked in 2 loops</span></h3>
+<div class="code"><pre>// Basic: subscribe in an effect, always return the unsubscribe
+useEffect(() =&gt; {
+  const onResize = () =&gt; setWidth(window.innerWidth)
+  window.addEventListener("resize", onResize)
+  return () =&gt; window.removeEventListener("resize", onResize)
+}, [])
+
+// Best for external stores: useSyncExternalStore (no tearing in concurrent rendering)
+const online = useSyncExternalStore(
+  cb =&gt; { addEventListener("online", cb); addEventListener("offline", cb)
+          return () =&gt; { removeEventListener("online", cb); removeEventListener("offline", cb) } },
+  () =&gt; navigator.onLine,          // client snapshot
+  () =&gt; true                       // server snapshot (SSR)
+)</pre></div>
+<p class="sees">▶ Zustand, Redux and TanStack Query all use <code>useSyncExternalStore</code> under the hood.</p>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Stale closure → updater form or ref</li>
+<li>Race → abort in cleanup + debounce</li>
+<li>Layout effect = before paint</li>
+<li>Transition ≠ debounce</li>
+</ul></div>
+</section>
+
+<!-- ============ INTERVIEW PREP 3 ============ -->
+<section class="sheet" id="pg-iv-arch" data-part="Part F: Interview prep" data-title="Interview prep 3: state management, optimistic UI, errors and routing">
+
+<h3 class="t"><span class="ttl">Context vs Redux Toolkit vs Zustand vs TanStack Query</span><span class="src">asked 6 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“First I ask <b>what kind of state</b> it is. <b>Server state</b> (remote data that can go stale) belongs in TanStack Query. <b>Local UI state</b> stays in the component. <b>Shared client state</b> uses Context if it rarely changes, otherwise a store like Zustand or Redux Toolkit. They solve different problems.”</div>
+<div class="tw"><table>
+<tr><th>Tool</th><th>Best for</th><th>Watch out for</th></tr>
+<tr><td><code>useState</code> / lifting up</td><td>state used by one component or a near neighbour</td><td>prop drilling beyond ~3 levels</td></tr>
+<tr><td>Context</td><td>theme, locale, current user: rarely changes</td><td>every consumer re-renders on any change, <code>memo</code> cannot stop it</td></tr>
+<tr><td>Zustand</td><td>small to medium shared client state, tiny API, selectors</td><td>no enforced structure, discipline needed in big teams</td></tr>
+<tr><td>Redux Toolkit</td><td>large app, many teams, complex flows, time-travel debugging, strict conventions</td><td>more boilerplate than Zustand</td></tr>
+<tr><td>TanStack Query / SWR</td><td>API data: cache, dedup, background refetch, retries, pagination</td><td>not for pure UI state</td></tr>
+</table></div>
+<div class="code"><pre>// Context pitfall: new object every render re-renders all consumers
+&lt;Cart.Provider value={{ items, add }}&gt;           // new object each time
+
+const value = useMemo(() =&gt; ({ items, add }), [items, add])   // stable
+// Better: split into CartStateContext and CartActionsContext so buttons
+// that only call add() do not re-render when items change
+
+// Zustand: a component subscribes only to the slice it selects
+const count = useCartStore(s =&gt; s.items.length)   // re-renders only when length changes</pre></div>
+<div class="add"><span class="tag">interview edge</span>Context is <b>not</b> a state manager: it only transports a value. The state still lives in <code>useState</code>/<code>useReducer</code> above it. Say “I will not put server data in Redux by default, because then I have to re-implement caching, loading and invalidation by hand.”</div>
+
+<h3 class="t"><span class="ttl">Prop drilling and the shopping cart scenario</span><span class="src">senior full-stack loop</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Prop drilling is passing props through components that do not use them. I fix it with composition first (pass children or elements), then context for stable values, then a store when many distant components read and write the same state.”</div>
+<ul class="pts">
+  <li><b>Cart</b> is shared by header badge, product list, cart page and checkout, and survives route changes: a store is justified (Redux or Zustand, persisted to <code>localStorage</code>; the server cart is the truth once logged in).</li>
+  <li><b>Offer applied to the cart</b> is derived data: store the <em>offer code</em> and compute the discount with a selector. Do not store totals; they go out of sync.</li>
+  <li><b>Remove an item:</b> the UI removes it locally and calls <code>DELETE /cart/items/:id</code>. Stock is <em>not</em> restored by the frontend: inventory is owned by the backend, which releases a reservation (or on order cancel). Never trust the client for stock or price.</li>
+  <li>The product <em>list</em> and <em>details</em> are server state (TanStack Query), not Redux.</li>
+</ul>
+<div class="code"><pre>const useCart = create(set =&gt; ({
+  items: [],                                   // [{ id, qty }]
+  offer: null,
+  add:    id =&gt; set(s =&gt; ({ items: upsert(s.items, id, +1) })),
+  remove: id =&gt; set(s =&gt; ({ items: s.items.filter(i =&gt; i.id !== id) })),
+  applyOffer: code =&gt; set({ offer: code }),
+}))
+const total = useCart(s =&gt; price(s.items, s.offer))   // derived, never stored</pre></div>
+
+<h3 class="t"><span class="ttl">Optimistic updates with rollback</span><span class="src">like-button scenario</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I update the UI immediately, send the request, and if it fails I <b>restore the previous value</b> and tell the user. On success I confirm against the server so any difference wins.”</div>
+<div class="code"><pre>// Manual version
+async function toggleLike(post) {
+  const prev = post.liked                          // 1. remember
+  setPost(p =&gt; ({ ...p, liked: !prev, likes: p.likes + (prev ? -1 : 1) }))   // 2. instant
+  try {
+    await api.like(post.id, !prev)                 // 3. server
+  } catch {
+    setPost(p =&gt; ({ ...p, liked: prev, likes: p.likes + (prev ? 1 : -1) }))  // 4. rollback
+    toast.error("Could not update. Try again.")
+  }
+}
+
+// React 19: useOptimistic reverts automatically when the action settles
+const [optimisticLikes, addOptimistic] = useOptimistic(likes, (cur, delta) =&gt; cur + delta)
+async function action() { addOptimistic(1); await api.like(id) }</pre></div>
+<ul class="pts">
+  <li>TanStack Query: <code>onMutate</code> (snapshot + cancel outgoing fetches + set cache), <code>onError</code> (restore snapshot), <code>onSettled</code> (invalidate to resync).</li>
+  <li><b>Edges:</b> rapid double-click (disable or queue, make the endpoint idempotent), two tabs, and only use it for actions that rarely fail. Do <em>not</em> use it for payments.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Role-based access control and 404 with React Router</span><span class="src">asked in a recent loop</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Frontend role checks are <b>UX only</b>: hide what the user cannot use and redirect. The real enforcement is on the server for every request, because anyone can edit client code.”</div>
+<div class="code"><pre>function RequireRole({ roles }) {
+  const { user, loading } = useAuth()
+  const location = useLocation()
+  if (loading) return &lt;Spinner /&gt;
+  if (!user) return &lt;Navigate to="/login" state={{ from: location }} replace /&gt;
+  if (!roles.includes(user.role)) return &lt;Navigate to="/forbidden" replace /&gt;
+  return &lt;Outlet /&gt;                                  // render the nested routes
+}
+
+&lt;Routes&gt;
+  &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+  &lt;Route element={&lt;RequireRole roles={["admin"]} /&gt;}&gt;
+    &lt;Route path="/admin" element={&lt;Admin /&gt;} /&gt;
+  &lt;/Route&gt;
+  &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;             {/* 404: matches anything unmatched */}
+&lt;/Routes&gt;
+
+// Fine-grained: &lt;Can permission="invoice:delete"&gt;&lt;DeleteButton /&gt;&lt;/Can&gt;</pre></div>
+<div class="add"><span class="tag">interview edge</span>Keep frontend permissions consistent with the backend by sending <b>permissions from the server</b> (in the user payload) instead of hard-coding role names in many components. Wait for the auth check before redirecting, or you flash the login page on refresh. A real 404 status for SEO needs server rendering.</div>
+
+<h3 class="t"><span class="ttl">Error boundaries and centralised error handling with retries</span><span class="src">asked 3 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“An error boundary catches errors thrown <b>while rendering</b>, in lifecycle methods and constructors of its children, and shows a fallback. It does <b>not</b> catch event handlers, async code, server rendering, or errors in the boundary itself.”</div>
+<ul class="pts">
+  <li>Still needs a class component, or use the <code>react-error-boundary</code> package (<code>resetKeys</code>, <code>onReset</code>).</li>
+  <li><b>Place several</b>: one around the app, plus around risky widgets so a chart failing does not blank the page.</li>
+  <li>Handler and async errors: try/catch, then push into state or a toast. In React 19, <code>onCaughtError</code>/<code>onUncaughtError</code> on <code>createRoot</code> give one place to log.</li>
+</ul>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Many requests fail at once, what do you do?</b>One layer decides, not every component. Send all calls through one client (axios interceptor or a <code>fetch</code> wrapper, or the TanStack <code>QueryCache</code> <code>onError</code>).</div>
+<ul class="pts">
+  <li><b>Retry only what is safe:</b> network errors, 502/503/504 and 429 (respect <code>Retry-After</code>), on idempotent requests. Never retry 400/401/403/404, and never blindly retry a <code>POST</code> without an idempotency key.</li>
+  <li><b>Exponential backoff with jitter</b> (<code>delay = base * 2^n + random</code>) so thousands of clients do not retry in lockstep and hammer a recovering server.</li>
+  <li><b>401:</b> refresh the token <em>once</em>, queue the other failed requests behind that single refresh, then replay them.</li>
+  <li><b>Collapse the noise:</b> show one toast (“Some data failed to load”), per-section inline errors with a Retry button, and keep stale data visible. Report to Sentry with the request id.</li>
+  <li>A circuit breaker on the client stops hitting an endpoint that keeps failing for a short cool-down.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Route-based code splitting without hurting UX</span><span class="src">asked in 3 loops</span></h3>
+<div class="code"><pre>const Dashboard = lazy(() =&gt; import("./pages/Dashboard"))
+
+&lt;ErrorBoundary fallback={&lt;ChunkError /&gt;}&gt;          {/* chunk failed to load (offline, new deploy) */}
+  &lt;Suspense fallback={&lt;DashboardSkeleton /&gt;}&gt;     {/* skeleton of the same shape: no layout jump */}
+    &lt;Routes&gt;&lt;Route path="/dashboard" element={&lt;Dashboard /&gt;} /&gt;&lt;/Routes&gt;
+  &lt;/Suspense&gt;
+&lt;/ErrorBoundary&gt;
+
+// Prefetch before the click: hover or idle
+&lt;Link to="/dashboard" onMouseEnter={() =&gt; import("./pages/Dashboard")}&gt;Dashboard&lt;/Link&gt;</pre></div>
+<ul class="pts">
+  <li>Split by <b>route</b> first, then by heavy widgets (charts, editors, maps). Do not split tiny components: each chunk costs a request.</li>
+  <li>Wrap navigation in <code>startTransition</code> (React Router v7 does this by default) so the old page stays visible instead of flashing the fallback.</li>
+  <li>Check the result with a bundle analyser (<code>vite-bundle-visualizer</code>, <code>webpack-bundle-analyzer</code>), and set a size budget in CI.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Server state ≠ client state</li>
+<li>Optimistic: snapshot, update, rollback</li>
+<li>Frontend roles are UX, server enforces</li>
+<li>Retry only safe calls, with jitter</li>
+</ul></div>
+</section>
+
+<!-- ============ INTERVIEW PREP 4 ============ -->
+<section class="sheet" id="pg-iv-perf" data-part="Part F: Interview prep" data-title="Interview prep 4: performance, SSR, Server Components and small questions">
+
+<h3 class="t"><span class="ttl">“The page takes 5 seconds to become interactive.” How do you investigate?</span><span class="src">asked 5 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“<b>Measure first, then split the problem</b> into network, JavaScript on the main thread, and rendering. I never optimise by guessing.”</div>
+<div class="tw"><table>
+<tr><th>Step</th><th>Tool</th><th>Typical finding → fix</th></tr>
+<tr><td>1. Reproduce on a slow device</td><td>DevTools throttling (4× CPU, Fast 3G), Lighthouse, real-user data (CrUX, Web Vitals)</td><td>numbers for LCP, INP, CLS, TBT, TTI</td></tr>
+<tr><td>2. Network waterfall</td><td>Network panel</td><td>big bundle, render-blocking CSS/JS, late API calls → code split, compress (Brotli), CDN, preload critical, defer the rest, fetch in parallel not in a chain</td></tr>
+<tr><td>3. Main thread</td><td>Performance panel (long tasks &gt; 50 ms)</td><td>heavy parse/execute → remove or lazy-load dependencies, tree-shake, move work to a Web Worker</td></tr>
+<tr><td>4. React rendering</td><td>React Profiler</td><td>wasted renders → push state down, memo, virtualise lists, transitions</td></tr>
+<tr><td>5. Assets</td><td>Lighthouse, network</td><td>unoptimised images → AVIF/WebP, <code>srcset</code>, <code>loading="lazy"</code>, width/height to stop CLS; fonts → <code>font-display: swap</code>, subset</td></tr>
+<tr><td>6. Rendering strategy</td><td>—</td><td>blank screen until JS runs → SSR/SSG so content arrives as HTML</td></tr>
+</table></div>
+<div class="add"><span class="tag">interview edge</span>Finish with <b>guarding it</b>: a performance budget and Lighthouse CI in the pipeline, plus real-user monitoring. “Reduce load time by 40%” answers should always be a measured before/after, ordered by biggest win first (usually bundle size and the API waterfall).</div>
+
+<h3 class="t"><span class="ttl">Virtualise a table of 50,000 rows</span><span class="src">asked 5 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Only the rows in (and just outside) the viewport are in the DOM. A tall spacer keeps the scrollbar honest, and the visible slice is computed from <code>scrollTop</code>. DOM size stays at about 30 nodes instead of 50,000.”</div>
+<div class="code"><pre>const ROW = 40, VIEW = 400, OVERSCAN = 5
+
+function VirtualList({ rows }) {
+  const [top, setTop] = useState(0)
+  const start = Math.max(0, Math.floor(top / ROW) - OVERSCAN)
+  const end   = Math.min(rows.length, Math.ceil((top + VIEW) / ROW) + OVERSCAN)
+
+  return (
+    &lt;div style={{ height: VIEW, overflow: "auto" }}
+         onScroll={e =&gt; setTop(e.currentTarget.scrollTop)}&gt;
+      &lt;div style={{ height: rows.length * ROW, position: "relative" }}&gt;   {/* full height */}
+        {rows.slice(start, end).map((r, i) =&gt; (
+          &lt;div key={r.id}
+               style={{ position: "absolute", top: (start + i) * ROW, height: ROW }}&gt;
+            {r.name}
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}</pre></div>
+<ul class="pts">
+  <li>In production use <code>@tanstack/react-virtual</code>, <code>react-window</code> or <code>react-virtuoso</code>: they handle variable heights, sticky headers and scroll restoration.</li>
+  <li><b>Trade-offs:</b> Ctrl+F cannot find off-screen text, accessibility needs <code>aria-rowcount</code>/<code>aria-rowindex</code>, and a fast scroll shows blank flashes without overscan.</li>
+  <li>Often the real fix is not to load 50,000 rows at all: <b>server-side pagination, filtering and sorting</b> with cursor paging, and virtualise only what remains.</li>
+  <li>With real-time updates: batch incoming messages (apply once per animation frame), update rows by id, and keep row components memoised.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Memory leaks in React: causes and how to debug</span><span class="src">asked 3 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A leak is memory that stays reachable after the component is gone. In React it almost always means something outside React still holds a reference: a listener, a timer, a subscription or a cache.”</div>
+<ul class="pts">
+  <li><b>Causes:</b> <code>addEventListener</code> / <code>setInterval</code> / WebSocket / observer not cleaned up in the effect return; subscriptions to a store; closures holding big objects; global or module-level caches that only grow; detached DOM nodes kept in a ref or variable; uncancelled long requests.</li>
+  <li><b>Fix:</b> every effect that starts something returns the function that stops it (<code>removeEventListener</code>, <code>clearInterval</code>, <code>socket.close()</code>, <code>observer.disconnect()</code>, <code>ctrl.abort()</code>). Bound caches (LRU), use <code>WeakMap</code> for per-object data.</li>
+  <li><b>Debug:</b> Chrome DevTools → Memory → take a heap snapshot, use the feature, navigate away, force GC, take a second snapshot and use “Comparison”. Look for <b>Detached</b> nodes and growing counts. The Performance panel’s memory graph with a sawtooth that never returns to baseline is the symptom.</li>
+  <li><b>Catch it early:</b> React Strict Mode runs effects twice in development, which exposes missing cleanup immediately.</li>
+</ul>
+<div class="code"><pre>useEffect(() =&gt; {
+  const ws = new WebSocket(url)
+  ws.onmessage = e =&gt; setMsgs(m =&gt; [...m.slice(-199), JSON.parse(e.data)])   // bounded list
+  return () =&gt; ws.close()
+}, [url])</pre></div>
+
+<h3 class="t"><span class="ttl">CSR vs SSR vs SSG, hydration and hydration mismatch</span><span class="src">asked 4 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“With <b>SSR</b> the server sends real HTML, so content shows early. <b>Hydration</b> then attaches event handlers and React state to that HTML. React expects the first client render to produce the <em>same</em> output. If it does not, that is a <b>hydration mismatch</b>.”</div>
+<div class="tw"><table>
+<tr><th>Strategy</th><th>HTML built</th><th>Good for</th><th>Cost</th></tr>
+<tr><td>CSR</td><td>in the browser</td><td>logged-in dashboards, no SEO need</td><td>blank until JS loads, slower first paint</td></tr>
+<tr><td>SSG</td><td>at build time</td><td>docs, marketing, blogs</td><td>stale until rebuild (ISR revalidates)</td></tr>
+<tr><td>SSR</td><td>per request</td><td>SEO + personalised or fresh pages</td><td>server load, TTFB, hydration cost</td></tr>
+<tr><td>Streaming SSR + Suspense</td><td>in chunks</td><td>slow data on part of the page</td><td>more moving parts</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Mismatch causes:</b> <code>Date.now()</code>, <code>Math.random()</code>, <code>window</code>/<code>localStorage</code> read during render, time zone or locale differences, invalid HTML nesting (<code>&lt;div&gt;</code> in <code>&lt;p&gt;</code>), browser extensions rewriting the DOM.</li>
+  <li><b>Fixes:</b> render the same thing first, then set client-only values in <code>useEffect</code>; <code>useId</code> for ids; <code>suppressHydrationWarning</code> for a known single text difference (a timestamp); pass server-computed values down.</li>
+</ul>
+<div class="code"><pre>const [mounted, setMounted] = useState(false)
+useEffect(() =&gt; setMounted(true), [])
+return mounted ? &lt;LocalTime /&gt; : &lt;span&gt;&amp;nbsp;&lt;/span&gt;     // same on server and first client render</pre></div>
+
+<h3 class="t"><span class="ttl">Server Components vs Client Components</span><span class="src">asked 3 times</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A <b>Server Component</b> renders only on the server: it can read the database directly, and its code and dependencies <b>never ship to the browser</b>. A <b>Client Component</b> (<code>"use client"</code>) ships JS and can use state, effects and browser APIs. The goal is a smaller bundle and fewer client-side waterfalls.”</div>
+<ul class="pts">
+  <li>Server components cannot use <code>useState</code>, <code>useEffect</code>, or event handlers. Client components cannot import server components, but can <b>receive them as <code>children</code></b>.</li>
+  <li>Props crossing the boundary must be serialisable (no functions, class instances).</li>
+  <li><b>Not the same as SSR:</b> SSR renders client components to HTML too, then hydrates them. Server Components never hydrate.</li>
+  <li>Push <code>"use client"</code> to the <em>leaves</em> (the button, the form), not the whole page.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Theming (light and dark) without performance problems</span><span class="src">asked in 2 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Use <b>CSS custom properties</b> and flip a class or <code>data-theme</code> on <code>&lt;html&gt;</code>. The browser recomputes styles; React does not re-render a single component.”</div>
+<div class="code"><pre>:root         { --bg: #fff; --text: #111 }
+:root.dark    { --bg: #0b0b0f; --text: #eee }
+body          { background: var(--bg); color: var(--text) }
+
+&lt;!-- inline in &lt;head&gt;, before first paint: no flash of the wrong theme --&gt;
+&lt;script&gt;
+  const t = localStorage.theme ||
+    (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+  document.documentElement.classList.toggle("dark", t === "dark")
+&lt;/script&gt;</pre></div>
+<p class="sees">▶ Putting the theme in React context would re-render every consumer on toggle. Keep context only for the toggle button itself. This very app does it this way.</p>
+
+<h3 class="t"><span class="ttl">Quick-fire definitions</span><span class="src">the small ones</span></h3>
+<div class="tw"><table>
+<tr><th>Question</th><th>One-line answer</th></tr>
+<tr><td>React Node vs Element vs Component</td><td><b>Element</b> = plain object <code>{type, props}</code> describing UI. <b>Component</b> = function that returns elements. <b>Node</b> = anything renderable: element, string, number, array, <code>null</code>.</td></tr>
+<tr><td>What is a Fragment for?</td><td>Group siblings without an extra DOM wrapper. Use <code>&lt;Fragment key=…&gt;</code> when you need a key in a list.</td></tr>
+<tr><td>React’s event system vs DOM events</td><td>Handlers are attached by delegation to the <b>root container</b> (not <code>document</code>, since 17) and receive a <code>SyntheticEvent</code> wrapper with a cross-browser, same-shape API. <code>e.nativeEvent</code> is the real one. Event pooling was removed in 17.</td></tr>
+<tr><td>What does the <code>useEffect</code> dependency array control?</td><td>When the effect re-runs: after any render where a listed value changed (<code>Object.is</code>). <code>[]</code> = on mount only (and cleanup on unmount). Omitted = after every render.</td></tr>
+<tr><td>Rules of hooks</td><td>Call at the top level, never in loops/conditions/nested functions, only from components or custom hooks. React relies on call <em>order</em>.</td></tr>
+<tr><td>Client-side vs server-side routing</td><td>Client: JS swaps views and updates the URL, no full page load. Server: every URL is a new request returning a page. Modern frameworks mix both.</td></tr>
+<tr><td>How do you localise a React app?</td><td>An i18n library (<code>react-i18next</code> or FormatJS/<code>react-intl</code>): message keys per locale, ICU plurals and variables, lazy-load locale files, <code>Intl.DateTimeFormat</code>/<code>NumberFormat</code> for dates and numbers, set <code>lang</code> and <code>dir</code> (RTL) on <code>&lt;html&gt;</code>.</td></tr>
+<tr><td>How do you manage env config and secrets?</td><td>Anything in the bundle is public. Only non-secret values get the bundler prefix (<code>VITE_</code>, <code>NEXT_PUBLIC_</code>). Secrets stay on the server; the browser calls your API, which holds the key.</td></tr>
+<tr><td>Why an adapter between API and UI?</td><td>Map the API response into your own domain types in one place, so a backend change touches one file, not every component.</td></tr>
+<tr><td>TypeScript vs runtime validation</td><td>Types vanish at runtime. Validate untrusted data (API responses, forms) with Zod/Valibot at the boundary, and infer the type from the schema.</td></tr>
+</table></div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Measure → network / JS / render</li>
+<li>Virtualise = window + spacer + overscan</li>
+<li>Leak = missing cleanup</li>
+<li>Mismatch = server HTML ≠ first client render</li>
+</ul></div>
+</section>
+
 <!-- ============ WRAP-UP PAGE ============ -->
-<section class="sheet" id="pg-wrap" data-part="Part F: Wrap-up" data-title="Wrap-up, quick check and cheat sheet">
+<section class="sheet" id="pg-wrap" data-part="Part G: Wrap-up" data-title="Wrap-up, quick check and cheat sheet">
 
 <h3 class="t"><span class="ttl">Gaps I filled</span><span class="src">summary of green boxes</span></h3>
 <div class="add"><span class="tag">+ added</span>

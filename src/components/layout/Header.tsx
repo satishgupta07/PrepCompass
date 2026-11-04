@@ -83,6 +83,7 @@ async function LoggedInNav({ name, role }: { name: string; role: Role }) {
       </NavLink>
       <NavLink href="/activity">Activity</NavLink>
       <NavLink href="/study">Study</NavLink>
+      {role === "admin" && <NavLink href="/resume">Resume</NavLink>}
 
       <span className="mx-2 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
 

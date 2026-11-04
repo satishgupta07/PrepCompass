@@ -1834,6 +1834,310 @@ console.log('sync');</code></pre><div class="out">sync · nextTick · promise ·
 <ul class="ar"><li>A basic HTTP server: page 9</li><li>A custom middleware: page 10 · a rate limiter: page 13</li><li>Read a large file with streams: page 8 · a custom EventEmitter: page 7 · a promise-based retry helper: page 7</li></ul></div>
 <div class="sticky"><h3>Remember!</h3><ul><li>“It depends” is correct for single vs multi-threaded: say why</li><li>Predict output: sync → nextTick → promise → timers → immediate</li><li>V8 = language, libuv = I/O</li></ul></div>
 </section>
+<!-- ======================= PAGE: INTERVIEW PREP 3 ======================= -->
+<section class="sheet" id="pg-int3" data-part="G · Interview prep" data-label="Interview prep 3: load, shutdown, uploads, duplicates, rate limits">
+
+<h2 data-q="9">Q9 · An Express API gets 10,000 concurrent requests. What happens, and how do you find the bottleneck?<span class="src">asked in 3 loops</span></h2>
+<div class="say"><b>Say this:</b> “Ten thousand <em>open</em> connections are cheap for Node; the question is what each request <em>does</em>. The limit is whichever resource saturates first: the <b>event loop</b> (CPU work on the main thread), the <b>database</b> (pool or slow queries), a downstream service, memory, or file descriptors. I load-test, measure, and fix the biggest one.”</div>
+<div class="tw"><table><tr><th>Suspect</th><th>How I check</th><th>Fix</th></tr>
+<tr><td>Event loop blocked</td><td>event-loop delay metric, CPU at 100% on one core, flame graph (<code class="i">clinic flame</code>, <code class="i">--cpu-prof</code>)</td><td>remove sync calls, move CPU work to <code class="i">worker_threads</code> or a queue, stream big JSON</td></tr>
+<tr><td>Database</td><td>slow-query profiler, pool wait time, connections in use</td><td>indexes, projection, caching, tune pool size, read replicas</td></tr>
+<tr><td>Downstream API</td><td>per-call latency and error metrics, traces</td><td>timeouts, retries with backoff, circuit breaker, cache</td></tr>
+<tr><td>One process, many cores</td><td>one core busy, the rest idle</td><td><code class="i">cluster</code> / PM2 / several containers behind a load balancer (page 20)</td></tr>
+<tr><td>Memory or file descriptors</td><td>RSS growth, <code class="i">EMFILE</code> errors, <code class="i">ulimit -n</code></td><td>fix leaks, raise limits, close resources, stream instead of buffer</td></tr></table></div>
+<div class="code"><pre><code>// Is the event loop healthy? Delay near 0 = fine, hundreds of ms = something blocks it
+const { monitorEventLoopDelay } = require('node:perf_hooks');
+const h = monitorEventLoopDelay({ resolution: 20 });
+h.enable();
+setInterval(() =&gt; {
+  console.log('loop delay p99 (ms):', (h.percentile(99) / 1e6).toFixed(1));
+  h.reset();
+}, 5000).unref();
+
+// Load test:  npx autocannon -c 10000 -d 30 http://localhost:3000/api/items</code></pre></div>
+<ul class="ar"><li><span class="y">Protect yourself:</span> timeouts on every outbound call, <b>backpressure</b> (a bounded queue, return 503 or 429 when saturated instead of piling up), and rate limits per client</li>
+<li><span class="y">Watch p95/p99</span>, not the average: a healthy mean can hide a saturated tail</li>
+<li><span class="y">Scale out, not just up:</span> Node processes are stateless behind a load balancer; keep sessions in Redis or in the token</li></ul>
+<h3>Follow-up: why can Node hold 10k connections but still be slow?</h3>
+<p>Waiting on I/O is free (the loop is idle), but every request that does CPU work or a sync call runs on the one JavaScript thread and delays all the others. A single 200 ms bcrypt on the main thread caps you at about 5 requests per second per process.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Say the method: <b>reproduce with a load test, find the saturated resource with metrics, fix the biggest one, re-test</b>. Never start with “add more servers” before you know the bottleneck.</div>
+
+<h2 data-q="10">Q10 · Graceful shutdown without losing in-flight requests<span class="src">extends page 21</span></h2>
+<div class="say"><b>Say this:</b> “On <code class="i">SIGTERM</code> I stop accepting new work, let in-flight requests finish within a deadline, close the database and other resources, then exit. I also tell the load balancer to stop sending traffic first, and I force-exit if the deadline passes.”</div>
+<div class="code"><pre><code>let shuttingDown = false;
+const server = app.listen(PORT);
+
+app.get('/ready', (req, res) =&gt; res.sendStatus(shuttingDown ? 503 : 200));   // readiness probe
+app.use((req, res, next) =&gt; {
+  if (shuttingDown) res.set('Connection', 'close');   // ask keep-alive clients to reconnect elsewhere
+  next();
+});
+
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(signal, 'received, draining');
+
+  const force = setTimeout(() =&gt; process.exit(1), 10_000);   // hard deadline
+  force.unref();
+
+  server.close(async (err) =&gt; {                  // runs when all connections have ended
+    await mongoose.connection.close();             // then close DB, Redis, queues
+    process.exit(err ? 1 : 0);
+  });
+  server.closeIdleConnections?.();                 // Node 18.2+: do not wait for idle keep-alive sockets
+}
+process.on('SIGTERM', () =&gt; shutdown('SIGTERM'));
+process.on('SIGINT',  () =&gt; shutdown('SIGINT'));</code></pre></div>
+<ul class="ar"><li><span class="y">Order matters:</span> (1) fail readiness so the load balancer drains you, (2) stop accepting, (3) finish in-flight, (4) close dependencies, (5) exit</li>
+<li><span class="y">Kubernetes:</span> a pod receives <code class="i">SIGTERM</code> while it may still be in the load balancer’s list for a few seconds, so add a short <code class="i">preStop</code> sleep, and set <code class="i">terminationGracePeriodSeconds</code> larger than your force-exit timer</li>
+<li><span class="y">Background work:</span> let the current job finish or put it back on the queue; make jobs idempotent so a redelivery is safe</li></ul>
+<h3>Follow-up: why does <code class="i">server.close()</code> sometimes hang?</h3>
+<p>It waits for every connection to end, including idle keep-alive sockets. Close idle connections explicitly (<code class="i">closeIdleConnections()</code>; Node 19+ does this inside <code class="i">close()</code>) and keep a force-exit deadline.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Mention <b>zero-downtime deploys</b>: rolling updates only work if shutdown is graceful <em>and</em> readiness is accurate. Also handle <code class="i">unhandledRejection</code> by logging and shutting down, because the process state is unknown.</div>
+
+<h2 data-q="11">Q11 · Support large file uploads without loading the file into memory<span class="src">see also page 17</span></h2>
+<div class="say"><b>Say this:</b> “I never buffer the file. I <b>stream</b> the request body straight to its destination with backpressure, enforce size limits while streaming, or better, let the client upload directly to object storage with a <b>presigned URL</b> so my API never carries the bytes.”</div>
+<div class="code"><pre><code>const busboy = require('busboy');
+const { pipeline } = require('node:stream/promises');
+const { createWriteStream } = require('node:fs');
+const { randomUUID } = require('node:crypto');
+
+app.post('/upload', (req, res, next) =&gt; {
+  const bb = busboy({ headers: req.headers, limits: { fileSize: 500 * 1024 * 1024, files: 1 } });
+  bb.on('file', async (field, file, info) =&gt; {
+    const dest = `/data/uploads/${randomUUID()}`;
+    file.on('limit', () =&gt; { file.unpipe(); req.unpipe(bb); res.status(413).end(); });   // too big
+    try {
+      await pipeline(file, createWriteStream(dest));           // backpressure handled for you
+      res.status(201).json({ id: dest.split('/').pop(), name: info.filename });
+    } catch (e) { next(e); }
+  });
+  req.pipe(bb);
+});
+
+// Better for big files: the browser uploads straight to S3
+const url = await getSignedUrl(s3, new PutObjectCommand({ Bucket, Key, ContentType }), { expiresIn: 300 });
+res.json({ url, key: Key });                                   // client PUTs the file to this URL</code></pre></div>
+<ul class="ar"><li><span class="y">Why memory explodes otherwise:</span> <code class="i">multer.memoryStorage()</code> or <code class="i">await req.body</code> holds the whole file; ten parallel 1 GB uploads need 10 GB</li>
+<li><span class="y">Resumable uploads:</span> chunked or multipart (S3 multipart, the tus protocol) so a dropped connection resumes instead of restarting</li>
+<li><span class="y">Safety:</span> check size, extension <em>and</em> the real file signature (magic bytes), store outside the web root, random names, scan for malware, and never trust <code class="i">Content-Type</code></li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>Name <b>backpressure</b>: a slow disk or network makes the readable stream pause, so memory stays flat. <code class="i">pipeline()</code> also destroys all the streams on error, which avoids file-descriptor leaks.</div>
+
+<h2 data-q="12">Q12 · Prevent duplicate order creation when many requests arrive at once<span class="src">asked in 3 loops</span></h2>
+<div class="say"><b>Say this:</b> “I make the endpoint <b>idempotent</b>. The client sends an <code class="i">Idempotency-Key</code>, and a <b>unique index</b> in the database guarantees only one order can exist for that key, no matter how many requests race. Checking first and inserting afterwards is the bug, because two requests both pass the check.”</div>
+<div class="code"><pre><code>orderSchema.index({ userId: 1, idempotencyKey: 1 }, { unique: true });   // the real guard
+
+app.post('/orders', auth, async (req, res) =&gt; {
+  const key = req.get('Idempotency-Key');
+  if (!key) return res.status(400).json({ error: 'Idempotency-Key header required' });
+
+  try {
+    const order = await Order.create({
+      userId: req.user.id, idempotencyKey: key, items: req.body.items, status: 'pending',
+    });
+    await enqueuePayment(order._id);                       // or charge, with the same key at the provider
+    return res.status(201).json(order);
+  } catch (e) {
+    if (e.code === 11000) {                                // duplicate key: this request already ran
+      const existing = await Order.findOne({ userId: req.user.id, idempotencyKey: key });
+      return res.status(existing.status === 'pending' ? 202 : 200).json(existing);
+    }
+    throw e;
+  }
+});</code></pre></div>
+<ul class="ar"><li><span class="y">Client side:</span> disable the button and reuse the same key on a retry (generate it when the form opens, not per click)</li>
+<li><span class="y">Payment provider:</span> pass your key to Stripe-style APIs so a retried charge is not applied twice</li>
+<li><span class="y">Alternatives:</span> a Redis <code class="i">SET key NX EX 60</code> lock for short-lived dedupe; a business-level unique constraint (one open cart per user); a transaction around stock decrement</li>
+<li><span class="y">Keys expire:</span> keep them for 24 hours or so (a TTL index) so the table does not grow forever</li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>The principle: <b>enforce uniqueness in the database, not in application code</b>, because application code is racy across processes. Remember POST is not idempotent by definition (page 12); the key makes it so.</div>
+
+<h2 data-q="13">Q13 · Rate limiting in Express that works across several servers<span class="src">builds on page 13</span></h2>
+<div class="say"><b>Say this:</b> “An in-memory limiter only counts per process, so with several instances the real limit is multiplied. I keep the counters in <b>Redis</b> with an atomic increment, key by user id when logged in (else IP), and return <b>429</b> with <code class="i">Retry-After</code>.”</div>
+<div class="code"><pre><code>async function rateLimit(req, res, next) {
+  const id = req.user?.id ?? req.ip;                       // set app.set('trust proxy', 1) behind a proxy
+  const windowSec = 60, max = 100;
+  const key = `rl:${id}:${Math.floor(Date.now() / 1000 / windowSec)}`;
+
+  const count = await redis.incr(key);                     // atomic across all servers
+  if (count === 1) await redis.expire(key, windowSec);
+
+  res.set('RateLimit-Limit', String(max));
+  res.set('RateLimit-Remaining', String(Math.max(0, max - count)));
+  if (count &gt; max) {
+    res.set('Retry-After', String(windowSec));
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  next();
+}</code></pre></div>
+<div class="tw"><table><tr><th>Algorithm</th><th>Idea</th><th>Trade-off</th></tr>
+<tr><td>Fixed window</td><td>count per minute</td><td>simple; up to 2× burst at a window boundary</td></tr>
+<tr><td>Sliding window</td><td>count requests in the last N seconds (sorted set of timestamps)</td><td>accurate; more memory</td></tr>
+<tr><td>Token bucket</td><td>tokens refill at a steady rate, a request spends one</td><td>allows controlled bursts; the usual choice</td></tr>
+<tr><td>Leaky bucket</td><td>queue drains at a fixed rate</td><td>smooths traffic; adds latency</td></tr></table></div>
+<ul class="ar"><li><span class="y">Where:</span> at the edge or API gateway first, in the app for per-user or per-route rules; stricter limits on login and password-reset routes</li>
+<li><span class="y">Fail open or closed?</span> If Redis is down, decide on purpose: usually let traffic through (and alert), except for security-critical routes</li>
+<li><span class="y">Atomicity:</span> <code class="i">INCR</code> then <code class="i">EXPIRE</code> is two calls; a Lua script or <code class="i">SET key 1 NX EX</code> makes it one atomic step</li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>The trap to mention: <b><code class="i">req.ip</code> behind a load balancer is the balancer’s IP</b> unless you set <code class="i">trust proxy</code>, so every user shares one bucket.</div>
+
+<div class="sticky"><h3>Remember!</h3><ul><li>10k connections are cheap; blocked loop, DB or downstream is the limit</li><li>Shutdown: fail readiness → stop → drain → close → exit, with a deadline</li><li>Stream uploads or presign; never buffer</li><li>Duplicates: unique index + idempotency key</li><li>Distributed rate limit: Redis counters, 429 + Retry-After</li></ul></div>
+</section>
+
+<!-- ======================= PAGE: INTERVIEW PREP 4 ======================= -->
+<section class="sheet" id="pg-int4" data-part="G · Interview prep" data-label="Interview prep 4: MongoDB at scale and a top-K coding question">
+
+<h2 data-q="14">Q14 · A MongoDB query is fast with 100 records and very slow with 10 million. How do you debug it?<span class="src">asked in 4 loops</span></h2>
+<div class="say"><b>Say this:</b> “With 100 documents a full scan is instant, so the missing index never showed. I run <code class="i">explain('executionStats')</code>, look for a <b>COLLSCAN</b> and a big gap between documents examined and documents returned, then build an index that matches the query’s equality, sort and range fields.”</div>
+<div class="code"><pre><code>// The query
+Order.find({ userId, status: 'paid', createdAt: { $gte: since } })
+     .sort({ createdAt: -1 }).limit(20);
+
+// 1. Measure (mongosh)
+db.orders.find({ userId, status: 'paid', createdAt: { $gte: since } })
+         .sort({ createdAt: -1 }).limit(20).explain('executionStats');
+// Bad signs: winningPlan stage COLLSCAN, totalDocsExamined = 10,000,000, nReturned = 20,
+//            or an in-memory SORT stage
+
+// 2. Index by the ESR rule: Equality fields, then Sort, then Range
+orderSchema.index({ userId: 1, status: 1, createdAt: -1 });
+// Good: stage IXSCAN, totalDocsExamined close to nReturned (here about 20)</code></pre></div>
+<ul class="ar"><li><span class="y">ESR rule:</span> equality fields first, then the sort field, then range fields; an index can serve the filter <em>and</em> the sort</li>
+<li><span class="y">Return less:</span> a <b>projection</b> (only needed fields) and <code class="i">.lean()</code> in Mongoose; if the index holds every field you return, it is a <b>covered query</b> with no document fetch</li>
+<li><span class="y">Avoid patterns that cannot use an index:</span> unanchored or case-insensitive <code class="i">$regex</code>, <code class="i">$where</code>, a function on the field, leading negations (<code class="i">$ne</code>, <code class="i">$nin</code>); use anchored prefix regex, a text index or Atlas Search</li>
+<li><span class="y">Deep <code class="i">skip()</code>:</span> cost grows with the offset; use cursor pagination (Q17)</li>
+<li><span class="y">Find offenders in production:</span> the profiler (<code class="i">db.setProfilingLevel(1, { slowms: 100 })</code>), slow-query logs, Atlas Performance Advisor, and watch that the working set (hot data plus indexes) fits in RAM</li>
+<li><span class="y">Schema causes:</span> unbounded arrays, huge documents, and joins with <code class="i">$lookup</code> on unindexed fields; reshape or pre-aggregate</li></ul>
+<h3>Follow-up: it is still slow after the index. Now what?</h3>
+<p>Check that the planner actually picked it (<code class="i">hint()</code> to compare), that the index is not too wide or low-selectivity, that the working set fits in memory, and whether the access pattern needs caching, a read replica, pre-computed summaries, or sharding on a well-chosen key.</p>
+<div class="edge"><span class="tag red">Interview edge</span>Lead with measurement: <b>explain first, index second</b>. Adding indexes by guesswork slows writes and still misses the real cause.</div>
+
+<h2 data-q="15">Q15 · How do MongoDB indexes work, and what is the cost of too many?<span class="src">asked in 3 loops</span></h2>
+<div class="say"><b>Say this:</b> “An index is a sorted B-tree of the indexed fields with pointers to documents, so a lookup is logarithmic instead of a full scan. The cost is that <b>every insert, update and delete must also update every index</b>, and indexes consume disk and RAM.”</div>
+<div class="tw"><table><tr><th>Cost of each extra index</th><th>Why it hurts</th></tr>
+<tr><td>Slower writes</td><td>one extra B-tree update per index on each write</td></tr>
+<tr><td>Memory</td><td>indexes should fit in RAM; otherwise lookups hit the disk</td></tr>
+<tr><td>Storage and backups</td><td>indexes can be as large as the data</td></tr>
+<tr><td>Planner and maintenance</td><td>more plans to choose between; builds and rebuilds take time</td></tr></table></div>
+<div class="tw"><table><tr><th>Index type</th><th>Use</th></tr>
+<tr><td>Single field</td><td>equality or range on one field</td></tr>
+<tr><td>Compound</td><td>queries on several fields; order of fields matters (prefix rule: <code class="i">{a,b}</code> also serves queries on <code class="i">a</code>)</td></tr>
+<tr><td>Unique</td><td>enforce uniqueness (emails, idempotency keys)</td></tr>
+<tr><td>Partial</td><td>index only matching documents (e.g. <code class="i">status: 'active'</code>): smaller and cheaper</td></tr>
+<tr><td>TTL</td><td>auto-delete documents after a time (sessions, tokens)</td></tr>
+<tr><td>Text / 2dsphere</td><td>text search / geospatial</td></tr>
+<tr><td>Multikey</td><td>automatic on array fields; one entry per element</td></tr></table></div>
+<ul class="ar"><li><span class="y">Keep it lean:</span> drop redundant prefix indexes (<code class="i">{a}</code> when <code class="i">{a,b}</code> exists), find unused ones with <code class="i">$indexStats</code>, avoid indexing low-cardinality fields alone (a boolean)</li>
+<li><span class="y">Rule:</span> index for your real query patterns, not for every field; read-heavy collections tolerate more indexes than write-heavy ones</li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>Say the balance out loud: <b>indexes trade write speed and memory for read speed</b>. Mention compound index field order (ESR) and that an index also provides the sort order for free.</div>
+
+<h2 data-q="16">Q16 · Keep data consistent when one operation updates several collections<span class="src">asked in 3 loops</span></h2>
+<div class="say"><b>Say this:</b> “First I try to make it a <b>single-document</b> change, which MongoDB does atomically, by embedding data that always changes together. If it truly spans documents I use a <b>multi-document transaction</b> (needs a replica set), and for steps across services I use a saga or the outbox pattern with idempotent retries.”</div>
+<div class="code"><pre><code>const session = await mongoose.startSession();
+try {
+  await session.withTransaction(async () =&gt; {              // retries transient errors automatically
+    const from = await Account.findOneAndUpdate(
+      { _id: fromId, balance: { $gte: amount } },           // conditional update: no overdraft
+      { $inc: { balance: -amount } }, { session, new: true });
+    if (!from) throw new Error('Insufficient funds');        // throwing aborts the whole transaction
+
+    await Account.updateOne({ _id: toId }, { $inc: { balance: amount } }, { session });
+    await Ledger.create([{ fromId, toId, amount }], { session });   // array form when passing a session
+  });
+} finally {
+  await session.endSession();
+}</code></pre></div>
+<ul class="ar"><li><span class="y">Single-document atomicity:</span> an update that changes several fields or an embedded array in one document is atomic without a transaction</li>
+<li><span class="y">Transaction costs:</span> they need a replica set or sharded cluster, add latency and locking, and have a time limit (60 s by default); keep them short and touch few documents</li>
+<li><span class="y">Across services or a payment provider:</span> a <b>saga</b> (a chain of local steps with compensating actions) or the <b>outbox</b> pattern: write the order and an <code class="i">outbox</code> event in one transaction, and a worker publishes the event, so a crash never loses it</li>
+<li><span class="y">Make steps idempotent</span> so a retry after a crash is safe</li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>Show the ladder: <b>embed → conditional atomic update → transaction → saga/outbox</b>, choosing the cheapest that is correct. Mongo’s join-less design pushes you to model data so most business operations are one document.</div>
+
+<h2 data-q="17">Q17 · Design pagination for millions of records<span class="src">asked in 3 loops</span></h2>
+<div class="say"><b>Say this:</b> “<code class="i">skip/limit</code> gets slower with every page because the database walks past all the skipped rows, and it repeats or drops items when data changes between requests. I use <b>keyset (cursor) pagination</b>: ‘give me the next 20 after the last item I saw’, backed by an index.”</div>
+<div class="code"><pre><code>// Index: sort key + a unique tiebreaker
+postSchema.index({ createdAt: -1, _id: -1 });
+
+app.get('/posts', async (req, res) =&gt; {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const filter = {};
+  if (req.query.cursor) {
+    const { t, id } = JSON.parse(Buffer.from(req.query.cursor, 'base64url').toString());
+    filter.$or = [
+      { createdAt: { $lt: new Date(t) } },
+      { createdAt: new Date(t), _id: { $lt: id } },          // same timestamp: break the tie by _id
+    ];
+  }
+  const rows = await Post.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit + 1).lean();
+  const hasMore = rows.length &gt; limit;
+  const items = hasMore ? rows.slice(0, limit) : rows;
+  const last = items[items.length - 1];
+  const nextCursor = hasMore
+    ? Buffer.from(JSON.stringify({ t: last.createdAt, id: last._id })).toString('base64url') : null;
+  res.json({ items, nextCursor });
+});</code></pre></div>
+<div class="tw"><table><tr><th></th><th>Offset (<code class="i">skip</code>)</th><th>Cursor (keyset)</th></tr>
+<tr><td>Speed on deep pages</td><td>degrades linearly</td><td>constant (index seek)</td></tr>
+<tr><td>Stable when data changes</td><td>no: duplicates or gaps</td><td>yes</td></tr>
+<tr><td>Jump to page N</td><td>yes</td><td>no (next/previous only)</td></tr>
+<tr><td>Total count</td><td>easy, but <code class="i">countDocuments</code> is slow on millions</td><td>usually skipped, or an estimate</td></tr></table></div>
+<ul class="ar"><li><span class="y">Why <code class="i">limit + 1</code>:</span> fetching one extra row tells you if there is a next page without a count query</li>
+<li><span class="y">Why a tiebreaker:</span> two documents can share a timestamp; without <code class="i">_id</code> the cursor skips or repeats them</li>
+<li><span class="y">Opaque cursor:</span> encode it so clients cannot depend on its shape, and validate it</li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>Say the trade-off: <b>cursor pagination cannot jump to page 50</b>. For a feed that is fine; for an admin table people sometimes accept offset with a hard cap.</div>
+
+<h2 data-q="18">Q18 · Given a stream of events, find the top K most frequent<span class="src">coding question</span></h2>
+<div class="say"><b>Say this:</b> “Count with a hash map, then keep a <b>min-heap of size K</b>: push each entry and pop the smallest when the heap exceeds K. That is <b>O(n + u log K)</b> time for u unique events, and O(u + K) memory. For an endless stream where u does not fit in memory, I switch to an approximate structure.”</div>
+<div class="code"><pre><code>class MinHeap {
+  constructor(cmp) { this.a = []; this.cmp = cmp; }
+  size() { return this.a.length; }
+  push(x) {
+    const a = this.a; a.push(x);
+    let i = a.length - 1;
+    while (i &gt; 0) {
+      const p = (i - 1) &gt;&gt; 1;
+      if (this.cmp(a[i], a[p]) &gt;= 0) break;
+      [a[i], a[p]] = [a[p], a[i]]; i = p;
+    }
+  }
+  pop() {
+    const a = this.a, top = a[0], last = a.pop();
+    if (a.length) {
+      a[0] = last;
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1, r = l + 1; let m = i;
+        if (l &lt; a.length &amp;&amp; this.cmp(a[l], a[m]) &lt; 0) m = l;
+        if (r &lt; a.length &amp;&amp; this.cmp(a[r], a[m]) &lt; 0) m = r;
+        if (m === i) break;
+        [a[i], a[m]] = [a[m], a[i]]; i = m;
+      }
+    }
+    return top;
+  }
+}
+
+function topK(events, k) {
+  const counts = new Map();
+  for (const e of events) counts.set(e, (counts.get(e) ?? 0) + 1);
+
+  const heap = new MinHeap((x, y) =&gt; x[1] - y[1]);          // smallest count at the top
+  for (const entry of counts) {
+    heap.push(entry);
+    if (heap.size() &gt; k) heap.pop();                        // drop the least frequent of the K+1
+  }
+  return heap.a.sort((x, y) =&gt; y[1] - x[1]);                // [[event, count], …] highest first
+}
+// topK(['a','b','a','c','a','b'], 2) → [['a',3], ['b',2]]</code></pre></div>
+<ul class="ar"><li><span class="y">Alternative:</span> <b>bucket sort</b> by count (counts are at most n): O(n) time, more memory</li>
+<li><span class="y">Why not sort everything:</span> O(u log u) when you only need K; the heap does O(u log K)</li>
+<li><span class="y">Unbounded stream:</span> <b>Space-Saving</b> or <b>Count-Min Sketch</b> + a small heap give approximate top-K in fixed memory</li>
+<li><span class="y">“Top K in the last hour”:</span> keep counts per time bucket (for example per minute) and expire old buckets</li>
+<li><span class="y">Distributed:</span> each shard sends its local counts or top-K, a coordinator merges; exact answers need counts (or K large enough) from every shard, because a global heavy hitter can be mid-ranked locally</li></ul>
+<div class="edge"><span class="tag red">Interview edge</span>Ask first: <b>exact or approximate? bounded or unbounded? sliding window?</b> Those three questions pick the algorithm. This is the “Top K Frequent Elements” problem: add it to the DSA tracker under Heaps.</div>
+
+<div class="sticky"><h3>Remember!</h3><ul><li>Slow Mongo query: explain → IXSCAN, ESR index, projection</li><li>Indexes speed reads and slow writes; keep them lean</li><li>Embed → atomic update → transaction → saga/outbox</li><li>Cursor pagination with a tiebreaker; fetch limit + 1</li><li>Top K = hash map + min-heap of size K</li></ul></div>
+</section>
+
 <!-- ======================= PAGE: QUICK CHECK ======================= -->
 <section class="sheet" id="pg-check" data-part="H · Wrap-up" data-label="Quick check and summary">
 

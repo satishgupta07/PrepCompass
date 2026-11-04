@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Behavioral and Leadership Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--paper:#fbf8ee;--rule:#cfe0f3;--ink:#1f3d8f;--red:#c0392b;--green:#17743a;--yellow:#fff176;--pink:#ffc0dc;--desk:#d8cdb4;--code:#fffdf4;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(12px + env(safe-area-inset-top,0px));-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:'Caveat','Comic Sans MS','Segoe Print','Bradley Hand',cursive;font-size:22px;line-height:32px;padding:calc(18px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+a{color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.68em;background:rgba(31,61,143,.09);padding:1px 5px;border-radius:4px 7px 5px 8px;color:#16306e;word-break:break-word}
+.sheet{position:relative;max-width:880px;margin:0 auto 46px;padding:20px 30px 18px 96px;background-color:var(--paper);background-image:linear-gradient(to bottom,transparent 31px,var(--rule) 31px,var(--rule) 32px);background-size:100% 32px;background-position:0 14px;border-radius:7px 16px 9px 20px/14px 7px 18px 9px;box-shadow:0 2px 3px rgba(60,40,10,.18),0 12px 28px rgba(60,40,10,.22)}
+.sheet::before{content:"";position:absolute;top:0;bottom:0;left:74px;width:2px;background:#e36b6b;opacity:.8;box-shadow:3px 0 0 rgba(227,107,107,.3);pointer-events:none;z-index:0}
+.sheet::after{content:"";position:absolute;left:20px;top:0;bottom:0;width:30px;pointer-events:none;z-index:0;background-image:radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px),radial-gradient(circle,var(--desk) 0 11px,rgba(0,0,0,.2) 12px,transparent 14px);background-size:30px 30px;background-repeat:no-repeat;background-position:0 12%,0 50%,0 88%}
+.sheet>*{position:relative;z-index:1}
+.sh{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:4px double var(--red);padding-bottom:4px;margin-bottom:18px}
+.sh .pg{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;background:var(--red);color:#fff;padding:0 12px;border-radius:14px 4px 12px 5px;transform:rotate(-2deg);line-height:28px}
+.sh h2{margin:0;font-size:42px;line-height:44px;color:var(--red);font-weight:700;transform:rotate(-.6deg)}
+.t{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:30px 0 8px;font-size:32px;line-height:36px;color:var(--red);font-weight:700;counter-increment:tp}
+.sheet{counter-reset:tp}
+.t .ttl{display:flex;align-items:center;gap:10px;transform:rotate(-.5deg)}
+.t .ttl::before{content:counter(tp);display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;border:2.5px solid var(--red);border-radius:52% 48% 55% 45%/48% 55% 45% 52%;font-size:23px;line-height:1;transform:rotate(-6deg)}
+.t .src{font-family:'Patrick Hand','Caveat',cursive;font-size:16px;font-weight:400;line-height:20px;color:#4a5f9c;border:1.5px dashed #8aa0d6;padding:2px 10px;border-radius:12px 4px 10px 5px;transform:rotate(1.2deg)}
+.st{font-size:27px;line-height:32px;color:var(--red);font-weight:700;margin:20px 0 4px;transform:rotate(-.4deg)}
+p{margin:6px 0}
+.plain{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.5);padding:10px 16px 10px 74px;margin:12px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px;transform:rotate(-.3deg)}
+.plain b{font-family:'Patrick Hand','Caveat',cursive;font-weight:400;font-size:19px;color:#2457c5;display:block;line-height:24px}
+.plain .bulb{position:absolute;left:14px;top:12px;width:46px;height:52px}
+.pts{list-style:none;margin:8px 0;padding:0}
+.pts li{position:relative;padding-left:34px;margin:2px 0}
+.pts li::before{content:"\279C";position:absolute;left:6px;top:0;color:var(--red);font-size:22px}
+.pts li:nth-child(3n+1){transform:rotate(-.4deg)}.pts li:nth-child(3n+2){transform:rotate(.35deg)}.pts li:nth-child(3n){transform:rotate(-.15deg)}
+mark{color:inherit;padding:0 4px;border-radius:3px 9px 4px 10px}
+mark.y{background:linear-gradient(104deg,transparent 1%,var(--yellow) 3%,#fff59d 96%,transparent 99%)}
+mark.p{background:linear-gradient(100deg,transparent 1%,var(--pink) 3%,#ffd3e6 96%,transparent 99%)}
+.code{position:relative;background:var(--code);border:2.2px dashed #85744f;padding:14px 16px 12px;margin:22px 0 8px;border-radius:12px 3px 14px 4px/4px 14px 3px 12px;box-shadow:2px 3px 0 rgba(120,100,60,.2);transform:rotate(.15deg)}
+.code::before{content:"";position:absolute;top:-13px;left:26px;width:92px;height:24px;background:rgba(255,222,120,.72);transform:rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.code .cap{position:absolute;top:-12px;right:18px;font-family:'Patrick Hand','Caveat',cursive;font-size:15px;line-height:20px;background:#fff;border:1.5px solid #85744f;padding:0 8px;border-radius:9px 3px 8px 3px;color:#5b4b2c;transform:rotate(2deg)}
+.code pre{margin:0;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.55;color:#1c2b4a;tab-size:2;-webkit-overflow-scrolling:touch}
+.sees{font-family:'Patrick Hand','Caveat',cursive;font-size:19px;line-height:26px;color:#0f5a2c;margin:6px 0 12px;padding-left:12px;border-left:4px solid #6bbf86}
+.warn{color:var(--red);margin:4px 0 4px 6px;padding-left:2px;transform:rotate(-.3deg)}
+.tw{overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;min-width:460px;background:rgba(255,255,255,.55)}
+th,td{border:1.8px solid var(--ink);padding:4px 10px;text-align:left;vertical-align:top}
+th{background:rgba(255,241,118,.6);color:var(--red);font-weight:400}
+td code{font-size:.78em}
+.add,.old,.flag{position:relative;margin:20px 0 10px;padding:16px 16px 10px;border-radius:14px 4px 16px 5px/5px 16px 4px 14px}
+.add{border:2.5px solid var(--green);background:rgba(190,236,203,.55);color:#0f5a2c}
+.add code{color:#0b4a22;background:rgba(23,116,58,.12)}
+.add .code{border-color:#3d8a58}
+.add a{color:#0f5a2c}
+.old{border:2.2px dashed var(--red);background:rgba(255,226,222,.55);color:#8c2a1f}
+.flag{border:2.5px solid var(--red);background:rgba(255,204,214,.5);color:#8c1f2f}
+.tag{position:absolute;top:-15px;left:16px;font-family:'Patrick Hand','Caveat',cursive;font-size:17px;line-height:24px;padding:0 12px;color:#fff;border-radius:12px 3px 12px 4px;transform:rotate(-2deg);box-shadow:1px 2px 0 rgba(0,0,0,.2)}
+.add .tag{background:var(--green)}.old .tag,.flag .tag{background:var(--red)}
+.ver{display:inline-block;font-family:'Patrick Hand','Caveat',cursive;font-size:14px;line-height:20px;padding:0 8px;border:1.5px solid currentColor;border-radius:10px 3px 9px 3px;vertical-align:middle;margin:0 2px;transform:rotate(-2deg)}
+.sticky{position:relative;width:min(100%,430px);margin:30px 0 8px auto;padding:20px 20px 12px;background:#fff59a;box-shadow:2px 6px 10px rgba(80,60,0,.28);transform:rotate(1.4deg);border-radius:3px 3px 26px 3px/3px 3px 14px 3px;color:#5b3d00}
+.sticky::before{content:"";position:absolute;top:-12px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(255,255,255,.6);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sticky h4{margin:0 0 4px;font-size:30px;line-height:32px;color:var(--red)}
+.sticky ul{list-style:none;margin:0;padding:0}
+.sticky li{position:relative;padding-left:28px;line-height:28px}
+.sticky li::before{content:"\279C";position:absolute;left:4px;color:var(--red)}
+.diagram{margin:14px 0;overflow-x:auto}
+.diagram svg{display:block;min-width:520px;width:100%;height:auto;max-width:760px;margin:0 auto}
+.diagram svg text{font-family:'Caveat','Comic Sans MS',cursive;fill:#1f3d8f;font-size:19px}
+.diagram .cap2{text-align:center;font-family:'Patrick Hand','Caveat',cursive;font-size:16px;color:#4a5f9c;line-height:22px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:26px;padding-top:6px;border-top:2px dashed var(--ink);font-family:'Patrick Hand','Caveat',cursive;font-size:18px}
+.ft .mid{color:#4a5f9c}
+.ft a.off{visibility:hidden}
+.fab{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--red);color:#fff;font-family:'Patrick Hand','Caveat',cursive;font-size:18px;line-height:24px;padding:6px 16px;border-radius:20px 6px 18px 7px;text-decoration:none;box-shadow:2px 4px 8px rgba(0,0,0,.3);transform:rotate(-2deg)}
+details{margin:8px 0;border:2px dashed #3b6fd4;border-radius:12px 4px 12px 5px;background:rgba(255,255,255,.6);padding:4px 12px}
+details summary{cursor:pointer;color:var(--red);font-weight:700}
+details[open] summary{margin-bottom:4px}
+/* cover */
+.cover{padding-top:44px;padding-bottom:30px}
+.cover .ring{position:absolute;right:46px;top:54px;width:150px;height:150px;border-radius:50%;border:9px solid rgba(120,72,30,.2);border-right-color:rgba(120,72,30,.07);border-bottom-color:rgba(120,72,30,.28);box-shadow:inset 0 0 12px rgba(120,72,30,.12);transform:rotate(-24deg);z-index:0;pointer-events:none}
+.cover h1{font-size:68px;line-height:70px;margin:8px 0 0;color:var(--red);transform:rotate(-1.4deg);font-weight:700}
+.cover .sub{font-size:28px;margin:10px 0 18px;transform:rotate(-.5deg)}
+.how{position:relative;border:2.5px dashed #3b6fd4;background:rgba(206,224,255,.45);padding:10px 16px 12px;margin:18px 0;border-radius:255px 18px 225px 18px/18px 225px 18px 255px}
+.how h3,.legend h3,.toc h3{margin:0 0 2px;color:var(--red);font-size:30px}
+.legend{margin:16px 0}
+.legend ul{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.chip{display:inline-block;min-width:22px;height:20px;vertical-align:-3px;margin-right:8px;border-radius:4px 8px 5px 9px;border:2px solid var(--ink)}
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin-top:8px}
+.toc .part{break-inside:avoid;margin-bottom:10px}
+.toc h4{margin:6px 0 2px;color:var(--red);font-size:25px;line-height:28px;border-bottom:2px dashed var(--red)}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{line-height:28px}
+.toc li a{color:var(--ink);text-decoration:none;border-bottom:2px dotted #8aa0d6}
+.toc li a:hover{background:var(--yellow)}
+.toc li span{display:inline-block;min-width:34px;color:var(--red);font-weight:700}
+@media(max-width:700px){
+body{font-size:20px;line-height:30px}
+.sheet{padding:14px 14px 14px 50px;background-size:100% 30px;margin-bottom:34px}
+.sheet::before{left:36px}
+.sheet::after{left:5px;width:22px;background-size:22px 22px;background-image:radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px),radial-gradient(circle,var(--desk) 0 7px,rgba(0,0,0,.2) 8px,transparent 10px)}
+.sh h2{font-size:32px;line-height:36px}
+.t{font-size:27px;line-height:31px}
+.plain{padding:10px 12px 10px 12px}.plain .bulb{position:static;display:block;width:34px;height:38px;margin-bottom:2px}
+.cover h1{font-size:46px;line-height:50px}.cover .sub{font-size:23px;line-height:28px}.cover .ring{width:90px;height:90px;right:12px;top:10px}
+.toc{grid-template-columns:1fr}.legend ul{grid-template-columns:1fr}
+.sticky{margin-right:auto}
+}
+@media print{
+body{background:#fff;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.fab{display:none}
+.sheet{box-shadow:none;margin:0;max-width:none;break-after:page;page-break-after:always;border-radius:0}
+.sheet:last-of-type{break-after:auto;page-break-after:auto}
+.code,.add,.old,.flag,.sticky,.plain,.diagram,table{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="bulb" viewBox="0 0 48 54">
+<path d="M24 8c-8 0-13 6-13 12 0 5 3 7 5 10 1 2 1 4 1 5h14c0-1 0-3 1-5 2-3 5-5 5-10 0-6-5-12-13-12z" fill="#fff59a" stroke="#1f3d8f" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M18 40h12M20 45h8M22 49h4" fill="none" stroke="#1f3d8f" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M24 1v4M7 7l3 3M41 7l-3 3M2 22h4M42 22h4" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-linecap="round"/>
+</symbol>
+<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#c0392b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#1f3d8f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+</svg>
+
+<a class="fab" href="#contents">↑ contents</a>
+
+<!-- ============ COVER ============ -->
+<section class="sheet cover" id="top">
+  <div class="ring"></div>
+  <h1>Behavioral &amp; Leadership: my handwritten notebook</h1>
+  <p class="sub">The managerial and behavioural round for senior frontend and full-stack roles: how to structure answers, the questions that keep coming back, and fill-in-the-blank scripts for your own stories</p>
+  <p>Every sample answer here is a <mark class="y">template with [blanks]</mark>. The numbers and situations marked <b>example</b> are illustrations, not facts about you. Replace each one with something that really happened. Interviewers probe the details, so an invented story falls apart in follow-up questions.</p>
+
+  <div class="how">
+    <h3>How to use these notes</h3>
+    <ul class="pts">
+      <li>Start with page 2 and <mark class="y">build your story bank first</mark>: 6 to 8 real stories. Almost every question on later pages is answered by re-using one of them.</li>
+      <li>For each question, read the <b>Say this</b> skeleton, then write your own version in the blanks, then say it aloud with a timer: <b>about two minutes</b>.</li>
+      <li>Always include <b>what you did</b> (“I”, not “we”), <b>a number</b> for the result, and <b>what you learned or would change</b>.</li>
+      <li>Record yourself once. It is the fastest way to find filler words and rambling.</li>
+      <li>Do the <b>Quick check</b> on the last page, answers are folded away.</li>
+    </ul>
+  </div>
+
+  <div class="legend">
+    <h3>Colour legend</h3>
+    <ul>
+      <li><span class="chip" style="background:#fff;border-color:#1f3d8f"></span>Blue ink = the explanation</li>
+      <li><span class="chip" style="background:#fff;border-color:#c0392b"></span>Red = headings and ⚠ gotchas</li>
+      <li><span class="chip" style="background:rgba(190,236,203,.9);border-color:#17743a"></span>Green box = <b>sample answer</b> or <b>interview edge</b></li>
+      <li><span class="chip" style="background:rgba(255,226,222,.9);border-color:#c0392b;border-style:dashed"></span>Red dashed = <b>⚠ weak answer</b> to avoid</li>
+      <li><span class="chip" style="background:var(--yellow)"></span><span class="chip" style="background:var(--pink)"></span>Highlighter = key terms</li>
+    </ul>
+  </div>
+
+  <div class="toc-wrap" id="contents">
+    <h3 style="margin:18px 0 0;color:var(--red);font-size:36px">Contents</h3>
+    <div class="toc" id="toc"></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="sheet" id="pg-how" data-part="Part A: Foundations" data-title="What the round tests, and the STAR structure">
+
+<h3 class="t"><span class="ttl">What interviewers are really scoring</span><span class="src">read this before anything else</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“For a senior role the question behind every question is: <b>can I trust this person to own an outcome, work well with others, and raise the people around them?</b> The stories are just evidence.”</div>
+<div class="tw"><table>
+<tr><th>Signal</th><th>What a strong answer shows</th><th>Typical questions</th></tr>
+<tr><td><b>Ownership</b></td><td>you took responsibility beyond your ticket and followed it to the result</td><td>“a feature you owned”, “a time you went beyond your role”</td></tr>
+<tr><td><b>Judgement under pressure</b></td><td>you prioritised, cut scope deliberately, and communicated trade-offs</td><td>“tight deadline”, “conflicting priorities”</td></tr>
+<tr><td><b>Collaboration</b></td><td>you worked with design, backend, QA and product, and disagreed without damage</td><td>“disagreement with a designer or backend developer”</td></tr>
+<tr><td><b>Communication</b></td><td>you adapt the message to the audience, and you explain numbers in business terms</td><td>“explain performance to non-technical stakeholders”</td></tr>
+<tr><td><b>Quality and reliability</b></td><td>you prevent, detect, respond and learn</td><td>“a production bug”, “a build that broke the UI”</td></tr>
+<tr><td><b>Leadership</b></td><td>you mentor, set standards, make decisions visible and reduce risk</td><td>“mentoring juniors”, “technical decision-making”</td></tr>
+<tr><td><b>Growth mindset</b></td><td>you name a real mistake, what it cost, and what changed</td><td>“a failure”, “how do you keep learning”</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">STAR, with a Result and a Lesson</span><span class="src">the structure for every story</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I answer in four beats: <b>Situation</b> in two sentences, <b>Task</b> (what was mine), <b>Action</b> (what <em>I</em> did, in order, with the reasoning), <b>Result</b> (a number), then one line on <b>what I learned</b>.”</div>
+<div class="tw"><table>
+<tr><th>Beat</th><th>Share of the answer</th><th>Do</th><th>Do not</th></tr>
+<tr><td><b>S</b>ituation</td><td>10%</td><td>team, product, scale, why it mattered</td><td>give a long backstory</td></tr>
+<tr><td><b>T</b>ask</td><td>10%</td><td>the goal and your specific responsibility</td><td>blur the team’s job with yours</td></tr>
+<tr><td><b>A</b>ction</td><td><b>50%</b></td><td>2 to 4 concrete steps; the decision you made and why; who you involved</td><td>say “we” for everything, or list tools without reasons</td></tr>
+<tr><td><b>R</b>esult</td><td>20%</td><td>a measurable outcome (time, errors, conversion, satisfaction), and the business effect</td><td>end with “and it went well”</td></tr>
+<tr><td><b>L</b>esson</td><td>10%</td><td>what you would do differently or now do by default</td><td>pretend nothing could improve</td></tr>
+</table></div>
+<ul class="pts">
+  <li><b>Length:</b> about two minutes (roughly 300 words). Stop and let them ask follow-ups.</li>
+  <li><b>“I” not “we”:</b> they are hiring you. Credit the team once, then describe your part.</li>
+  <li><b>Numbers beat adjectives:</b> “cut p75 LCP from 4.1 s to 2.3 s” beats “made it much faster”.</li>
+  <li><b>Real beats impressive:</b> a modest true story you can discuss for ten minutes beats a dramatic one you cannot.</li>
+</ul>
+<div class="old"><span class="tag">⚠ weak answers</span>“We had a deadline and we all worked really hard and it launched.” No decision, no personal action, no number, no lesson. Also avoid blaming a named colleague, saying you have no weaknesses, and answering with hypotheticals (“I would…”) when they asked for a past example (“tell me about a time…”).</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>S-T-A-R-L, half the time on Action</li>
+<li>“I”, one number, one lesson</li>
+<li>About 2 minutes, then stop</li>
+<li>Past example, not hypothetical</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="sheet" id="pg-bank" data-part="Part A: Foundations" data-title="Build your story bank (do this first)">
+
+<h3 class="t"><span class="ttl">One story answers many questions</span><span class="src">the highest-leverage preparation</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I do not memorise forty answers. I prepare <b>six to eight real stories</b> and map each to several questions. A single incident story can answer ‘production bug’, ‘working under pressure’, ‘ownership’ and ‘a mistake’, just with a different emphasis.”</div>
+<div class="tw"><table>
+<tr><th>#</th><th>Story to find in your career</th><th>Questions it can answer</th></tr>
+<tr><td>1</td><td><b>A production incident</b> you handled or caused</td><td>production bug, pressure, ownership, mistake, communication</td></tr>
+<tr><td>2</td><td><b>A tight deadline</b> where you cut scope smartly</td><td>deadlines, prioritisation, trade-offs, stakeholder pushback</td></tr>
+<tr><td>3</td><td><b>A disagreement</b> with a designer, backend engineer or manager</td><td>conflict, influence without authority, disagree and commit</td></tr>
+<tr><td>4</td><td><b>A performance or quality win</b> with measured results</td><td>impact, technical depth, explaining metrics, ownership</td></tr>
+<tr><td>5</td><td><b>Mentoring or raising the bar</b> for others</td><td>leadership, standards, code review, growing juniors</td></tr>
+<tr><td>6</td><td><b>An ambiguous or unrealistic request</b> you shaped</td><td>ambiguity, client management, saying no, scoping</td></tr>
+<tr><td>7</td><td><b>A real failure or mistake</b></td><td>failure, learning, accountability</td></tr>
+<tr><td>8</td><td><b>A large project you can walk through end to end</b></td><td>architecture, previous work, proof of quality, decisions</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">The worksheet: fill in one per story</span><span class="src">copy this into your notes</span></h3>
+<div class="code"><pre>STORY TITLE:  [e.g. "Checkout crash after the Friday release"]
+WHEN / WHERE: [company, year, team size, your role]
+S  (2 lines): [what was happening, what was at stake]
+T  (1 line):  [what you were responsible for]
+A  (3 steps): 1. [first thing I did and WHY]
+              2. [the key decision, options I weighed, what I chose]
+              3. [how I involved / informed other people]
+R  (numbers): [before → after: time, error rate, users, revenue, NPS]
+L  (1 line):  [what I do differently now]
+FOLLOW-UP PREP:
+  - What was the hardest part?          [..]
+  - What would you do differently?      [..]
+  - Who disagreed and what happened?    [..]
+  - How did you measure the result?     [..]
+TAGS: incident / deadline / conflict / performance / mentoring / ambiguity / failure / project</pre></div>
+<ul class="pts">
+  <li><b>If you lack a story</b> for a category, borrow from a side project, an open-source contribution, a hackathon or a college project, and say so. Honest and specific is fine.</li>
+  <li><b>Collect the numbers now:</b> dashboards, release notes, old tickets, performance reports. Memory fades; the numbers make the story credible.</li>
+  <li><b>Check confidentiality:</b> describe the problem and result without leaking customer names, internal figures or anything under NDA.</li>
+</ul>
+<div class="add"><span class="tag">interview edge</span>Practise <b>switching the angle</b>. The same incident story, told for “a mistake”, emphasises your accountability and the safeguard you added; told for “working under pressure”, it emphasises triage and calm communication. Same facts, different spotlight.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>6 to 8 stories, mapped to many questions</li>
+<li>Find the numbers before the interview</li>
+<li>Change the spotlight, keep the facts</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="sheet" id="pg-pressure" data-part="Part B: The common questions" data-title="Deadlines, priorities and production incidents">
+
+<h3 class="t"><span class="ttl">“Tell me about delivering a feature under a tight deadline”</span><span class="src">asked in 5+ loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I first agree what <b>must</b> ship versus what can wait, in writing, with the product owner. Then I cut scope rather than quality, de-risk the hardest part first, and communicate progress daily, so the deadline is never a surprise.”</div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p><b>S:</b> “At [company] we had [N weeks] to ship [feature] before [event: a launch, a contract date]. The team was [size] and [a constraint: a dependency, a missing API].”</p>
+<p><b>T:</b> “I owned the frontend delivery of [the part].”</p>
+<p><b>A:</b> “First I sat with the product owner and split the work into <b>must-have, should-have and nice-to-have</b>, and we agreed to launch with [the must-haves] and a simple [fallback]. Second, I tackled the riskiest unknown first, [the integration / the data shape], with a thin end-to-end slice by [day], so surprises came early. Third, I put the unfinished parts behind a <b>feature flag</b> so we could ship safely, and I posted a short daily update: done, next, blocked.”</p>
+<p><b>R:</b> “We shipped on [date] with [the core flows]; [metric: error rate, adoption]. The deferred items went out in [the next sprint]. [Optional: the stakeholder’s reaction.]”</p>
+<p><b>L:</b> “I now ask for the must-have list on day one, and I raise risk the moment I see it, not at the deadline.”</p></div>
+<ul class="pts">
+  <li><b>Show prioritisation logic:</b> impact versus effort, risk, and dependencies.</li>
+  <li><b>Never trade away silently:</b> tests, accessibility and security are not “scope” to cut. Say what you protected.</li>
+  <li><b>Follow-up:</b> “What if they refused to cut scope?” → show the options (more people rarely helps late, move the date, reduce quality knowingly with a payback plan) and who decides.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“Tell me about a production bug, or a release that broke the UI”</span><span class="src">asked in 5+ loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“Order matters: <b>stop the bleeding first</b> (roll back or flag off), <b>communicate</b>, <b>find the root cause</b>, <b>fix and verify</b>, then <b>prevent a repeat</b> with a blameless post-mortem. Restoring users comes before understanding why.”</div>
+<div class="tw"><table>
+<tr><th>Phase</th><th>What I do</th><th>What I say</th></tr>
+<tr><td>1 · Detect and triage</td><td>confirm scope: who, how many, which browsers or flows; check release time, errors, vitals</td><td>“Error rate on [flow] jumped at [time], right after release [version].”</td></tr>
+<tr><td>2 · Mitigate</td><td>roll back, flag off, or hotfix, whichever is fastest and safest</td><td>“I rolled back first; root cause came second.”</td></tr>
+<tr><td>3 · Communicate</td><td>one clear channel, regular updates, plain language, an owner for each thread</td><td>“Support and the manager had updates every [30 min].”</td></tr>
+<tr><td>4 · Fix and verify</td><td>reproduce, fix, test, release gradually, watch the metrics</td><td>“The cause was [X]; I added a regression test.”</td></tr>
+<tr><td>5 · Prevent</td><td>blameless post-mortem: timeline, root cause, 2 to 3 concrete actions with owners</td><td>“We added [a canary, a test, an alert] so it cannot recur silently.”</td></tr>
+</table></div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p><b>S:</b> “After our Friday release of [feature], [N]% of users on [browser/device] could not [complete checkout / see the page]. It affected [revenue / users].”</p>
+<p><b>A:</b> “Our alert fired at [time]. I confirmed from the error tracker that it matched the release, and we <b>rolled back within [N] minutes</b>. I posted updates in the incident channel. After that I reproduced it: [root cause, e.g. a polyfill missing in an older Safari / an undefined value from a changed API field]. I fixed it, added a regression test and a browser to the test matrix, and re-released behind a flag at [1%] first.”</p>
+<p><b>R:</b> “Total impact was [N] minutes. We then added [canary release and an error-rate alert], and similar issues were caught in staging [twice] in the next quarter.”</p>
+<p><b>L:</b> “I treat ‘how did this reach production?’ as the real bug, not just the line of code.”</p></div>
+<div class="old"><span class="tag">⚠ weak answer</span>Blaming a teammate, or the QA team; skipping the rollback and describing only the debugging; or claiming nothing like this ever happened to you. A calm, structured response to a real failure is the thing being scored.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Deadlines: agree must-haves, cut scope not quality</li>
+<li>Incidents: mitigate → communicate → fix → prevent</li>
+<li>Blameless, with 2 to 3 concrete actions</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="sheet" id="pg-collab" data-part="Part B: The common questions" data-title="Disagreements, difficult stakeholders and cross-team work">
+
+<h3 class="t"><span class="ttl">“How do you handle a disagreement with a designer or backend developer?”</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I assume good intent, <b>get specific about the shared goal</b>, bring data or a prototype instead of opinions, and look for an option that satisfies the underlying need. If we still disagree, we escalate the decision to the owner, and then I commit fully.”</div>
+<div class="tw"><table>
+<tr><th>Step</th><th>Example move</th></tr>
+<tr><td>1 · Understand their reason</td><td>“Help me understand what you are optimising for.” Often the real constraint is hidden (a deadline, an API limit, brand rules).</td></tr>
+<tr><td>2 · State the shared goal</td><td>“We both want [fast checkout / a consistent UI].”</td></tr>
+<tr><td>3 · Bring evidence</td><td>a quick prototype, a performance measurement, a user-research finding, an a11y audit</td></tr>
+<tr><td>4 · Offer options with trade-offs</td><td>A: [design as drawn, costs X]. B: [close variant, costs less, keeps the intent].</td></tr>
+<tr><td>5 · Decide and commit</td><td>the owner decides (design owns look, backend owns the data contract); document it; disagree and commit</td></tr>
+</table></div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p><b>S:</b> “The designer wanted [a heavy animated hero / a custom data table], and I was concerned about [performance / accessibility / delivery time].”</p>
+<p><b>A:</b> “Instead of arguing, I asked what the animation was meant to achieve, and it was [draw attention to the offer]. I built a <b>quick prototype</b> and measured: it added [N] KB and pushed LCP to [X] s on a mid-range phone. I showed both of us the numbers and proposed [a lighter version with CSS transforms and a poster image] that kept the intent. The designer tweaked the motion, and I agreed to [keep the richer version for desktop].”</p>
+<p><b>R:</b> “We kept the visual idea, LCP stayed at [Y] s, and we shipped on time. We also agreed to review performance in design critique from then on.”</p>
+<p><b>L:</b> “I now bring a measurement or prototype early, so the conversation is about the user, not about who is right.”</p></div>
+<ul class="pts">
+  <li><b>With a backend developer</b> (API shape, pagination, error format): agree a contract first (OpenAPI), mock it so both sides unblock, and name the cost of each shape for the client, such as an N+1 request count.</li>
+  <li><b>Never</b> go around the person or complain to the manager before talking to them directly.</li>
+  <li><b>If you were wrong</b> in the story, say so. It builds trust.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“Coordinating designers, backend engineers, QA and product”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I make dependencies explicit early and keep everyone unblocked: agree the <b>API contract</b> and a mock before backend is ready, review designs with the engineers before build, and give QA testable builds continuously, not at the end.”</div>
+<ul class="pts">
+  <li><b>Designers:</b> design review before build, a shared component library and tokens, agreed states (loading, empty, error), and acceptance of “close enough” pixel differences.</li>
+  <li><b>Backend:</b> contract-first (OpenAPI/types), mock server, integration test environment, versioning plan.</li>
+  <li><b>QA:</b> acceptance criteria written with product, preview deployments per PR, automated E2E for critical flows, clear bug reports with steps.</li>
+  <li><b>Product:</b> a visible plan, trade-off conversations in terms of user and business impact, and early demos.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“A client or stakeholder has unrealistic expectations”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I do not say ‘no’ first. I find the <b>goal behind the request</b>, show what it costs, and offer options: reduce scope, move the date, or add capacity, with the risk of each. Expectations are managed by being specific and early, not by being agreeable.”</div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p>“A stakeholder asked for [a large feature] in [too short a time]. I asked what outcome they needed by that date, which turned out to be [a demo for a customer]. I broke the request into [what a demo needs] and [what production needs], estimated each with a range, and presented three options: <b>(1)</b> demo-quality in [N days], <b>(2)</b> full feature in [M weeks], <b>(3)</b> full feature faster with [one more engineer / reduced scope], listing the risks. They chose option [1] first, and we did [2] afterwards. They later said [a positive outcome].”</p></div>
+<ul class="pts">
+  <li>Give <b>ranges</b> (best, likely, worst), not a single optimistic date.</li>
+  <li>Put it in writing afterwards. Surprises later usually come from verbal agreements.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Goal first, then evidence, then options</li>
+<li>Prototype or measure instead of arguing</li>
+<li>Decision owner decides, then commit</li>
+<li>Offer options, not just “no”</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="sheet" id="pg-comm" data-part="Part B: The common questions" data-title="Communication and walking through your own work">
+
+<h3 class="t"><span class="ttl">“Explain performance metrics (TTI, FCP, CLS) to non-technical stakeholders”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I translate each metric into a <b>user moment</b> and a <b>business outcome</b>, give one number with a comparison, and end with a decision I need from them. No jargon unless they ask.”</div>
+<div class="tw"><table>
+<tr><th>Metric</th><th>Say it like this</th><th>Link to the business</th></tr>
+<tr><td>FCP / LCP</td><td>“How long until the page looks ready. Today it is [4.1] seconds; our target is under [2.5].”</td><td>visitors leave slow pages before they see the product</td></tr>
+<tr><td>TTI / INP</td><td>“How quickly it reacts when someone taps or types. Right now [the filter button] feels stuck for [0.6] seconds.”</td><td>frustrated users abandon forms and carts</td></tr>
+<tr><td>CLS</td><td>“Whether the page jumps around while you read. It makes people tap the wrong thing.”</td><td>mis-clicks, support tickets, lower trust</td></tr>
+</table></div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p>“I use three parts. <b>One:</b> the user experience in plain words, ‘on a mid-range phone, the product page took [N] seconds to show the price.’ <b>Two:</b> why it matters to us: ‘[a similar industry study / our own analytics] show conversion drops as load time rises; our [mobile checkout] is where we lose the most.’ <b>Three:</b> the plan and the ask: ‘We can bring it to [M] seconds in [two sprints] by [compressing images and removing unused code]. I need [one sprint of capacity] and will report the number weekly.’ After we shipped, I showed a before/after chart.”</p></div>
+<ul class="pts">
+  <li><b>Use analogies sparingly:</b> a restaurant (“the menu appears fast but the food is slow”) can help, but do not stretch it.</li>
+  <li><b>Visuals:</b> a side-by-side filmstrip or video of the page loading is more persuasive than a chart.</li>
+  <li><b>Always give a comparison</b> (before and after, competitor, target), and say how confident you are.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“Explain the architecture of a frontend-heavy app you built”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I walk through it top-down in about four minutes: <b>what it does and for whom</b>, the <b>shape</b> (rendering strategy, folders, state), the <b>two or three decisions</b> that mattered with their alternatives, and <b>what I would change</b>. Then I ask which area they would like to go deeper on.”</div>
+<div class="code"><pre>1. PURPOSE (20 s)   What it is, users, scale (users, pages, team size), my role
+2. SHAPE (60 s)     Stack + rendering (CSR/SSR), routing, state split (server vs client state),
+                    API layer, auth, design system, testing, deployment
+3. DECISIONS (90 s) For 2 or 3 choices: "I chose X over Y because Z; the cost was W"
+                    e.g. TanStack Query vs Redux for server data; SSR vs CSR for SEO;
+                    feature-based folders vs layer-based
+4. HARD PART (45 s) The most difficult problem and how it was solved (performance, offline, real time)
+5. RESULT (20 s)    Metric: load time, error rate, adoption, team velocity
+6. HINDSIGHT (20 s) What I would change with what I know now</pre></div>
+<ul class="pts">
+  <li><b>Draw while you talk.</b> A simple box diagram (browser → API → database, plus cache and auth) helps both of you.</li>
+  <li><b>Know the numbers:</b> bundle size, number of routes, requests per page, test coverage, deploy frequency.</li>
+  <li><b>“Proof of quality”</b> (asked for senior roles): tests and coverage at the right level, CI gates, error and performance monitoring, accessibility checks, code review standards, and incident history. Bring one concrete example of each you actually did.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“Which of your projects are you most proud of?”</span><span class="src">asked in 3 loops</span></h3>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p>“I am proudest of [project] because [the impact: users, revenue, time saved] and because of <b>how</b> it was done: [a specific engineering decision, e.g. we moved to a design system, cutting new-screen build time from [X] days to [Y]]. My part was [what I personally led or built]. What I learned was [a lesson].”</p></div>
+<div class="old"><span class="tag">⚠ weak answer</span>Naming a project and listing technologies, with no result and no personal contribution. Interviewers want evidence of <b>impact and judgement</b>, not a stack list.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>User moment + business outcome + ask</li>
+<li>Walkthrough: purpose → shape → decisions → hard part → result → hindsight</li>
+<li>Draw it; know your numbers</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="sheet" id="pg-lead-q" data-part="Part B: The common questions" data-title="Leadership, mentoring and technical decisions">
+
+<h3 class="t"><span class="ttl">“How do you mentor junior engineers?”</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I try to <b>teach how to think</b>, not hand out answers. I set a clear goal with each person, give them work slightly beyond their comfort zone with a safety net, and give feedback that is specific, kind and timely. Success is when they no longer need me for that class of problem.”</div>
+<ul class="pts">
+  <li><b>Pairing and thinking aloud:</b> debug together, narrate how I narrow a problem, then swap and let them drive.</li>
+  <li><b>Code review as teaching:</b> explain the <em>why</em>, link to a doc or ADR, separate must-fix from nit, and praise what is good.</li>
+  <li><b>Stretch work:</b> hand over a small feature end to end with a checkpoint at the design stage, not at the end.</li>
+  <li><b>Regular 1:1s:</b> goals, blockers, feedback both ways.</li>
+  <li><b>Scale it:</b> write down recurring advice (a team guide, example PRs), run a short knowledge-share.</li>
+</ul>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p>“[Name], a [junior engineer], kept shipping components that re-rendered too much and was frustrated by review comments. I asked what they found hardest, and it was <b>reading the Profiler</b>. We paired for [an hour], I let them drive, and I only asked questions like ‘what changed between these renders?’. They then fixed [a real slow screen] themselves. Over [3 months] their PRs needed [fewer review rounds, from N to M], and they later [mentored a new joiner / led a feature]. What I took from it: asking the right question helps more than giving the answer.”</p></div>
+
+<h3 class="t"><span class="ttl">“How do you make and communicate a technical decision?”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I frame the problem and the constraints, list two or three real options with trade-offs, prototype only the riskiest unknown, write a short <b>RFC or ADR</b>, time-box the discussion, decide, and record why. Reversible decisions I make quickly; hard-to-reverse ones get more input.”</div>
+<div class="tw"><table>
+<tr><th>Step</th><th>Output</th></tr>
+<tr><td>1 · Problem and constraints</td><td>what we are solving, success criteria, deadlines, team skills</td></tr>
+<tr><td>2 · Options</td><td>2 to 3 candidates, including “do nothing”, each with cost, risk, reversibility</td></tr>
+<tr><td>3 · Evidence</td><td>a spike, benchmark or reference from another team</td></tr>
+<tr><td>4 · Write it down</td><td>ADR: context, decision, alternatives, consequences</td></tr>
+<tr><td>5 · Decide and commit</td><td>a named decision owner; “disagree and commit” for the rest</td></tr>
+<tr><td>6 · Revisit</td><td>a review date or trigger (“if build times pass 10 min, reconsider”)</td></tr>
+</table></div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p>“We needed to choose [a state library / a micro-frontend approach / SSR vs CSR] for [project]. I wrote a one-page ADR comparing [A, B, C] on [the criteria that mattered: team familiarity, bundle size, testability]. I ran a [two-day] spike on the riskiest part. We held a [30-minute] review, and the team chose [B]; two engineers preferred [A] and I made sure their concerns were recorded as risks with a trigger to revisit. After [6 months] [the outcome and what we would adjust].”</p></div>
+
+<h3 class="t"><span class="ttl">“How do you raise standards or introduce a change across a team?”</span><span class="src">asked in 3 loops</span></h3>
+<ul class="pts">
+  <li><b>Start from a pain the team already feels</b> (flaky tests, slow reviews, repeated bugs), not from a preference.</li>
+  <li><b>Pilot small:</b> one team or module, measure, then expand. Show results rather than mandating.</li>
+  <li><b>Automate it:</b> a lint rule, template or CI check beats a wiki page nobody reads.</li>
+  <li><b>Bring people along:</b> ask for objections early, credit others, make the old way easy to leave.</li>
+  <li><b>Leave a trail:</b> a short guide, an ADR and an example PR.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“A teammate’s work is below standard, or a colleague is struggling”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I talk to them <b>privately and early</b>, describe the specific behaviour or outcome (not the person), ask what is getting in the way, and agree what support and what change looks like. I involve the manager only if it continues, and I tell them I am doing so.”</div>
+<ul class="pts">
+  <li>Ask first: unclear requirements, personal circumstances, a skills gap and a motivation problem each need a different response.</li>
+  <li>Offer something concrete: pairing, a smaller task, a code walkthrough, better documentation.</li>
+  <li>Protect the delivery: adjust who does what while the support takes effect.</li>
+</ul>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Mentor: teach thinking, specific feedback, stretch with a net</li>
+<li>Decide: options → evidence → ADR → commit → revisit</li>
+<li>Standards: pain first, pilot, automate</li>
+<li>Struggling teammate: private, specific, supportive</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 7 ============ -->
+<section class="sheet" id="pg-growth" data-part="Part B: The common questions" data-title="Failure, ambiguity, feedback and continuous learning">
+
+<h3 class="t"><span class="ttl">“Tell me about a mistake or failure”</span><span class="src">asked in 4 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I pick a <b>real, mid-sized mistake</b> that I owned, say plainly what I did wrong, what it cost, how I fixed it, and the <b>process change</b> that came from it. The lesson must be something that visibly changed how I work.”</div>
+<div class="add"><span class="tag">sample answer (template)</span>
+<p><b>S:</b> “I [shipped a change without checking the older-browser / empty-state / failure case] on [project].”</p>
+<p><b>A:</b> “It caused [the impact: N users saw an error for M minutes]. I told [the manager and the team] immediately rather than hoping nobody noticed, helped [roll back / fix], and wrote the post-mortem, taking responsibility for [the specific decision].”</p>
+<p><b>R + L:</b> “Afterwards I [added a checklist item / a test / a staging check]. Since then [a concrete improvement: such issues have been caught before release].”</p></div>
+<div class="old"><span class="tag">⚠ weak answers</span>“My weakness is that I work too hard” or a failure that was really someone else’s fault. Also avoid a mistake so serious it raises doubts about judgement (data loss through carelessness) or so trivial it sounds evasive.</div>
+
+<h3 class="t"><span class="ttl">“Tell me about working with an ambiguous or changing requirement”</span><span class="src">asked in 3 loops</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“I reduce ambiguity quickly: ask the questions that <b>change the design</b>, write down assumptions and share them, build the smallest slice that tests the riskiest assumption, and make the system easy to change where I am least sure.”</div>
+<ul class="pts">
+  <li><b>List assumptions</b> and get them confirmed (“I am assuming users can edit after submit. Correct?”).</li>
+  <li><b>Thin vertical slice</b> to validate with the user early; avoid building the whole thing on a guess.</li>
+  <li><b>Keep it flexible:</b> config instead of hard-coding, a feature flag, an adapter in front of an uncertain API.</li>
+  <li><b>Changing requirements:</b> agree how change is handled (trade scope for time), and keep a visible change log.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“How do you take feedback, and how do you give hard feedback?”</span><span class="src">asked in 3 loops</span></h3>
+<ul class="pts">
+  <li><b>Receiving:</b> listen without defending, ask for an example, summarise it back, decide what to change, and follow up later to show you acted. Give a real example where feedback changed your behaviour.</li>
+  <li><b>Giving:</b> be timely, specific and about observable behaviour; say the impact; ask for their view; agree a next step. “In the review yesterday, the PR had no tests for [X], which caused [Y] last month. What would help you add them?”</li>
+  <li><b>Code review disagreement:</b> separate preference from correctness, link to a standard, and defer to the author on style that does not matter.</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“How do you keep learning, and prioritise your own work?”</span><span class="src">asked in 3 loops</span></h3>
+<div class="tw"><table>
+<tr><th>Topic</th><th>A credible, specific answer</th></tr>
+<tr><td>Continuous learning</td><td>a <b>habit</b> with proof: “I read the release notes of [React / the framework] and try one new feature on a side project per quarter; last quarter I used [X] to [Y]. I also write short internal notes after learning something new.”</td></tr>
+<tr><td>Learning on the job</td><td>“When I needed [a new library], I read the docs and the source, built a small proof of concept, and then shared a summary with the team.”</td></tr>
+<tr><td>Prioritising tasks</td><td>“Impact, urgency and dependencies. I ask the owner when two things conflict, rather than guessing. I protect focus time and keep a visible list.”</td></tr>
+<tr><td>Saying no</td><td>“I say: ‘I can do A this week; to add B, we would need to move C. Which matters more?’”</td></tr>
+</table></div>
+<div class="add"><span class="tag">interview edge</span>For “keep learning”, avoid a list of courses. Show <b>application</b>: something you learned, used, and what changed because of it.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Mistake: own it, cost, fix, process change</li>
+<li>Ambiguity: assumptions, thin slice, keep it flexible</li>
+<li>Feedback: specific, behaviour, next step</li>
+<li>Learning: show application, not a course list</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 8 ============ -->
+<section class="sheet" id="pg-closing" data-part="Part B: The common questions" data-title="Motivation, introduction and questions to ask them">
+
+<h3 class="t"><span class="ttl">“Tell me about yourself”</span><span class="src">the first question, every time</span></h3>
+<div class="plain"><svg class="bulb"><use href="#bulb"/></svg><b>Say this</b>“A <b>present-past-future</b> pitch in about 90 seconds: what I do now and what I am good at, the path and the proof, and why this role is the next step.”</div>
+<div class="add"><span class="tag">template</span>
+<p><b>Present:</b> “I am a [senior frontend / full-stack] engineer at [company], where I [own X] for [N users]. My strengths are [performance, React architecture, mentoring].”</p>
+<p><b>Past:</b> “Before that I [worked on Y]. Highlights: [a result with a number] and [a result with a number].”</p>
+<p><b>Future:</b> “I am looking for [a role with more ownership of architecture and a larger scale], and [company]’s work on [specific thing you researched] matches that.”</p></div>
+<ul class="pts">
+  <li>Keep it professional and relevant; do not recite the CV chronologically.</li>
+  <li>End with a hook they can ask about (“…which taught me a lot about [offline sync]”).</li>
+</ul>
+
+<h3 class="t"><span class="ttl">“Why are you leaving, and why us?”</span><span class="src">asked in 4 loops</span></h3>
+<div class="tw"><table>
+<tr><th>Question</th><th>Good shape</th><th>Avoid</th></tr>
+<tr><td>Why leave?</td><td>pull, not push: “I have learned a lot and want [larger scale, more ownership, a different domain]”</td><td>complaining about the manager, team or pay</td></tr>
+<tr><td>Why this company?</td><td>something specific you researched: product, engineering blog, scale, tech choices, values</td><td>generic praise (“great culture”)</td></tr>
+<tr><td>Why this role?</td><td>link their needs to your strengths with one example</td><td>only talking about what you will gain</td></tr>
+<tr><td>Where in 5 years?</td><td>growth in impact and scope (technical leadership or management), flexible on the title</td><td>“your job” or a rigid plan</td></tr>
+</table></div>
+
+<h3 class="t"><span class="ttl">Strengths and weaknesses</span><span class="src">asked in 3 loops</span></h3>
+<ul class="pts">
+  <li><b>Strength:</b> one or two with <b>evidence</b>: “I am good at diagnosing performance problems; for example I [cut X by Y].”</li>
+  <li><b>Weakness:</b> a real one that is not core to the job, plus the <b>steps you are taking</b>: “I used to over-engineer first versions. I now write the simplest thing and a list of ‘when to revisit’ triggers.”</li>
+</ul>
+
+<h3 class="t"><span class="ttl">Questions to ask the interviewer</span><span class="src">always have 4 ready</span></h3>
+<div class="tw"><table>
+<tr><th>To the engineer</th><th>To the manager</th></tr>
+<tr><td>What does a typical week of shipping look like, and how often do you deploy?</td><td>What does success in the first 6 months look like for this role?</td></tr>
+<tr><td>How do you handle technical debt and quality (tests, monitoring, reviews)?</td><td>How are priorities set between product requests and engineering health?</td></tr>
+<tr><td>What is the hardest technical problem the team has right now?</td><td>How do you support growth for senior engineers (technical track, mentoring)?</td></tr>
+<tr><td>How are decisions made and recorded across frontend teams?</td><td>What would make someone struggle in this team?</td></tr>
+</table></div>
+<div class="add"><span class="tag">interview edge</span>Do not ask about salary, leave or perks in a technical round; save them for the recruiter. For compensation talks later, research the market range, state your range confidently, and discuss total compensation, not just base.</div>
+
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Intro: present → past → future, 90 seconds</li>
+<li>Leave for a pull, never a push</li>
+<li>Weakness + the fix you are working on</li>
+<li>Always ask 4 good questions</li>
+</ul></div>
+</section>
+
+<!-- ============ PAGE 9 ============ -->
+<section class="sheet" id="pg-check" data-part="Part C: Wrap-up" data-title="Quick check and cheat sheet">
+
+<h3 class="t"><span class="ttl">Quick check</span><span class="src">answers folded away</span></h3>
+<details><summary>1. What does STAR(L) stand for, and where should most of the time go?</summary><p>Situation, Task, Action, Result, Lesson. About half on the Action: what <em>you</em> did and why.</p></details>
+<details><summary>2. Why prepare a story bank instead of one answer per question?</summary><p>Six to eight real stories can answer dozens of questions by changing the emphasis, and you can discuss them in depth when probed.</p></details>
+<details><summary>3. In a production incident, what comes first: finding the root cause or restoring service?</summary><p>Restoring service (rollback or flag off). Root cause comes after, then a blameless post-mortem with concrete prevention actions.</p></details>
+<details><summary>4. How do you handle a disagreement with a designer?</summary><p>Understand their goal, restate the shared goal, bring a prototype or measurement, offer options with trade-offs, let the decision owner decide, then commit.</p></details>
+<details><summary>5. How do you explain CLS to a non-technical stakeholder?</summary><p>“Whether the page jumps while you read, which makes people tap the wrong thing,” then the business effect and the plan.</p></details>
+<details><summary>6. What is “disagree and commit”?</summary><p>You state your concern, the owner decides, and afterwards you fully support the decision. The concern is recorded, with a trigger to revisit if it proves right.</p></details>
+<details><summary>7. What makes a good “mistake” story?</summary><p>A real, mid-sized mistake you owned, its cost, how you fixed it, and a process change you can point to afterwards.</p></details>
+<details><summary>8. How do you handle an unrealistic request?</summary><p>Find the goal behind it, estimate with ranges, and present options (reduce scope, move the date, add capacity) with the risk of each.</p></details>
+<details><summary>9. “We” or “I”?</summary><p>Credit the team once, then describe your own actions with “I”, because you are the one being evaluated.</p></details>
+<details><summary>10. How long should an answer be?</summary><p>About two minutes. Stop and let the interviewer ask follow-ups.</p></details>
+
+<h3 class="t"><span class="ttl">Cheat sheet</span><span class="src">question → story → key move</span></h3>
+<div class="tw"><table>
+<tr><th>Question</th><th>Story to use</th><th>Key move</th></tr>
+<tr><td>Tight deadline</td><td>#2</td><td>agree must-haves, cut scope not quality, flag risk early</td></tr>
+<tr><td>Production bug / broken release</td><td>#1</td><td>mitigate → communicate → fix → prevent</td></tr>
+<tr><td>Disagreement</td><td>#3</td><td>shared goal, evidence, options, commit</td></tr>
+<tr><td>Unrealistic client</td><td>#6</td><td>goal behind the ask, ranges, options</td></tr>
+<tr><td>Explain metrics</td><td>#4</td><td>user moment, business effect, the ask</td></tr>
+<tr><td>Architecture of your app</td><td>#8</td><td>purpose → shape → decisions → hard part → result → hindsight</td></tr>
+<tr><td>Mentoring</td><td>#5</td><td>teach thinking, stretch with a net, measurable growth</td></tr>
+<tr><td>Technical decision</td><td>#3 / #8</td><td>options, evidence, ADR, commit, revisit</td></tr>
+<tr><td>Mistake</td><td>#7</td><td>own it, cost, fix, process change</td></tr>
+<tr><td>Ambiguity</td><td>#6</td><td>assumptions, thin slice, stay flexible</td></tr>
+<tr><td>Why leave / why us</td><td>—</td><td>pull not push; something specific you researched</td></tr>
+</table></div>
+<div class="sticky"><h4>Remember!</h4><ul>
+<li>Real story, “I”, one number, one lesson</li>
+<li>Two minutes, then stop</li>
+<li>Have 4 questions ready for them</li>
+</ul></div>
+</section>
+
+
+<script>
+(function () {
+  var sheets = [].slice.call(document.querySelectorAll('.sheet[data-title]'));
+  var total = sheets.length;
+  var toc = document.getElementById('toc');
+  var partsOrder = [], partsMap = {};
+
+  sheets.forEach(function (s, i) {
+    var n = i + 1;
+
+    var head = document.createElement('div');
+    head.className = 'sh';
+    head.innerHTML = '<span class="pg">Page ' + n + '</span><h2>' + s.getAttribute('data-title') + '</h2>';
+    s.insertBefore(head, s.firstChild);
+
+    var prev = sheets[i - 1], next = sheets[i + 1];
+    var ft = document.createElement('div');
+    ft.className = 'ft';
+    ft.innerHTML =
+      '<a ' + (prev ? 'href="#' + prev.id + '"' : 'class="off" aria-hidden="true"') + '>← previous</a>' +
+      '<span class="mid">Page ' + n + ' of ' + total + '</span>' +
+      '<a ' + (next ? 'href="#' + next.id + '"' : 'href="#contents"') + '>' + (next ? 'next →' : 'back to contents ↑') + '</a>';
+    s.appendChild(ft);
+
+    var part = s.getAttribute('data-part');
+    if (!partsMap[part]) { partsMap[part] = []; partsOrder.push(part); }
+    partsMap[part].push({ n: n, id: s.id, title: s.getAttribute('data-title') });
+  });
+
+  partsOrder.forEach(function (p) {
+    var d = document.createElement('div');
+    d.className = 'part';
+    var html = '<h4>' + p + '</h4><ol>';
+    partsMap[p].forEach(function (x) {
+      html += '<li><span>' + x.n + '.</span><a href="#' + x.id + '">' + x.title + '</a></li>';
+    });
+    d.innerHTML = html + '</ol>';
+    toc.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

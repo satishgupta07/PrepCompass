@@ -239,3 +239,17 @@ on the pages go through `tryGet…` helpers that return `null` on a DB error or
 3 s timeout, so `/study` still renders (without progress) if MongoDB is down.
 Removing a sheet from a notebook leaves a stale id in `completed` — harmless,
 counts are clamped to the current total.
+
+### Resume (admin only)
+
+`/resume` shows the owner's resume and `/resume/pdf` downloads it; both require
+`role: "admin"` and answer 404 (not 403) to everyone else, and the header's
+"Resume" link only renders for admins. There is deliberately **no editor and no
+database model**: the content is the `RESUME` object in `src/lib/resume-data.ts`
+(edit that file to change it). `src/lib/resume-html.ts` renders it to one
+self-contained, ATS-friendly HTML string (single column, standard headings,
+plain text, no letter-spacing, all values escaped) that the page shows in a
+fully sandboxed `<iframe srcDoc>` and `src/lib/resume-pdf.ts` prints to a text
+A4 PDF with the same headless Chrome/Edge lookup and render limit as
+`study-pdf.ts` (which exports `findChrome`/`withRenderSlot` for this). Keep it to
+one page: check by downloading after edits.

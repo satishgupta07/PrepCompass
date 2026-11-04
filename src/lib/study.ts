@@ -28,6 +28,31 @@ export const NOTEBOOKS = [
     title: "Node.js, Express & MongoDB",
     blurb: "Event loop, modules, streams, Express middleware, auth, Mongoose, scaling, and interview Q&A.",
   },
+  {
+    slug: "frontend-perf-security",
+    title: "Frontend Performance, Browser & Security",
+    blurb: "Rendering pipeline, Core Web Vitals, bundles and runtime speed, caching, real time and offline, XSS/CSRF/CORS, accessibility, and senior architecture questions.",
+  },
+  {
+    slug: "machine-coding",
+    title: "Machine Coding & Frontend LLD",
+    blurb: "Build-it-yourself rounds: autocomplete, infinite scroll, multi-step form, file upload, Kanban, modal and toast, data grid, comments, live chat, with the approach and edge cases.",
+  },
+  {
+    slug: "behavioral",
+    title: "Behavioral & Leadership",
+    blurb: "STAR answers and fill-in-the-blank templates for deadlines, incidents, conflict, mentoring, decisions and failure, plus a story-bank worksheet.",
+  },
+  {
+    slug: "database-sql",
+    title: "Database & SQL",
+    blurb: "DBMS, ER model, keys, SQL from DDL to window functions, normalisation, indexing and EXPLAIN, transactions and isolation, replication, sharding, CAP, NoSQL, and classic SQL interview problems.",
+  },
+  {
+    slug: "operating-systems",
+    title: "Operating Systems",
+    blurb: "Kernel and system calls, processes and threads, CPU scheduling, synchronisation and deadlock, paging and virtual memory, file systems and disk scheduling, and how it shows up in Node and containers.",
+  },
 ] as const;
 
 export type NotebookSlug = (typeof NOTEBOOKS)[number]["slug"];
